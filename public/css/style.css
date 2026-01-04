@@ -1,0 +1,803 @@
+/* =========================================
+   PİTO - EARTH & COFFEE TEMA (KAHVE TONLARI)
+   FINAL SÜRÜM - İKONLAR EKLENDİ
+   ========================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Quicksand:wght@300;400;500;600;700&display=swap');
+
+:root {
+    /* --- RENK PALETİ --- */
+    --primary-clay: #A64D32;      /* Ana Renk: Kiremit */
+    --clay-dark: #4E342E;         /* Hover: Acı Kahve */
+    --clay-taupe: #8D6E63;        /* Sütlü Kahve */
+    --clay-earth: #5D4037;        /* Toprak */
+    --bg-cream: #F9F6F0;          /* Arka Plan: Krem */
+    --text-dark: #3E2723;         /* Yazı: Koyu Kahve */
+    --text-light: #8D6E63;        /* Yazı: Açık Kahve */
+    
+    /* --- FONTLAR --- */
+    --font-heading: 'Playfair Display', serif;
+    --font-body: 'Quicksand', sans-serif;
+    
+    /* --- EFEKTLER --- */
+    --shadow-soft: 0 10px 30px rgba(62, 39, 35, 0.08);
+    --shadow-hover: 0 15px 35px rgba(62, 39, 35, 0.15);
+    --radius-card: 20px;
+    --radius-btn: 50px;
+}
+
+/* =========================================
+   GENEL AYARLAR
+   ========================================= */
+body {
+    font-family: var(--font-body);
+    background-color: var(--bg-cream);
+    color: var(--text-dark);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, .section-title, .navbar-brand {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--primary-clay) !important;
+}
+
+p, .text-muted, .lead, small {
+    font-family: var(--font-body);
+    color: var(--text-light) !important;
+}
+
+/* =========================================
+   NAVBAR
+   ========================================= */
+.navbar {
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(62, 39, 35, 0.05);
+    border-bottom: 1px solid rgba(109, 76, 65, 0.1);
+}
+
+.navbar-brand {
+    font-size: 1.6rem;
+    letter-spacing: 1px;
+}
+
+.nav-link {
+    color: var(--text-dark) !important;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin: 0 8px;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+    color: var(--primary-clay) !important;
+}
+
+/* =========================================
+   HERO BÖLÜMÜ (ANA SAYFA)
+   ========================================= */
+.hero {
+    position: relative;
+    width: 100%;
+    height: 85vh; /* Tam ekran yüksekliği */
+    
+    /* Kedi ve Köpek Yavrusu Görseli + Kahve Filtre */
+    background: linear-gradient(rgba(62, 39, 35, 0.4), rgba(62, 39, 35, 0.4)),
+                url('https://images.pexels.com/photos/46024/pexels-photo-46024.jpeg?auto=compress&cs=tinysrgb&w=1600');
+    
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed; /* Parallax efekti */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+}
+
+.hero h1 {
+    font-size: 4rem;
+    color: #ffffff !important;
+    text-shadow: 2px 4px 15px rgba(0,0,0,0.5);
+    margin-bottom: 0.5rem;
+}
+
+.hero p {
+    font-size: 1.3rem;
+    letter-spacing: 3px;
+    color: #ffffff !important;
+    text-shadow: 1px 2px 10px rgba(0,0,0,0.5);
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 3rem;
+}
+
+/* =========================================
+   ANA SAYFA ÖZEL BUTONLARI
+   ========================================= */
+.btn-custom {
+    border-radius: var(--radius-btn);
+    padding: 14px 35px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: none;
+    color: white !important;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    margin: 5px;
+}
+
+.btn-custom:hover {
+    transform: translateY(-5px);
+    filter: brightness(1.1);
+}
+
+/* BÜTÜN BUTONLAR SAHİPLEN RENGİNDE */
+.btn-rust, .btn-taupe, .btn-earth, .btn-coffee { 
+    background-color: var(--primary-clay); 
+}
+
+/* =========================================
+   KART TASARIMLARI
+   ========================================= */
+.card {
+    border: 1px solid rgba(109, 76, 65, 0.1);
+    border-radius: var(--radius-card);
+    background: #ffffff;
+    box-shadow: var(--shadow-soft);
+    transition: all 0.4s ease;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--shadow-hover);
+}
+
+.card-img-top {
+    height: 240px;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+    filter: sepia(10%);
+}
+
+.card:hover .card-img-top {
+    transform: scale(1.05);
+    filter: sepia(0%);
+}
+
+.card-body {
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.card-title {
+    color: var(--primary-clay) !important;
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+}
+
+/* Outline Butonlar */
+.btn-outline-clay {
+    color: var(--primary-clay);
+    border: 2px solid var(--primary-clay);
+    border-radius: 50px;
+    font-weight: 700;
+    background: transparent;
+    transition: 0.3s;
+}
+
+.btn-outline-clay:hover {
+    background-color: var(--primary-clay);
+    color: #fff;
+}
+
+/* =========================================
+   FOOTER (İkonlar Eklendi)
+   ========================================= */
+footer {
+    background-color: var(--clay-dark);
+    color: #EFEBE9;
+    padding: 3rem 0;
+    margin-top: 4rem;
+    border-top: 5px solid var(--primary-clay);
+}
+
+footer p { color: #EFEBE9 !important; opacity: 0.8; }
+
+/* Sosyal Medya İkonları */
+footer a {
+    color: #D7CCC8 !important; /* Latte Rengi */
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+footer a:hover {
+    color: #ffffff !important; /* Hover'da Beyaz */
+    transform: translateY(-3px) scale(1.1); /* Hafif zıplama efekti */
+}
+/* =========================================
+   PET-DETAIL.HTML (DETAY SAYFASI) ÖZEL STİLLERİ
+   ========================================= */
+
+/* Sayfaya Özel Değişkenler */
+.pet-detail-page {
+    --nav-parchment: #F9F6F0;
+    --secondary-sage: #8CAEAB; /* Rozetler için yumuşak yeşil */
+    --accent-sand: #D7CCC8;
+    --white: #ffffff;
+    
+    background-color: var(--nav-parchment);
+    /* Özel SVG Desenli Arka Plan */
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d48166' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Resim Kartı (GÜNCELLENDİ: Daha Küçük Boyut) */
+.pet-image-card {
+    border-radius: 30px;
+    border: 8px solid var(--white);
+    box-shadow: 0 15px 35px rgba(212, 129, 102, 0.2);
+    overflow: hidden;
+    height: 400px; /* Sabit yükseklik ile küçültüldü */
+    position: relative;
+    background-color: #eee; /* Resim yüklenene kadar gri zemin */
+}
+
+.pet-image-card img {
+    height: 100%; 
+    width: 100%; 
+    object-fit: cover; /* Resmi kutuya sığdırır ve fazlalıkları kırpar */
+    transition: transform 0.5s ease;
+}
+
+.pet-image-card:hover img { 
+    transform: scale(1.03); 
+}
+
+/* Bilgi Kartı */
+.pet-info-card {
+    background-color: var(--white);
+    border-radius: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    padding: 3rem;
+    height: 100%;
+    display: flex; 
+    flex-direction: column;
+    border-top: 5px solid var(--secondary-sage);
+}
+
+.pet-name-title {
+    font-family: var(--font-heading);
+    color: var(--primary-clay);
+    font-weight: 800; 
+    letter-spacing: -1px;
+}
+
+/* Otantik Rozetler */
+.otantik-badge {
+    background-color: #f8f5f0;
+    color: var(--text-dark);
+    border: 1px solid var(--accent-sand);
+    font-weight: 600; 
+    font-size: 0.95rem;
+    padding: 0.8rem 1.2rem;
+    border-radius: 15px;
+    display: inline-flex; 
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.otantik-badge i {
+    color: var(--primary-clay);
+    margin-right: 10px; 
+    font-size: 1.1rem;
+}
+
+/* Hikaye Kutusu */
+.story-box {
+    position: relative; 
+    padding: 25px;
+    background: linear-gradient(to right, rgba(212, 129, 102, 0.08), transparent);
+    border-left: 4px solid var(--primary-clay);
+    border-radius: 0 20px 20px 0;
+    margin: 2.5rem 0;
+}
+
+.story-text {
+    font-family: 'Playfair Display', serif;
+    font-style: italic; 
+    color: #6d5c55;
+    font-size: 1.2rem; 
+    line-height: 1.7;
+}
+
+.story-label {
+     font-family: var(--font-heading); 
+     color: var(--primary-clay);
+     text-transform: uppercase; 
+     letter-spacing: 2px; 
+     font-size: 0.85rem; 
+     font-weight: 700;
+     margin-bottom: 1rem; 
+     display: block;
+}
+
+/* İlan Sahibi Kutusu */
+.owner-box-otantik {
+    background-color: #F9F6F0;
+    border-radius: 25px;
+    padding: 1.5rem 2rem;
+    margin-top: 2rem;
+    border: 2px dashed rgba(93, 138, 130, 0.3);
+    display: flex; 
+    align-items: center;
+}
+
+.owner-avatar-circle {
+    width: 55px; 
+    height: 55px;
+    background-color: var(--white); 
+    color: var(--secondary-sage);
+    border-radius: 50%; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08); 
+    font-size: 1.8rem;
+    margin-right: 1.5rem;
+}
+
+/* Mesaj Gönder Butonu */
+.btn-message {
+    background-color: var(--primary-clay);
+    color: white;
+    border-radius: 15px;
+    padding: 1rem;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    border: none;
+    margin-top: 1.5rem;
+}
+
+.btn-message:hover {
+    background-color: #b5634a;
+    transform: translateY(-3px);
+    color: white;
+    box-shadow: 0 5px 15px rgba(212, 129, 102, 0.3);
+}
+
+
+/* =========================================
+   PET-DETAIL.HTML (DETAY SAYFASI) - EARTH & COFFEE TEMA
+   ========================================= */
+
+.pet-detail-page {
+    /* Genel Arka Plan: Krem Tonu */
+    background-color: #F9F6F0;
+    /* Hafif SVG Desen */
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23A64D32' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* 1. Resim Kartı */
+.pet-image-card {
+    border-radius: 30px;
+    border: 8px solid #ffffff;
+    box-shadow: 0 15px 35px rgba(62, 39, 35, 0.15); /* Kahve gölge */
+    overflow: hidden;
+    height: 400px;
+    position: relative;
+    background-color: #EFEBE9; /* Yüklenirken Latte rengi */
+}
+
+.pet-image-card img {
+    height: 100%; width: 100%; 
+    object-fit: cover;
+    transition: transform 0.5s ease;
+    filter: sepia(5%); /* Çok hafif sıcaklık */
+}
+
+.pet-image-card:hover img { 
+    transform: scale(1.03); 
+    filter: sepia(0%);
+}
+
+/* Durum Rozeti (Müsait vb.) */
+#petStatus {
+    background-color: #8D6E63 !important; /* Pastel Kahve */
+    color: white;
+    font-weight: 600;
+}
+
+/* 2. Bilgi Kartı */
+.pet-info-card {
+    background-color: #ffffff;
+    border-radius: 30px;
+    box-shadow: 0 10px 30px rgba(62, 39, 35, 0.05);
+    padding: 3rem;
+    height: 100%;
+    display: flex; flex-direction: column;
+    border-top: 5px solid #A64D32; /* Üst Çizgi: Kiremit */
+}
+
+.pet-name-title {
+    font-family: 'Playfair Display', serif;
+    color: #A64D32; /* Başlık: Kiremit */
+    font-weight: 800; 
+    letter-spacing: -1px;
+}
+
+/* 3. Otantik Rozetler (Tür, Cinsiyet vb.) */
+.otantik-badge {
+    background-color: #EFEBE9; /* Latte Arka Plan */
+    color: #3E2723; /* Koyu Kahve Yazı */
+    border: 1px solid #D7CCC8;
+    font-weight: 600; 
+    font-size: 0.95rem;
+    padding: 0.8rem 1.2rem;
+    border-radius: 15px;
+    display: inline-flex; align-items: center;
+}
+
+.otantik-badge i {
+    color: #A64D32; /* İkonlar: Kiremit */
+    margin-right: 10px; 
+    font-size: 1.1rem;
+}
+
+/* 4. Hikaye Kutusu */
+.story-box {
+    position: relative; 
+    padding: 25px;
+    background: linear-gradient(to right, rgba(166, 77, 50, 0.05), transparent); /* Kiremit Opak */
+    border-left: 4px solid #A64D32;
+    border-radius: 0 20px 20px 0;
+    margin: 2.5rem 0;
+}
+
+.story-text {
+    font-family: 'Playfair Display', serif;
+    font-style: italic; 
+    color: #5D4037; /* Toprak Rengi */
+    font-size: 1.2rem; 
+    line-height: 1.7;
+}
+
+.story-label {
+     font-family: 'Quicksand', sans-serif;
+     color: #A64D32;
+     text-transform: uppercase; 
+     letter-spacing: 2px; 
+     font-size: 0.85rem; 
+     font-weight: 700;
+     margin-bottom: 1rem; 
+     display: block;
+}
+
+/* 5. İlan Sahibi Kutusu */
+.owner-box-otantik {
+    background-color: #F9F6F0; /* Krem */
+    border-radius: 25px;
+    padding: 1.5rem 2rem;
+    margin-top: 2rem;
+    border: 2px dashed #D7CCC8; /* Kesikli Latte Çizgi */
+    display: flex; align-items: center;
+}
+
+.owner-avatar-circle {
+    width: 55px; height: 55px;
+    background-color: #ffffff; 
+    color: #A64D32; /* İkon Rengi */
+    border-radius: 50%; 
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 5px 15px rgba(62, 39, 35, 0.08); 
+    font-size: 1.8rem;
+    margin-right: 1.5rem;
+}
+
+/* 6. Mesaj Gönder Butonu */
+.btn-message {
+    background-color: #A64D32; /* Kiremit */
+    color: white;
+    border-radius: 15px;
+    padding: 1rem;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    border: none;
+    margin-top: 1.5rem;
+}
+
+.btn-message:hover {
+    background-color: #4E342E; /* Hover: Acı Kahve */
+    transform: translateY(-3px);
+    color: white;
+    box-shadow: 0 5px 15px rgba(62, 39, 35, 0.3);
+}
+
+/* =========================================
+   PROFILE.HTML (PROFİL) ÖZEL STİLLERİ
+   ========================================= */
+
+.profile-page {
+    background-color: #F9F6F0; /* Krem */
+}
+
+/* Profil Kartı */
+.profile-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    overflow: hidden;
+    border-top: 5px solid #A64D32; /* Kiremit */
+}
+
+/* Profil Resmi Yuvarlağı */
+.profile-img-container {
+    width: 130px; 
+    height: 130px; 
+    margin: 0 auto;
+    border-radius: 50%;
+    border: 4px solid #F9F6F0;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+    position: relative;
+    background: #eee;
+}
+
+.profile-img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Profil Yardımcı Renk Sınıfları */
+.text-clay { color: #A64D32 !important; }
+.text-dark-brown { color: #3E2723 !important; }
+.border-clay { border-color: #A64D32 !important; }
+
+/* Butonlar */
+.btn-clay { 
+    background-color: #A64D32; 
+    color: white; 
+    border: none; 
+}
+.btn-clay:hover { 
+    background-color: #8c412a; 
+    color: white; 
+}
+
+/* =========================================
+   ADD-BREEDING.HTML (EŞ İLANI) TASARIMI
+   ========================================= */
+
+.bg-earth-cream {
+    background-color: #F9F6F0;
+}
+
+/* Resim Yükleme Alanı */
+.image-upload-box {
+    width: 100%;
+    max-width: 350px;
+    height: 250px; 
+    background-color: #F9F6F0; 
+    border: 2px dashed #D7CCC8; /* Kesikli Çizgi */
+    border-radius: 20px;
+    display: flex; 
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    position: relative;
+}
+
+.image-upload-box:hover {
+    background-color: #EFEBE9;
+    border-color: #A64D32;
+}
+
+/* Form Elemanları (Kahve Temalı) */
+.form-control-earth, .form-select-earth {
+    background-color: #ffffff;
+    border: 1px solid #D7CCC8;
+    color: #3E2723;
+    font-weight: 500;
+}
+
+.form-control-earth:focus, .form-select-earth:focus {
+    border-color: #A64D32;
+    box-shadow: 0 0 0 4px rgba(166, 77, 50, 0.1);
+}
+
+/* Buton */
+.btn-earth-primary {
+    background-color: #A64D32; 
+    border: none;
+    font-size: 1.1rem; 
+    transition: 0.3s;
+}
+
+.btn-earth-primary:hover {
+    background-color: #4E342E;
+    transform: translateY(-2px);
+}
+
+
+/* =========================================
+   CARETAKERS.HTML (BAKICILAR) TASARIMI
+   ========================================= */
+
+.caretakers-page {
+    background-color: #F9F6F0; /* Krem */
+}
+
+/* Bakıcı Kartı */
+.caretaker-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: white;
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.caretaker-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(166, 77, 50, 0.15) !important;
+}
+
+/* Kart Görseli */
+.caretaker-img {
+    height: 220px;
+    object-fit: cover;
+    transition: 0.5s;
+    filter: sepia(10%);
+}
+
+.caretaker-card:hover .caretaker-img {
+    transform: scale(1.05);
+    filter: sepia(0%);
+}
+
+/* Butonlar */
+.btn-earth-primary {
+    background-color: #A64D32; 
+    color: white; 
+    border: none;
+    transition: 0.3s;
+}
+
+.btn-earth-primary:hover {
+    background-color: #4E342E; 
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-earth-outline {
+    color: #A64D32;
+    border: 2px solid #A64D32;
+    background: transparent;
+    font-weight: 700;
+}
+
+.btn-earth-outline:hover {
+    background-color: #A64D32;
+    color: white;
+}
+
+/* Modal Bilgi Kutusu Hover */
+.info-box {
+    transition: all 0.3s ease;
+}
+.info-box:hover {
+    background-color: #fff8f6 !important; /* Çok açık kiremit */
+    border-color: #D7CCC8 !important;
+    transform: translateX(5px);
+}
+
+/* =========================================
+   CARETAKERS.HTML (BAKICILAR) ÖZEL STİLLERİ
+   ========================================= */
+
+/* Sayfa Arka Planı */
+.caretakers-page {
+    background-color: #F9F6F0; /* Krem */
+}
+
+/* --- KART YAPISI --- */
+.caretaker-card {
+    border-radius: 20px;
+    overflow: hidden;
+    border: none;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    height: 100%; /* Kartların boyunu eşitler */
+    background-color: #ffffff;
+}
+
+.caretaker-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(166, 77, 50, 0.2);
+}
+
+/* Kart İçeriği */
+.caretaker-card .card-body {
+    padding: 1.5rem;
+}
+
+/* --- RESİM AYARLARI (TAM OTURMA) --- */
+/* !important kullanarak JS tarafından eklenen olası satır içi stilleri eziyoruz */
+.caretaker-card img, 
+.caretaker-card .card-img-top {
+    width: 100% !important;
+    height: 280px !important; /* Yüksekliği sabitledik */
+    object-fit: cover !important; /* Resmi kutuya sığdırıp doldurur */
+    object-position: top center !important; /* Yüzlere (yukarıya) odaklanır */
+    border-bottom: 5px solid #A64D32; /* Altına dekoratif çizgi */
+}
+
+/* --- DİĞER ELEMANLAR --- */
+
+/* Butonlar */
+.btn-earth-primary {
+    background-color: #A64D32; 
+    color: white; 
+    border: none;
+    transition: 0.3s;
+}
+
+.btn-earth-primary:hover {
+    background-color: #4E342E; 
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Spinner Rengi */
+.text-earth {
+    color: #A64D32 !important;
+}
+
+/* Modal Bilgi Kutusu Hover Efekti */
+.info-box {
+    transition: all 0.3s ease;
+}
+
+.info-box:hover {
+    background-color: #fff8f6 !important;
+    border-color: #D7CCC8 !important;
+    transform: translateX(5px);
+}
+
+/* =========================================
+   GİZLİ İÇERİK (LOGIN KONTROLÜ)
+   ========================================= */
+
+.login-blur-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.blur-content {
+    filter: blur(4px);
+    opacity: 0.6;
+    pointer-events: none; /* Tıklamayı engeller */
+    user-select: none;    /* Seçmeyi engeller */
+}
+
+.login-overlay-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    width: 80%;
+    border: 1px solid #A64D32;
+}

@@ -1,0 +1,201 @@
+// --- js/index.js ---
+
+const API_URL = 'http://localhost:3001';
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateNavbar(); // Navbarı güncelle
+    loadShowcase(); // Vitrinleri doldur
+});
+
+// --- NAVBAR GÜNCELLEME ---
+function updateNavbar() {
+    const token = localStorage.getItem('token');
+    const navbarList = document.querySelector('.navbar-nav');
+    if (!navbarList) return;
+
+    const commonLinks = `
+        <li class="nav-item"><a class="nav-link" href="index.html">Ana Sayfa</a></li>
+        <li class="nav-item"><a class="nav-link" href="about.html">Hakkımızda</a></li>
+        <li class="nav-item"><a class="nav-link" href="vets.html">Veterinerler</a></li>
+        <li class="nav-item"><a class="nav-link" href="breeding.html">Eş Bul</a></li>
+        <li class="nav-item"><a class="nav-link" href="pets.html">Sahiplen</a></li>
+        <li class="nav-item"><a class="nav-link" href="caretakers.html">Bakıcılar</a></li>
+    `;
+
+    if (token) {
+        // Giriş Yapmış
+        navbarList.innerHTML = `
+            ${commonLinks}
+            <li class="nav-item"><a class="nav-link fw-bold" href="messages.html">Mesajlar</a></li>
+            <li class="nav-item"><a class="nav-link fw-bold" href="profile.html" style="color: #A64D32;">Profilim</a></li>
+            <li class="nav-item ms-2"><button onclick="logout()" class="btn btn-sm btn-outline-danger rounded-pill px-3 mt-1">Çıkış</button></li>
+        `;
+    } else {
+        // Misafir
+        navbarList.innerHTML = `
+            ${commonLinks}
+            <li class="nav-item ms-2"><a class="btn btn-sm btn-outline-primary rounded-pill px-3 mt-1" href="login.html">Giriş Yap</a></li>
+            <li class="nav-item ms-1"><a class="btn btn-sm btn-primary rounded-pill px-3 mt-1 text-white" href="register.html">Kayıt Ol</a></li>
+        `;
+    }
+}
+
+// --- VİTRİN YÜKLEME (TÜM KATEGORİLER) ---
+async function loadShowcase() {
+    // HTML'deki ID'leri seçiyoruz
+    const adoptionContainer = document.getElementById('adoptionContainer');
+    const breedingContainer = document.getElementById('breedingContainer');
+    // Senin eklediğin yeni ID'ler:
+    const caretakersContainer = document.getElementById('caretakersShowcase');
+    const vetsContainer = document.getElementById('vetsShowcase');
+
+    try {
+        // 1. SAHİPLENDİRME (İlk 3)
+        if(adoptionContainer) {
+            const res = await fetch(`${API_URL}/api/pets`);
+            const data = await res.json();
+            renderPets(data.slice(0, 3), adoptionContainer, 'adoption');
+        }
+
+        // 2. EŞ BULMA (İlk 3)
+        if(breedingContainer) {
+            const res = await fetch(`${API_URL}/api/breeding-pets`);
+            const data = await res.json();
+            renderPets(data.slice(0, 3), breedingContainer, 'breeding');
+        }
+
+        // 3. BAKICILAR (İlk 3)
+        if(caretakersContainer) {
+            const res = await fetch(`${API_URL}/api/caretakers`);
+            const data = await res.json();
+            renderCaretakers(data.slice(0, 3), caretakersContainer);
+        }
+
+        // 4. VETERİNERLER (İlk 3)
+        if(vetsContainer) {
+            const res = await fetch(`${API_URL}/api/vets`);
+            const data = await res.json();
+            renderVets(data.slice(0, 3), vetsContainer);
+        }
+
+    } catch (error) {
+        console.error("Vitrin Hatası:", error);
+    }
+}
+
+// --- KART OLUŞTURUCU FONKSİYONLAR ---
+
+// 1. Evcil Hayvan Kartları (Sahiplendirme & Eş Bulma)
+function renderPets(pets, container, type) {
+    container.innerHTML = '';
+    if (!pets || pets.length === 0) {
+        container.innerHTML = '<div class="col-12 text-center text-muted">İlan bulunamadı.</div>';
+        return;
+    }
+
+    pets.forEach(pet => {
+        // Supabase Resim Kontrolü
+        const rawImg = pet.imageurl || pet.imageUrl;
+        let imgUrl = 'https://via.placeholder.com/300x200?text=Resim+Yok';
+        if (rawImg) imgUrl = rawImg.startsWith('http') ? rawImg : `${API_URL}${rawImg}`;
+
+        let badge = type === 'breeding' 
+            ? '<span class="badge bg-danger position-absolute top-0 start-0 m-2"><i class="fa-solid fa-heart"></i> Eş Arıyor</span>'
+            : '';
+            
+        let link = type === 'breeding' 
+            ? `breeding-detail.html?id=${pet.id}` 
+            : `pet-detail.html?id=${pet.id}`;
+
+        container.innerHTML += `
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm overflow-hidden card-hover-effect">
+                <div class="position-relative">
+                    ${badge}
+                    <img src="${imgUrl}" class="card-img-top" style="height: 250px; object-fit: cover;">
+                </div>
+                <div class="card-body text-center">
+                    <h5 class="fw-bold text-dark-brown">${pet.name}</h5>
+                    <p class="text-muted small">${pet.species} • ${pet.age} Yaş</p>
+                    <a href="${link}" class="btn btn-sm btn-outline-dark rounded-pill px-4">İncele</a>
+                </div>
+            </div>
+        </div>`;
+    });
+}
+
+// 2. Bakıcı Kartları (YENİ)
+function renderCaretakers(data, container) {
+    container.innerHTML = '';
+    if (!data || data.length === 0) {
+        container.innerHTML = '<div class="col-12 text-center text-muted">Henüz bakıcı ilanı yok.</div>';
+        return;
+    }
+
+    data.forEach(item => {
+        const rawImg = item.imageurl || item.imageUrl;
+        let imgUrl = 'https://via.placeholder.com/300x200?text=Bakici';
+        if (rawImg) imgUrl = rawImg.startsWith('http') ? rawImg : `${API_URL}${rawImg}`;
+
+        container.innerHTML += `
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm overflow-hidden card-hover-effect">
+                <div class="position-relative">
+                     <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-2 fw-bold">
+                        ${item.price} ₺ / Gün
+                     </span>
+                    <img src="${imgUrl}" class="card-img-top" style="height: 250px; object-fit: cover;">
+                </div>
+                <div class="card-body">
+                    <h6 class="fw-bold text-dark-brown text-truncate">${item.title}</h6>
+                    <div class="d-flex justify-content-between small text-muted mb-3">
+                        <span><i class="fa-solid fa-star text-warning"></i> ${item.experience} Yıl</span>
+                        <span><i class="fa-solid fa-location-dot"></i> ${item.location}</span>
+                    </div>
+                    <a href="caretakers.html" class="btn btn-sm btn-outline-warning w-100 rounded-pill text-dark fw-bold">Profili Gör</a>
+                </div>
+            </div>
+        </div>`;
+    });
+}
+
+// 3. Veteriner Kartları (YENİ)
+function renderVets(data, container) {
+    container.innerHTML = '';
+    if (!data || data.length === 0) {
+        container.innerHTML = '<div class="col-12 text-center text-muted">Henüz klinik ilanı yok.</div>';
+        return;
+    }
+
+    data.forEach(item => {
+        const rawImg = item.imageurl || item.imageUrl;
+        let imgUrl = 'https://images.pexels.com/photos/6235231/pexels-photo-6235231.jpeg?auto=compress&cs=tinysrgb&w=400';
+        if (rawImg) imgUrl = rawImg.startsWith('http') ? rawImg : `${API_URL}${rawImg}`;
+
+        const cName = item.clinicname || item.clinicName || "Klinik";
+
+        container.innerHTML += `
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm overflow-hidden card-hover-effect">
+                <div class="position-relative">
+                     <span class="badge bg-white text-dark position-absolute top-0 end-0 m-2 shadow-sm">
+                        <i class="fa-solid fa-location-dot text-danger"></i> ${item.city || 'Konum Yok'}
+                     </span>
+                    <img src="${imgUrl}" class="card-img-top" style="height: 250px; object-fit: cover;">
+                </div>
+                <div class="card-body text-center">
+                    <h6 class="fw-bold text-dark-brown text-truncate">${cName}</h6>
+                    <p class="small text-muted mb-3"><i class="fa-solid fa-user-doctor me-1"></i> ${item.vetname || item.vetName}</p>
+                    <a href="vets.html" class="btn btn-sm btn-outline-danger w-100 rounded-pill" style="border-color:#A64D32; color:#A64D32;">Detaylar</a>
+                </div>
+            </div>
+        </div>`;
+    });
+}
+
+// Çıkış Fonksiyonu
+window.logout = function() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = 'index.html';
+}
