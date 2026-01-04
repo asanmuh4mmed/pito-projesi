@@ -7,6 +7,19 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Listelerin daha profesyonel ve kaydırılabilir görünmesi için */
+        .form-select {
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+        .form-select:focus {
+            border-color: #A64D32;
+            box-shadow: 0 0 0 0.25rem rgba(166, 77, 50, 0.1);
+        }
+    </style>
 </head>
 <body style="background-color: #F9F6F0;">
 
@@ -28,42 +41,42 @@
                     
                     <form id="addVetForm">
                         <div class="mb-3">
-                            <label class="form-label fw-bold small">Klinik Adı</label>
-                            <input type="text" name="clinicName" class="form-control" required placeholder="Örn: Can Dostlar Veteriner Kliniği">
+                            <label class="form-label fw-bold small text-muted">Klinik Adı</label>
+                            <input type="text" name="clinicName" class="form-control" required placeholder="Örn: Can Dostlar Veteriner Kliniği" style="border-radius: 10px; padding: 12px;">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold small">Hekim Adı Soyadı</label>
-                            <input type="text" name="vetName" class="form-control" required placeholder="Örn: Vet. Hekim Ahmet Yılmaz">
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small">Şehir</label>
-                            <input class="form-control" list="cityOptions" id="cityInput" name="cityInput" placeholder="Şehir aramak için yazın (Örn: İst...)" required autocomplete="off">
-                            <datalist id="cityOptions">
-                                </datalist>
+                            <label class="form-label fw-bold small text-muted">Hekim Adı Soyadı</label>
+                            <input type="text" name="vetName" class="form-control" required placeholder="Örn: Vet. Hekim Ahmet Yılmaz" style="border-radius: 10px; padding: 12px;">
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold small">İlçe</label>
-                            <select class="form-select" id="districtSelect" name="districtSelect" required disabled>
+                            <label class="form-label fw-bold small text-muted">Şehir</label>
+                            <select id="citySelect" name="cityInput" class="form-select" required>
+                                <option value="" selected disabled>Şehir Seçiniz...</option>
+                                </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">İlçe</label>
+                            <select id="districtSelect" name="districtSelect" class="form-select" required disabled>
                                 <option value="" selected disabled>Önce şehir seçiniz</option>
                             </select>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold small">Telefon Numarası</label>
-                            <input type="tel" name="phone" class="form-control" placeholder="0555 123 45 67" required>
+                            <label class="form-label fw-bold small text-muted">Telefon Numarası</label>
+                            <input type="tel" name="phone" class="form-control" placeholder="0555 123 45 67" required style="border-radius: 10px; padding: 12px;">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold small">Açık Adres</label>
-                            <textarea name="address" class="form-control" rows="3" placeholder="Mahalle, Cadde, No..." required></textarea>
+                            <label class="form-label fw-bold small text-muted">Açık Adres</label>
+                            <textarea name="address" class="form-control" rows="3" placeholder="Mahalle, Cadde, No..." required style="border-radius: 10px; padding: 12px;"></textarea>
                         </div>
                         <div class="mb-4">
-                            <label class="form-label fw-bold small">Klinik Fotoğrafı</label>
-                            <input type="file" name="vetImage" class="form-control">
+                            <label class="form-label fw-bold small text-muted">Klinik Fotoğrafı</label>
+                            <input type="file" name="vetImage" class="form-control" style="border-radius: 10px; padding: 8px;">
                         </div>
 
-                        <button type="submit" class="btn w-100 text-white fw-bold py-2 rounded-pill shadow-sm" style="background-color: #A64D32;">
+                        <button type="submit" class="btn w-100 text-white fw-bold py-3 rounded-pill shadow-sm" style="background-color: #A64D32; font-size: 1.1rem; transition: transform 0.2s;">
                             KAYDET VE YAYINLA
                         </button>
                     </form>
@@ -159,20 +172,20 @@
         "Zonguldak": ["Alaplı", "Çaycuma", "Devrek", "Ereğli", "Gökçebey", "Kilimli", "kozlu", "Merkez"]
     };
 
-    // --- Şehir Listesini Doldurma Fonksiyonu ---
-    const cityListElement = document.getElementById('cityOptions');
-    const cityInputElement = document.getElementById('cityInput');
+    // --- ŞEHİR LİSTESİNİ DOLDURMA (Kaydırılabilir Select) ---
+    const citySelectElement = document.getElementById('citySelect');
     const districtSelectElement = document.getElementById('districtSelect');
 
-    // Sayfa açılınca şehirleri datalist'e ekle
+    // Sayfa açılınca şehirleri dropdown'a ekle
     for (const city in cityData) {
         const option = document.createElement('option');
         option.value = city;
-        cityListElement.appendChild(option);
+        option.textContent = city;
+        citySelectElement.appendChild(option);
     }
 
-    // Kullanıcı bir şehir yazdığında/seçtiğinde çalışacak kod
-    cityInputElement.addEventListener('input', function() {
+    // Kullanıcı bir şehir seçtiğinde (change) çalışacak kod
+    citySelectElement.addEventListener('change', function() {
         const selectedCity = this.value;
         
         // Önce ilçe kutusunu temizle ve kilitle
@@ -207,20 +220,19 @@
         const formData = new FormData(e.target);
         
         // *** ŞEHİR VE İLÇEYİ BİRLEŞTİRME İŞLEMİ ***
-        const city = formData.get('cityInput');      // Formdaki name="cityInput"
-        const district = formData.get('districtSelect'); // Formdaki name="districtSelect"
+        const city = document.getElementById('citySelect').value;
+        const district = document.getElementById('districtSelect').value;
         
         if (city && district) {
             // Backend "city" sütununa "İstanbul / Kadıköy" şeklinde yazacak
             formData.set('city', `${city} / ${district}`);
         } else {
-             // Eğer ilçe seçilmemişse sadece şehri yolla (güvenlik için)
              formData.set('city', city);
         }
 
         const btn = e.target.querySelector('button');
         btn.disabled = true;
-        btn.innerText = "Kaydediliyor...";
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Kaydediliyor...';
 
         try {
             const res = await fetch('https://pito-projesi.onrender.com/api/vets', {
@@ -243,6 +255,7 @@
             console.error(err);
             alert('Sunucu hatası!');
             btn.disabled = false;
+            btn.innerText = "KAYDET VE YAYINLA";
         }
     });
 </script>

@@ -1,6 +1,5 @@
-// --- js/become-caretaker.js ---
+// --- js/become-caretaker.js (DROPDOWN VERSİYON) ---
 
-// 81 İL VE İLÇE VERİTABANI
 const cityData = {
     "Adana": ["Aladağ", "Ceyhan", "Çukurova", "Feke", "İmamoğlu", "Karaisalı", "Karataş", "Kozan", "Pozantı", "Saimbeyli", "Sarıçam", "Seyhan", "Tufanbeyli", "Yumurtalık", "Yüreğir"],
     "Adıyaman": ["Besni", "Çelikhan", "Gerger", "Gölbaşı", "Kahta", "Merkez", "Samsat", "Sincik", "Tut"],
@@ -88,33 +87,33 @@ const cityData = {
 document.addEventListener('DOMContentLoaded', () => {
     console.log("✅ Bakıcı Başvuru Sayfası Yüklendi.");
 
-    // 1. ŞEHİRLERİ LİSTEYE DOLDUR
-    const cityListElement = document.getElementById('cityOptions');
-    const cityInputElement = document.getElementById('cityInput');
-    const districtSelectElement = document.getElementById('districtSelect');
+    const citySelect = document.getElementById('citySelect');
+    const districtSelect = document.getElementById('districtSelect');
 
-    if (cityListElement) {
+    // 1. ŞEHİRLERİ DROPDOWN'A DOLDUR
+    if (citySelect) {
         for (const city in cityData) {
             const option = document.createElement('option');
             option.value = city;
-            cityListElement.appendChild(option);
+            option.textContent = city;
+            citySelect.appendChild(option);
         }
     }
 
     // 2. ŞEHİR SEÇİLİNCE İLÇELERİ GETİR
-    cityInputElement.addEventListener('input', function() {
+    citySelect.addEventListener('change', function() {
         const selectedCity = this.value;
         
-        districtSelectElement.innerHTML = '<option value="" selected disabled>İlçe seçiniz</option>';
-        districtSelectElement.disabled = true;
+        districtSelect.innerHTML = '<option value="" selected disabled>İlçe seçiniz</option>';
+        districtSelect.disabled = true;
 
         if (cityData[selectedCity]) {
-            districtSelectElement.disabled = false;
+            districtSelect.disabled = false;
             cityData[selectedCity].forEach(district => {
                 const option = document.createElement('option');
                 option.value = district;
                 option.textContent = district;
-                districtSelectElement.appendChild(option);
+                districtSelect.appendChild(option);
             });
         }
     });
@@ -132,8 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const titleVal = document.getElementById('title').value;
-        const cityVal = document.getElementById('cityInput').value; // Şehir
-        const districtVal = document.getElementById('districtSelect').value; // İlçe
+        const cityVal = document.getElementById('citySelect').value;
+        const districtVal = document.getElementById('districtSelect').value;
         const expVal = document.getElementById('experience').value;
         const priceVal = document.getElementById('price').value;
         const descVal = document.getElementById('description').value;
@@ -144,17 +143,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (fileInput.files.length === 0) {
-            alert("⚠️ Lütfen bir resim seçin!");
-            return;
-        }
-
-        // --- KONUM FORMATI: "İstanbul / Kadıköy" ---
         const fullLocation = `${cityVal} / ${districtVal}`;
 
         const formData = new FormData();
         formData.append('title', titleVal);
-        formData.append('location', fullLocation); // Birleştirilmiş konum
+        formData.append('location', fullLocation);
         formData.append('experience', expVal);
         formData.append('price', priceVal);
         formData.append('description', descVal);
@@ -184,6 +177,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Hata:', error);
             alert('Sunucu hatası!');
+            btn.disabled = false;
+            btn.innerText = "Başvuruyu Tamamla";
         }
     });
 });
