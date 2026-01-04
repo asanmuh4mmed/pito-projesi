@@ -86,57 +86,31 @@ const authenticateToken = (req, res, next) => {
 
 // ================= ROTALAR =================
 
-// 1. KAYIT OL (Mail Göndermeli)
+// 1. KAYIT OL (Mailsiz, Otomatik Onaylı - TEMİZ VERSİYON)
 app.post('/api/register', upload.single('profileImage'), async (req, res) => {
     const { name, email, phone, password } = req.body;
     
-    // Rastgele doğrulama kodu üret
+    // Veritabanı yapısı bozulmasın diye rastgele bir kod üretiyoruz (kullanmayacağız)
     const verificationToken = crypto.randomBytes(32).toString('hex');
 
     try {
         const profileImageUrl = await uploadToSupabase(req.file);
         
-        // Kullanıcıyı isVerified = 0 (Onaysız) olarak kaydet
+        // isVerified = 1 (ONAYLI) olarak kaydediyoruz.
         await pool.query(
             `INSERT INTO users (name, email, phone, password, profileImageUrl, isVerified, verificationToken) VALUES ($1, $2, $3, $4, $5, 1, $6)`,
             [name, email, phone, password, profileImageUrl, verificationToken]
         );
 
-        // Doğrulama Linki
-        // Not: Canlıya alınca buradaki 'localhost:3001' kısmını yeni site linkinle değiştireceğiz.
-const verifyLink = `https://pito-projesi.onrender.com/api/verify-email?token=${verificationToken}`;
-        // Mail İçeriği
-        const mailOptions = {
-            from: `"PİTO Platformu" <${EMAIL_USER}>`,
-            to: email,
-            subject: 'PİTO - Hesabını Doğrula 🐾',
-            html: `
-                <div style="font-family: Arial, sans-serif; padding: 20px; color: #3E2723; border: 1px solid #ddd; border-radius: 10px;">
-                    <h2 style="color: #A64D32;">Aramıza Hoş Geldin!</h2>
-                    <p>Merhaba <b>${name}</b>,</p>
-                    <p>PİTO hesabını oluşturduğun için teşekkürler. Hesabını aktif etmek için lütfen aşağıdaki butona tıkla:</p>
-                    <br>
-                    <a href="${verifyLink}" style="background-color: #A64D32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">Hesabımı Doğrula</a>
-                    <br><br>
-                    <p>Buton çalışmazsa şu linke tıkla: <a href="${verifyLink}">${verifyLink}</a></p>
-                </div>
-            `
-        };
-
-       /* // Maili Gönder
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                console.log('Email hatası:', error);
-            } else {
-                console.log('Email gönderildi: ' + info.response);
-            }
-        });*/
-
-        res.status(201).json({ message: "Kayıt başarılı! Giriş yapabilirsiniz" });
+        // Mail gönderme kodu YOK. Direkt başarı mesajı veriyoruz.
+        res.status(201).json({ message: "Kayıt başarılı! Giriş yapabilirsiniz." });
 
     } catch (err) {
-        if (err.code === '23505') return res.status(400).json({ message: "Bu e-posta zaten kayıtlı." });
-        res.status(500).json({ error: err.message });
+        if (err.code === '23505') {
+            return res.status(400).json({ message: "Bu e-posta zaten kayıtlı." });
+        }
+        console.error("Kayıt hatası:", err); // Hatayı konsola yazdır ki Render loglarında görelim
+        res.status(500).json({ error: "Sunucu hatası oluştu." });
     }
 });
 
