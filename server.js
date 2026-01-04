@@ -11,7 +11,11 @@ const path = require('path');
 require('dotenv').config();
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 10000;
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
+});
 const SECRET_KEY = 'pito_gizli_anahtar';
 
 // --- GMAIL AYARLARI ---
@@ -102,8 +106,7 @@ app.post('/api/register', upload.single('profileImage'), async (req, res) => {
 
         // Doğrulama Linki
         // Not: Canlıya alınca buradaki 'localhost:3001' kısmını yeni site linkinle değiştireceğiz.
-        const verifyLink = `http://localhost:${PORT}/api/verify-email?token=${verificationToken}`;
-
+const verifyLink = `https://pito-projesi.onrender.com/api/verify-email?token=${verificationToken}`;
         // Mail İçeriği
         const mailOptions = {
             from: `"PİTO Platformu" <${EMAIL_USER}>`,
@@ -269,6 +272,6 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
     const { receiver_id, pet_id, post_type, message } = req.body; const rId = receiver_id || req.body.receiverId; const pId = pet_id || req.body.petId; if (!rId || !message) return res.status(400).json({ message: "Eksik bilgi." }); try { const sql = `INSERT INTO messages (sender_id, receiver_id, pet_id, post_type, message) VALUES ($1, $2, $3, $4, $5) RETURNING *`; const result = await pool.query(sql, [req.user.id, rId, pId, post_type || 'adoption', message]); res.status(201).json({ message: "Mesaj gönderildi", id: result.rows[0].id }); } catch (err) { res.status(500).json({ message: "Hata" }); }
 });
 
-app.listen(PORT, () => {
-    console.log(`🚀 Sunucu E-posta Doğrulamasıyla Çalışıyor: http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Sunucu Render üzerinde aktif. Port: ${PORT}`);
 });
