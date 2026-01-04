@@ -38,14 +38,14 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-bold small">Şehir</label>
-                            <input class="form-control" list="cityOptions" id="cityInput" name="city" placeholder="Şehir aramak için yazın (Örn: İst...)" required autocomplete="off">
+                            <input class="form-control" list="cityOptions" id="cityInput" name="cityInput" placeholder="Şehir aramak için yazın (Örn: İst...)" required autocomplete="off">
                             <datalist id="cityOptions">
                                 </datalist>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold small">İlçe</label>
-                            <select class="form-select" id="districtSelect" name="district" required disabled>
+                            <select class="form-select" id="districtSelect" name="districtSelect" required disabled>
                                 <option value="" selected disabled>Önce şehir seçiniz</option>
                             </select>
                         </div>
@@ -193,7 +193,7 @@
         }
     });
 
-    // --- FORM GÖNDERME İŞLEMİ (MEVCUT KODUNUN AYNISI) ---
+    // --- FORM GÖNDERME İŞLEMİ (İLÇE BİRLEŞTİRMELİ) ---
     document.getElementById('addVetForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -206,12 +206,18 @@
 
         const formData = new FormData(e.target);
         
-        // Burada şehir ve ilçe verisini kontrol ediyoruz
-        // Backende 'city' olarak şu formatta gönderebiliriz: "İstanbul / Kadıköy"
-        // VEYA Backend 'district' alanını kabul ediyorsa olduğu gibi bırakırız.
-        // Şimdilik olduğu gibi bırakıyoruz, backend fazladan gelen 'district' verisini görmezden gelebilir
-        // ama 'address' kısmına ekleyebiliriz.
+        // *** ŞEHİR VE İLÇEYİ BİRLEŞTİRME İŞLEMİ ***
+        const city = formData.get('cityInput');      // Formdaki name="cityInput"
+        const district = formData.get('districtSelect'); // Formdaki name="districtSelect"
         
+        if (city && district) {
+            // Backend "city" sütununa "İstanbul / Kadıköy" şeklinde yazacak
+            formData.set('city', `${city} / ${district}`);
+        } else {
+             // Eğer ilçe seçilmemişse sadece şehri yolla (güvenlik için)
+             formData.set('city', city);
+        }
+
         const btn = e.target.querySelector('button');
         btn.disabled = true;
         btn.innerText = "Kaydediliyor...";

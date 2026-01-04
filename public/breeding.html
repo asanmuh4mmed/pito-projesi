@@ -49,10 +49,11 @@
 </header>
 
 <div class="container filter-overlap">
-    <div class="card border-0 shadow-lg mx-auto rounded-4 bg-white" style="max-width: 900px;">
+    <div class="card border-0 shadow-lg mx-auto rounded-4 bg-white" style="max-width: 1000px;">
         <div class="card-body p-4">
             <div class="row g-3 align-items-center">
-                <div class="col-md-4">
+                
+                <div class="col-md-3">
                     <div class="input-group">
                         <span class="input-group-text bg-white border-0 ps-3"><i class="fa-solid fa-paw clay-icon"></i></span>
                         <select id="filterSpecies" class="form-select border-0 bg-white fw-bold text-muted cursor-pointer">
@@ -63,19 +64,26 @@
                         </select>
                     </div>
                 </div>
-                
-                <div class="col-md-4">
-                    <div class="input-group border-start border-end">
-                        <span class="input-group-text bg-white border-0 ps-3"><i class="fa-solid fa-venus-mars clay-icon"></i></span>
-                        <select id="filterGender" class="form-select border-0 bg-white fw-bold text-muted cursor-pointer">
-                            <option value="all">Cinsiyet Farketmez</option>
-                            <option value="Dişi">Dişi</option>
-                            <option value="Erkek">Erkek</option>
+
+                <div class="col-md-3">
+                    <div class="input-group border-start">
+                        <span class="input-group-text bg-white border-0 ps-3"><i class="fa-solid fa-city clay-icon"></i></span>
+                        <input list="cityOptions" id="filterCity" class="form-control border-0 fw-bold text-muted" placeholder="Şehir Ara...">
+                        <datalist id="cityOptions">
+                            </datalist>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="input-group border-start">
+                        <span class="input-group-text bg-white border-0 ps-3"><i class="fa-solid fa-map-pin clay-icon"></i></span>
+                        <select id="filterDistrict" class="form-select border-0 bg-white fw-bold text-muted cursor-pointer" disabled>
+                            <option value="">İlçe Seç</option>
                         </select>
                     </div>
                 </div>
                 
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <button id="btnReset" class="btn btn-outline-danger w-100 rounded-pill fw-bold py-2">
                         <i class="fa-solid fa-rotate-left me-2"></i> Temizle
                     </button>

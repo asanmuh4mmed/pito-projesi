@@ -1,6 +1,7 @@
-// --- js/index.js ---
+// --- js/index.js (GÜNCELLENMİŞ VERSİYON) ---
 
 const API_URL = 'https://pito-projesi.onrender.com';
+
 document.addEventListener('DOMContentLoaded', () => {
     updateNavbar(); // Navbarı güncelle
     loadShowcase(); // Vitrinleri doldur
@@ -13,7 +14,7 @@ function updateNavbar() {
     if (!navbarList) return;
 
     const commonLinks = `
-        <li class="nav-item"><a class="nav-link" href="index.html">Ana Sayfa</a></li>
+        <li class="nav-item"><a class="nav-link active" href="index.html">Ana Sayfa</a></li>
         <li class="nav-item"><a class="nav-link" href="about.html">Hakkımızda</a></li>
         <li class="nav-item"><a class="nav-link" href="vets.html">Veterinerler</a></li>
         <li class="nav-item"><a class="nav-link" href="breeding.html">Eş Bul</a></li>
@@ -41,10 +42,8 @@ function updateNavbar() {
 
 // --- VİTRİN YÜKLEME (TÜM KATEGORİLER) ---
 async function loadShowcase() {
-    // HTML'deki ID'leri seçiyoruz
     const adoptionContainer = document.getElementById('adoptionContainer');
     const breedingContainer = document.getElementById('breedingContainer');
-    // Senin eklediğin yeni ID'ler:
     const caretakersContainer = document.getElementById('caretakersShowcase');
     const vetsContainer = document.getElementById('vetsShowcase');
 
@@ -53,7 +52,9 @@ async function loadShowcase() {
         if(adoptionContainer) {
             const res = await fetch(`${API_URL}/api/pets`);
             const data = await res.json();
-            renderPets(data.slice(0, 3), adoptionContainer, 'adoption');
+            // Sadece sahiplendirme olanları filtrele
+            const adoptionPets = data.filter(p => p.tur === 'Sahiplendirme' || !p.tur);
+            renderPets(adoptionPets.slice(0, 3), adoptionContainer, 'adoption');
         }
 
         // 2. EŞ BULMA (İlk 3)
@@ -84,7 +85,7 @@ async function loadShowcase() {
 
 // --- KART OLUŞTURUCU FONKSİYONLAR ---
 
-// 1. Evcil Hayvan Kartları (Sahiplendirme & Eş Bulma)
+// 1. Evcil Hayvan Kartları (Sahiplendirme & Eş Bulma) - KONUM EKLENDİ
 function renderPets(pets, container, type) {
     container.innerHTML = '';
     if (!pets || pets.length === 0) {
@@ -93,18 +94,36 @@ function renderPets(pets, container, type) {
     }
 
     pets.forEach(pet => {
-        // Supabase Resim Kontrolü
+        // Resim Kontrolü
         const rawImg = pet.imageurl || pet.imageUrl;
         let imgUrl = 'https://via.placeholder.com/300x200?text=Resim+Yok';
         if (rawImg) imgUrl = rawImg.startsWith('http') ? rawImg : `${API_URL}${rawImg}`;
 
+        // Konum Bilgisi Ayıklama (YENİ)
+        let locationText = "Konum Yok";
+        // Eş Bulma için 'description' veya 'location' sütunu
+        // Sahiplendirme için 'story' veya 'location' sütunu
+        const sourceText = pet.location || pet.description || pet.story || "";
+        
+        // Eğer location sütunu temiz geliyorsa kullan
+        if (pet.location) {
+            locationText = pet.location;
+        } 
+        // Yoksa metin içinden ayıkla: [Konum: İstanbul]
+        else if (sourceText.includes('[Konum:')) {
+            const match = sourceText.match(/\[Konum:\s*(.*?)\]/);
+            if (match && match[1]) {
+                locationText = match[1];
+            }
+        }
+
         let badge = type === 'breeding' 
             ? '<span class="badge bg-danger position-absolute top-0 start-0 m-2"><i class="fa-solid fa-heart"></i> Eş Arıyor</span>'
-            : '';
+            : '<span class="badge bg-primary position-absolute top-0 start-0 m-2"><i class="fa-solid fa-home"></i> Yuva Arıyor</span>';
             
         let link = type === 'breeding' 
             ? `breeding-detail.html?id=${pet.id}` 
-            : `pet-detail.html?id=${pet.id}`;
+            : `pet-detail.html?id=${pet.id}&type=adoption`;
 
         container.innerHTML += `
         <div class="col-md-4">
@@ -115,7 +134,12 @@ function renderPets(pets, container, type) {
                 </div>
                 <div class="card-body text-center">
                     <h5 class="fw-bold text-dark-brown">${pet.name}</h5>
-                    <p class="text-muted small">${pet.species} • ${pet.age} Yaş</p>
+                    <p class="text-muted small mb-2">${pet.species} • ${pet.age} Yaş</p>
+                    
+                    <div class="small text-danger fw-bold mb-3">
+                        <i class="fa-solid fa-location-dot me-1"></i> ${locationText}
+                    </div>
+
                     <a href="${link}" class="btn btn-sm btn-outline-dark rounded-pill px-4">İncele</a>
                 </div>
             </div>
@@ -123,7 +147,7 @@ function renderPets(pets, container, type) {
     });
 }
 
-// 2. Bakıcı Kartları (YENİ)
+// 2. Bakıcı Kartları
 function renderCaretakers(data, container) {
     container.innerHTML = '';
     if (!data || data.length === 0) {
@@ -146,10 +170,10 @@ function renderCaretakers(data, container) {
                     <img src="${imgUrl}" class="card-img-top" style="height: 250px; object-fit: cover;">
                 </div>
                 <div class="card-body">
-                    <h6 class="fw-bold text-dark-brown text-truncate">${item.title}</h6>
+                    <h6 class="fw-bold text-dark-brown text-truncate">${item.title || item.name}</h6>
                     <div class="d-flex justify-content-between small text-muted mb-3">
                         <span><i class="fa-solid fa-star text-warning"></i> ${item.experience} Yıl</span>
-                        <span><i class="fa-solid fa-location-dot"></i> ${item.location}</span>
+                        <span><i class="fa-solid fa-location-dot"></i> ${item.location || 'Konum Yok'}</span>
                     </div>
                     <a href="caretakers.html" class="btn btn-sm btn-outline-warning w-100 rounded-pill text-dark fw-bold">Profili Gör</a>
                 </div>
@@ -158,7 +182,7 @@ function renderCaretakers(data, container) {
     });
 }
 
-// 3. Veteriner Kartları (YENİ)
+// 3. Veteriner Kartları
 function renderVets(data, container) {
     container.innerHTML = '';
     if (!data || data.length === 0) {

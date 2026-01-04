@@ -58,6 +58,20 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label fw-bold small">Şehir</label>
+                        <input class="form-control" list="cityOptions" id="cityInput" placeholder="Şehir aramak için yazın (Örn: İst...)" required autocomplete="off">
+                        <datalist id="cityOptions">
+                            </datalist>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">İlçe</label>
+                        <select class="form-select" id="districtSelect" disabled required>
+                            <option value="" selected disabled>Önce şehir seçiniz</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label fw-bold small">Cinsiyet</label>
                         <select id="gender" class="form-select">
                             <option>Dişi</option>
