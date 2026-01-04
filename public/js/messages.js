@@ -1,3 +1,6 @@
+// --- js/messages.js (RENDER UYUMLU) ---
+
+const API_URL = 'https://pito-projesi.onrender.com'; // Render Adresi
 let myId = null;
 let currentChatPartner = null;
 let currentPetId = null;
@@ -24,7 +27,8 @@ async function fetchMessages() {
     const token = localStorage.getItem('token');
 
     try {
-        const response = await fetch('http://localhost:3001/api/my-messages', {
+        // GÜNCELLENDİ: API_URL kullanıldı
+        const response = await fetch(`${API_URL}/api/my-messages`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const messages = await response.json();
@@ -52,11 +56,10 @@ async function fetchMessages() {
         container.innerHTML = '';
 
         uniqueThreads.forEach(msg => {
-            // --- DÜZELTME BURADA YAPILDI ---
             // Backend 'senderName' gönderiyor. Eğer ben gönderdiysem 'Ben', değilse gelen isim.
             let otherName = msg.senderName; 
             if(msg.sender_id === myId) {
-                otherName = "Giden Mesaj"; // (Eğer giden kutusu mantığı eklenirse burası çalışır)
+                otherName = "Giden Mesaj"; 
             } else if (!otherName) {
                 otherName = "Kullanıcı";
             }
@@ -107,8 +110,8 @@ async function openChat(otherId, petId, otherName) {
     chatModalInstance.show();
 
     try {
-        // Sohbet geçmişini çek
-        const response = await fetch(`http://localhost:3001/api/messages/thread/${otherId}/${petId}`, {
+        // GÜNCELLENDİ: API_URL kullanıldı
+        const response = await fetch(`${API_URL}/api/messages/thread/${otherId}/${petId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const history = await response.json();
@@ -153,7 +156,8 @@ async function sendReply() {
 
     // Arka planda gönder
     try {
-        const response = await fetch('http://localhost:3001/api/messages', {
+        // GÜNCELLENDİ: API_URL kullanıldı
+        const response = await fetch(`${API_URL}/api/messages`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',

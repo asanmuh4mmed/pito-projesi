@@ -1,7 +1,6 @@
 // --- js/add-breeding.js ---
 
-const API_URL = 'http://localhost:3001';
-
+const API_URL = 'https://pito-projesi.onrender.com';
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. FOTOĞRAF ÖNİZLEME ---

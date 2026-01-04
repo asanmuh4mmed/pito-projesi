@@ -16,7 +16,7 @@ document.getElementById('addPetForm').addEventListener('submit', async (e) => {
         return;
     }
 
-    // 3. Verileri Paketle (FormData Kullanımı ŞARTTIR)
+    // 3. Verileri Paketle
     const formData = new FormData();
     formData.append('name', document.getElementById('name').value);
     formData.append('species', document.getElementById('species').value);
@@ -28,12 +28,12 @@ document.getElementById('addPetForm').addEventListener('submit', async (e) => {
     formData.append('petImage', fileInput.files[0]);
 
     try {
-        const res = await fetch('http://localhost:3001/api/pets', {
+        // --- DÜZELTME: Render Adresi Eklendi ---
+        const res = await fetch('https://pito-projesi.onrender.com/api/pets', {
             method: 'POST',
             headers: { 
                 'Authorization': `Bearer ${token}` 
-                // DİKKAT: 'Content-Type': 'application/json' BURADA KULLANILMAZ!
-                // FormData otomatik olarak doğru başlığı ayarlar.
+                // FormData kullanıldığı için 'Content-Type' otomatik ayarlanır.
             },
             body: formData
         });

@@ -1,7 +1,6 @@
 // --- js/profile.js (VETERİNER EKLENDİ) ---
 
-const API_URL = 'http://localhost:3001';
-let currentDeleteId = null;
+const API_URL = 'https://pito-projesi.onrender.com';let currentDeleteId = null;
 let currentDeleteType = null; // 'pet', 'caretaker', 'breeding' veya 'vet'
 let currentUser = null;
 

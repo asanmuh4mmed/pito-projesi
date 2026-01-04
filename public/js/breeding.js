@@ -1,5 +1,4 @@
-const API_URL = 'http://localhost:3001';
-
+const API_URL = 'https://pito-projesi.onrender.com';
 document.addEventListener('DOMContentLoaded', () => {
     updateNavbar();
     loadPets();
@@ -72,7 +71,7 @@ pets.forEach(pet => {
     const resimVerisi = pet.imageUrl || pet.imageurl; 
 
     if (resimVerisi) {
-        // Eğer resim http ile başlıyorsa (Supabase) olduğu gibi al, yoksa başına localhost ekle
+        // Eğer resim http ile başlıyorsa (Supabase) olduğu gibi al, değilse Render API adresiyle birleştir
         imgUrl = resimVerisi.startsWith('http') ? resimVerisi : `${API_URL}${resimVerisi}`;
     }
 

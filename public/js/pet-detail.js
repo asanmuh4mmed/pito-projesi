@@ -3,8 +3,7 @@
 // Global Değişkenler
 let currentPetOwnerId = null;
 let currentPetId = null;
-const API_BASE_URL = 'http://localhost:3001';
-
+const API_BASE_URL = 'https://pito-projesi.onrender.com';
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const petId = urlParams.get('id');

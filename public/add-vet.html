@@ -88,8 +88,7 @@
         btn.innerText = "Kaydediliyor...";
 
         try {
-            const res = await fetch('http://localhost:3001/api/vets', {
-                method: 'POST',
+const res = await fetch('https://pito-projesi.onrender.com/api/vets', {                method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
             });

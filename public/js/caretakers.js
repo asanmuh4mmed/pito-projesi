@@ -1,8 +1,8 @@
-// --- js/caretakers.js (SUPABASE UYUMLU) ---
+// --- js/caretakers.js (RENDER UYUMLU) ---
 
 let currentReceiverId = null;
 let contactModalInstance = null;
-const API_URL = 'http://localhost:3001';
+const API_URL = 'https://pito-projesi.onrender.com'; // Render Adresi
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log("✅ Bakıcılar sayfası yüklendi.");

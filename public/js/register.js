@@ -9,8 +9,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     const password = document.getElementById('password').value;
 
     try {
-        const response = await fetch('http://localhost:3001/api/register', {
-            method: 'POST',
+const response = await fetch('https://pito-projesi.onrender.com/api/register', {            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, email, phone, password })
         });

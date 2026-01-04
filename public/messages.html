@@ -139,8 +139,10 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // --- RENDER API ADRESİ ---
+    const API_URL = 'https://pito-projesi.onrender.com';
+
     let myId = null;
     let activeChat = { otherId: null, petId: null, petName: null, otherName: null };
     let chatRefreshInterval = null;
@@ -174,7 +176,8 @@
         const token = localStorage.getItem('token');
 
         try {
-            const response = await fetch('http://localhost:3001/api/my-messages', {
+            // DÜZELTME 1: API_URL kullanıldı
+            const response = await fetch(`${API_URL}/api/my-messages`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const messages = await response.json();
@@ -243,7 +246,8 @@
         const chatBody = document.getElementById('chatBody');
 
         try {
-            const response = await fetch(`http://localhost:3001/api/messages/thread/${activeChat.otherId}/${activeChat.petId}`, {
+            // DÜZELTME 2: API_URL kullanıldı
+            const response = await fetch(`${API_URL}/api/messages/thread/${activeChat.otherId}/${activeChat.petId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const history = await response.json();
@@ -273,7 +277,8 @@
 
         const token = localStorage.getItem('token');
         try {
-            const response = await fetch('http://localhost:3001/api/messages', {
+            // DÜZELTME 3: API_URL kullanıldı
+            const response = await fetch(`${API_URL}/api/messages`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({

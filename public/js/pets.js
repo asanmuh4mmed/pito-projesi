@@ -1,5 +1,4 @@
-const API_URL = 'http://localhost:3001';
-
+const API_URL = 'https://pito-projesi.onrender.com';
 document.addEventListener('DOMContentLoaded', async () => {
     // HTML'deki ID ile buradaki ID aynı olmalı.
     const list = document.getElementById('petsList'); 

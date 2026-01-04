@@ -1,7 +1,6 @@
 // --- js/vets.js (SUPABASE UYUMLU) ---
 
-const API_URL = 'http://localhost:3001';
-let allVets = [];
+const API_URL = 'https://pito-projesi.onrender.com';let allVets = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
     await fetchVets();

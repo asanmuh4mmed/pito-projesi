@@ -1,7 +1,6 @@
 // --- js/index.js ---
 
-const API_URL = 'http://localhost:3001';
-
+const API_URL = 'https://pito-projesi.onrender.com';
 document.addEventListener('DOMContentLoaded', () => {
     updateNavbar(); // Navbarı güncelle
     loadShowcase(); // Vitrinleri doldur
