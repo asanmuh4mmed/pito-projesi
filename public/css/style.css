@@ -820,3 +820,32 @@ footer a:hover {
     }
     */
 }
+
+/* =========================================
+   ANA SAYFA KART RESİM DÜZELTMESİ (FİNAL)
+   Bu kod Bakıcılar ve Veteriner resimlerinin çerçeveye tam sığmasını sağlar.
+   ========================================= */
+
+/* Ana sayfadaki tüm dinamik kart resimlerini hedefler */
+#caretakersShowcase .card img,
+#vetsShowcase .card img,
+#adoptionContainer .card img,
+#breedingContainer .card img {
+    width: 100% !important;
+    height: 260px !important;       /* Yüksekliği sabitliyoruz, hepsi eşit olacak */
+    object-fit: cover !important;   /* Resmi sündürmeden kutuya 'doldurur' (fazlalığı kırpar) */
+    object-position: center top !important; /* İnsan/hayvan yüzleri kesilmesin diye yukarı hizalar */
+    
+    /* Kartın yuvarlak köşelerine uyum sağlaması için */
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    border-bottom: none;
+}
+
+/* Kartların kendisine de yükseklik ayarı verelim ki hizalı dursunlar */
+#caretakersShowcase .card,
+#vetsShowcase .card {
+    height: 100%;
+    border: none;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}

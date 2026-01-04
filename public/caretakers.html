@@ -42,24 +42,27 @@
 <div class="container py-5">
     
     <div class="row align-items-end mb-5">
-        <div class="col-md-8">
+        <div class="col-md-7">
             <h1 class="display-5 page-title fw-bold" style="font-family: 'Playfair Display', serif; color: #3E2723;">Güvenilir Bakıcılar</h1>
             <p class="text-muted lead" style="color: #8D6E63 !important;">Dostlarınızı emanet edebileceğiniz sevgi dolu yuvalar.</p>
         </div>
-        <div class="col-md-4">
+        
+        <div class="col-md-5">
             <label class="fw-bold small text-muted text-uppercase mb-2" style="color: #A64D32 !important;">
-                <i class="fa-solid fa-filter me-2"></i>Şehre Göre Filtrele
+                <i class="fa-solid fa-filter me-2"></i>Konuma Göre Filtrele
             </label>
-            <select id="filterRegion" class="form-select border-0 shadow-sm py-3" style="border-radius: 15px; color: #5D4037; font-weight: 500;">
-                <option value="">Tüm Şehirler</option>
-                <option value="İstanbul">İstanbul</option>
-                <option value="Ankara">Ankara</option>
-                <option value="İzmir">İzmir</option>
-                <option value="Bursa">Bursa</option>
-                <option value="Antalya">Antalya</option>
-                <option value="Eskişehir">Eskişehir</option>
-                <option value="Diğer">Diğer</option>
-            </select>
+            <div class="d-flex gap-2">
+                <div class="flex-grow-1">
+                    <input list="cityOptions" id="filterCity" class="form-control border-0 shadow-sm py-3" placeholder="Şehir ara..." style="border-radius: 15px;">
+                    <datalist id="cityOptions">
+                        </datalist>
+                </div>
+                <div class="flex-grow-1">
+                    <select id="filterDistrict" class="form-select border-0 shadow-sm py-3" style="border-radius: 15px;" disabled>
+                        <option value="">İlçe Seç</option>
+                    </select>
+                </div>
+            </div>
         </div>
     </div>
 
