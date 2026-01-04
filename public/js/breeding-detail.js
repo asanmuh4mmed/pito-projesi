@@ -1,7 +1,6 @@
 // --- js/breeding-detail.js (SUPABASE UYUMLU) ---
 
-const API_URL = 'http://localhost:3001'; 
-let currentPetOwnerId = null;
+const API_URL = 'https://pito-projesi.onrender.com';let currentPetOwnerId = null;
 let currentPetId = null;
 
 document.addEventListener('DOMContentLoaded', async () => {

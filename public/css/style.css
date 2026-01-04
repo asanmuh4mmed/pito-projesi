@@ -801,3 +801,22 @@ footer a:hover {
     width: 80%;
     border: 1px solid #A64D32;
 }
+
+/* --- MOBİL İÇİN ARKA PLAN DÜZELTMESİ --- */
+@media (max-width: 768px) {
+    /* Buradaki .hero-wrap yerine kendi class ismini yaz */
+    .hero-wrap, .ftco-cover {
+        background-position: center center !important; /* Resmi tam ortalar */
+        background-attachment: scroll !important; /* Mobilde kayma sorununu çözer */
+        background-size: cover !important; /* Ekranı kaplamaya devam eder */
+        height: 100vh !important; /* Yüksekliği ekran boyutu kadar yapar */
+    }
+    
+    /* Eğer resim çok kalitesiz görünürse veya çok kırpılırsa
+       mobilde farklı bir resim kullanmak için şunu ekleyebilirsin: */
+    /*
+    .hero-wrap {
+        background-image: url('../images/mobil-arkaplan.jpg') !important;
+    }
+    */
+}

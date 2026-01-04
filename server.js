@@ -23,12 +23,15 @@ const SECRET_KEY = 'pito_gizli_anahtar';
 const EMAIL_USER = 'asanmuh4mmed@gmail.com'; 
 const EMAIL_PASS = 'kssm ebtq dbxo vwkf';   
 
+// YENİ HALİ (Bunu yapıştır)
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: EMAIL_USER,
-        pass: EMAIL_PASS
-    }
+  host: 'smtp.gmail.com',  // Gmail sunucusu
+  port: 465,               // Güvenli port (SSL)
+  secure: true,            // 465 için true olmalı
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
 });
 
 // --- SUPABASE VERİTABANI ---
