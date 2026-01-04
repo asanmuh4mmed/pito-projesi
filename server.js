@@ -14,9 +14,7 @@ const app = express();
 // Dosyanın EN ALT KISMI
 const PORT = process.env.PORT || 10000;
 
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`MUHAMMED'İN SERVERI ÇALIŞTI! Port: ${PORT}`);
-});
+
 const SECRET_KEY = 'pito_gizli_anahtar';
 
 // --- MAİL GÖNDERME AYARLARI (GÜVENLİ & SSL) ---
@@ -100,7 +98,7 @@ app.post('/api/register', upload.single('profileImage'), async (req, res) => {
         
         // Kullanıcıyı isVerified = 0 (Onaysız) olarak kaydet
         await pool.query(
-            `INSERT INTO users (name, email, phone, password, profileImageUrl, isVerified, verificationToken) VALUES ($1, $2, $3, $4, $5, 0, $6)`,
+            `INSERT INTO users (name, email, phone, password, profileImageUrl, isVerified, verificationToken) VALUES ($1, $2, $3, $4, $5, 1, $6)`,
             [name, email, phone, password, profileImageUrl, verificationToken]
         );
 
@@ -125,16 +123,16 @@ const verifyLink = `https://pito-projesi.onrender.com/api/verify-email?token=${v
             `
         };
 
-        // Maili Gönder
+       /* // Maili Gönder
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
                 console.log('Email hatası:', error);
             } else {
                 console.log('Email gönderildi: ' + info.response);
             }
-        });
+        });*/
 
-        res.status(201).json({ message: "Kayıt başarılı! Lütfen e-posta kutunu kontrol et ve hesabını doğrula." });
+        res.status(201).json({ message: "Kayıt başarılı! Giriş yapabilirsiniz" });
 
     } catch (err) {
         if (err.code === '23505') return res.status(400).json({ message: "Bu e-posta zaten kayıtlı." });
