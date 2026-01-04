@@ -11,10 +11,11 @@ const path = require('path');
 require('dotenv').config();
 
 const app = express();
+// Dosyanın EN ALT KISMI
 const PORT = process.env.PORT || 10000;
 
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`MUHAMMED'İN SERVERI ÇALIŞTI! Port: ${PORT}`);
 });
 const SECRET_KEY = 'pito_gizli_anahtar';
 
