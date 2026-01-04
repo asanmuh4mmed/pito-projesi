@@ -19,18 +19,14 @@ app.listen(PORT, '0.0.0.0', () => {
 });
 const SECRET_KEY = 'pito_gizli_anahtar';
 
-// --- GMAIL AYARLARI ---
-const EMAIL_USER = 'asanmuh4mmed@gmail.com'; 
-const EMAIL_PASS = 'kssm ebtq dbxo vwkf';   
-
-// YENİ HALİ (Bunu yapıştır)
+// --- MAİL GÖNDERME AYARLARI (GÜVENLİ & SSL) ---
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',  // Gmail sunucusu
-  port: 465,               // Güvenli port (SSL)
-  secure: true,            // 465 için true olmalı
+  host: 'smtp.gmail.com',
+  port: 465,               // Google için güvenli port
+  secure: true,            // 465 portu için true olmalı
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    user: process.env.EMAIL_USER, // Render Environment'tan çeker
+    pass: process.env.EMAIL_PASS  // Render Environment'tan çeker
   }
 });
 
