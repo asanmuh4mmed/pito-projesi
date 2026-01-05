@@ -61,19 +61,19 @@
             flex-direction: column;
         }
 
-        /* Bildirim Noktası Stili */
-.notification-dot {
-    position: absolute;
-    top: 12px;
-    right: 15px;
-    width: 10px;
-    height: 10px;
-    background-color: #dc3545; /* Kırmızı uyarı rengi */
-    border: 2px solid var(--white);
-    border-radius: 50%;
-    box-shadow: 0 0 5px rgba(220, 53, 69, 0.5);
-    z-index: 10;
-}
+        /* --- BİLDİRİM NOKTASI STİLİ --- */
+        .notification-dot {
+            position: absolute;
+            top: 12px;
+            right: 15px;
+            width: 10px;
+            height: 10px;
+            background-color: #dc3545; /* Kırmızı uyarı rengi */
+            border: 2px solid var(--white);
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(220, 53, 69, 0.5);
+            z-index: 10;
+        }
 
         .chat-bubble { 
             max-width: 75%; 
@@ -101,7 +101,11 @@
     <div class="collapse navbar-collapse">
       <ul class="navbar-nav ms-auto align-items-center">
         <li class="nav-item"><a class="nav-link px-3" href="index.html">Ana Sayfa</a></li>
-        <li class="nav-item"><a class="nav-link px-3 active fw-bold" href="messages.html" style="color: var(--primary-clay)">Mesajlarım</a></li>
+        
+        <li class="nav-item position-relative">
+            <a class="nav-link px-3 active fw-bold" href="messages.html" style="color: var(--primary-clay)">Mesajlarım</a>
+            <span class="notification-dot"></span>
+        </li>
         <li class="nav-item"><a class="nav-link px-3" href="profile.html">Profilim</a></li>
       </ul>
     </div>
@@ -153,163 +157,9 @@
     </div>
 </div>
 
-<script>
-    // --- RENDER API ADRESİ ---
-    const API_URL = 'https://pito-projesi.onrender.com';
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    let myId = null;
-    let activeChat = { otherId: null, petId: null, petName: null, otherName: null };
-    let chatRefreshInterval = null;
-    let bModal = null; // Bootstrap Modal Nesnesi
+<script src="messages.js"></script>
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const token = localStorage.getItem('token');
-        if (!token) { window.location.href = 'login.html'; return; }
-        
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        myId = payload.id;
-
-        // Modal nesnesini bir kez başlat
-        bModal = new bootstrap.Modal(document.getElementById('chatModal'));
-
-        // Enter tuşu dinleyici
-        document.getElementById('replyInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendReply();
-        });
-
-        // Modal kapandığında yenilemeyi durdur
-        document.getElementById('chatModal').addEventListener('hidden.bs.modal', () => {
-            clearInterval(chatRefreshInterval);
-        });
-
-        fetchInbox();
-    });
-
-    async function fetchInbox() {
-        const list = document.getElementById('messagesList');
-        const token = localStorage.getItem('token');
-
-        try {
-            // DÜZELTME 1: API_URL kullanıldı
-            const response = await fetch(`${API_URL}/api/my-messages`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const messages = await response.json();
-
-            if (messages.length === 0) {
-                list.innerHTML = `<div class="text-center py-5 opacity-50"><h3>Henüz mesaj yok</h3></div>`;
-                return;
-            }
-
-            // Önce mesajları tarihe göre sıralayalım (En yeni en üstte)
-            messages.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-            const threads = {};
-            messages.forEach(msg => {
-                const otherParticipantId = msg.sender_id === myId ? msg.receiver_id : msg.sender_id;
-                const key = `${otherParticipantId}-${msg.pet_id}`;
-                // Eğer bu thread daha önce eklenmediyse ekle (En yeni mesajı almış oluruz)
-                if (!threads[key]) threads[key] = msg;
-            });
-
-            const uniqueThreads = Object.values(threads);
-            document.getElementById('totalMsg').innerText = uniqueThreads.length;
-            
-            list.innerHTML = uniqueThreads.map(msg => {
-                const otherId = msg.sender_id === myId ? msg.receiver_id : msg.sender_id;
-                const otherName = msg.sender_id === myId ? (msg.receiver_name || "İlan Sahibi") : msg.sender_name;
-                
-                return `
-                    <div class="card message-card shadow-sm p-2" onclick="openThread(${otherId}, ${msg.pet_id}, '${msg.pet_name}', '${otherName}')">
-                        <div class="card-body d-flex align-items-center">
-                            <div class="sender-icon me-4">
-                                <i class="fa-solid ${msg.pet_id === 0 ? 'fa-user-nurse' : 'fa-paw'}"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="d-flex justify-content-between">
-                                    <h6 class="fw-bold mb-1">${otherName}</h6>
-                                    <small class="text-muted" style="font-size:0.7rem">${new Date(msg.createdAt).toLocaleDateString('tr-TR')}</small>
-                                </div>
-                                <div class="mb-1"><span class="badge bg-light text-clay p-0 fw-bold" style="color:var(--primary-clay)">${msg.pet_name}</span></div>
-                                <p class="text-muted small mb-0 text-truncate" style="max-width:350px;">${msg.message}</p>
-                            </div>
-                        </div>
-                    </div>`;
-            }).join('');
-        } catch (e) { console.error("Inbox hatası:", e); }
-    }
-
-    async function openThread(otherId, petId, petName, otherName) {
-        activeChat = { otherId, petId, petName, otherName };
-        document.getElementById('chatPartnerName').innerText = otherName;
-        document.getElementById('chatSubjectName').innerText = petName;
-        
-        const chatBody = document.getElementById('chatBody');
-        chatBody.innerHTML = '<div class="text-center m-auto"><div class="spinner-border text-clay"></div></div>';
-        
-        bModal.show();
-        loadMessages();
-
-        // 5 saniyede bir yeni mesajları kontrol et (Polling)
-        clearInterval(chatRefreshInterval);
-        chatRefreshInterval = setInterval(loadMessages, 5000);
-    }
-
-    async function loadMessages() {
-        const token = localStorage.getItem('token');
-        const chatBody = document.getElementById('chatBody');
-
-        try {
-            // DÜZELTME 2: API_URL kullanıldı
-            const response = await fetch(`${API_URL}/api/messages/thread/${activeChat.otherId}/${activeChat.petId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const history = await response.json();
-            
-            const oldScrollHeight = chatBody.scrollHeight;
-
-            chatBody.innerHTML = history.map(m => `
-                <div class="chat-bubble ${m.sender_id === myId ? 'bubble-me' : 'bubble-other'}">
-                    ${m.message}
-                    <div class="text-end" style="font-size: 0.6rem; opacity: 0.7; margin-top: 4px;">
-                        ${new Date(m.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                    </div>
-                </div>
-            `).join('');
-
-            // Eğer yeni mesaj geldiyse aşağı kaydır
-            if (chatBody.scrollHeight > oldScrollHeight) {
-                chatBody.scrollTop = chatBody.scrollHeight;
-            }
-        } catch (e) { console.error("Yükleme hatası:", e); }
-    }
-
-    async function sendReply() {
-        const input = document.getElementById('replyInput');
-        const message = input.value.trim();
-        if (!message) return;
-
-        const token = localStorage.getItem('token');
-        try {
-            // DÜZELTME 3: API_URL kullanıldı
-            const response = await fetch(`${API_URL}/api/messages`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({
-                    receiver_id: activeChat.otherId,
-                    pet_id: activeChat.petId,
-                    pet_name: activeChat.petName,
-                    message: message
-                })
-            });
-
-            if (response.ok) {
-                input.value = '';
-                loadMessages(); // Sohbeti tazele
-                fetchInbox();   // Arka plandaki listeyi tazele
-            }
-        } catch (e) { console.error("Gönderim hatası:", e); }
-    }
-</script>
 </body>
 </html>
