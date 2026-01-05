@@ -1,6 +1,7 @@
 // --- js/breeding-detail.js (SUPABASE UYUMLU) ---
 
-const API_URL = 'https://pito-projesi.onrender.com';let currentPetOwnerId = null;
+const API_URL = 'https://pito-projesi.onrender.com';
+let currentPetOwnerId = null;
 let currentPetId = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -46,8 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function renderPetDetail(pet, token) {
-    // 1. Resim Ayarı (SUPABASE DÜZELTMESİ)
-    // PostgreSQL sütunları küçük harfe çevirdiği için kontrol ediyoruz.
+    // 1. Resim Ayarı
     const rawImg = pet.imageurl || pet.imageUrl;
     let finalImage = 'https://via.placeholder.com/600x500?text=Resim+Yok';
     
@@ -56,10 +56,12 @@ function renderPetDetail(pet, token) {
     }
     
     const imgElem = document.getElementById('petImage');
-    imgElem.src = finalImage;
-    imgElem.onerror = function() {
-         this.src = 'https://via.placeholder.com/600x500?text=Resim+Yuklenemedi';
-    };
+    if (imgElem) {
+        imgElem.src = finalImage;
+        imgElem.onerror = function() {
+             this.src = 'https://via.placeholder.com/600x500?text=Resim+Yuklenemedi';
+        };
+    }
 
     // 2. Metin Bilgileri
     setText('petName', pet.name || 'İsimsiz');
@@ -69,18 +71,18 @@ function renderPetDetail(pet, token) {
     setText('petAge', pet.age || '0');
     setText('petDescription', pet.description || "Açıklama girilmemiş.");
 
-    // 3. İlan Sahibi Bilgileri ve Güvenlik (SUPABASE DÜZELTMESİ)
+    // 3. İlan Sahibi Bilgileri ve Güvenlik
     const ownerCardBody = document.querySelector('.bg-white.p-4.rounded-4.shadow-sm.border');
     const messageBtn = document.querySelector('button[onclick="openMessageModal()"]');
 
     if (token) {
         // Giriş yapılmışsa bilgileri göster
         const oName = pet.ownername || pet.ownerName || pet.users_name || "Kullanıcı";
-        const oPhone = pet.ownerphone || pet.ownerPhone || pet.users_phone;
+        // TELEFON BİLGİSİ SİLİNDİ
         const oEmail = pet.owneremail || pet.ownerEmail || pet.users_email;
 
         setText('ownerName', oName);
-        setLink('displayPhone', oPhone, 'tel');
+        // TELEFON SET EDİLMİYOR
         setLink('displayEmail', oEmail, 'mailto');
 
         if(messageBtn) messageBtn.style.display = 'block';
@@ -105,7 +107,7 @@ function setText(id, text) {
     if(el) el.innerText = text;
 }
 
-// Yardımcı Fonksiyon: Link oluştur (tel: veya mailto:)
+// Yardımcı Fonksiyon: Link oluştur (mailto:)
 function setLink(id, value, prefix) {
     const el = document.getElementById(id);
     if (!el) return;

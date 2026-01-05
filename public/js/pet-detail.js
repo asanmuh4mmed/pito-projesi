@@ -4,6 +4,7 @@
 let currentPetOwnerId = null;
 let currentPetId = null;
 const API_BASE_URL = 'https://pito-projesi.onrender.com';
+
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const petId = urlParams.get('id');
@@ -27,8 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentPetOwnerId = pet.user_id;
         currentPetId = pet.id;
 
-        // --- RESİM AYARLARI (SUPABASE DÜZELTMESİ) ---
-        // PostgreSQL sütunları küçük harfe çevirebilir (imageurl)
+        // --- RESİM AYARLARI ---
         const rawImg = pet.imageurl || pet.imageUrl;
         let finalImage = 'https://via.placeholder.com/600x400?text=Resim+Yok';
         
@@ -40,7 +40,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         const imgElem = document.getElementById('petImage');
         imgElem.src = finalImage;
-        // Resim yüklenemezse (kırık link) hata görseli göster
         imgElem.onerror = function() {
             this.src = 'https://via.placeholder.com/600x400?text=Resim+Yuklenemedi';
         };
@@ -53,8 +52,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('petStory').innerText = pet.story || pet.description;
         document.getElementById('modalPetName').innerText = pet.name;
 
-        // --- DURUM ROZETİ (SUPABASE DÜZELTMESİ) ---
-        const status = pet.adoptionstatus || pet.adoptionStatus; // Küçük/Büyük harf kontrolü
+        // --- DURUM ROZETİ ---
+        const status = pet.adoptionstatus || pet.adoptionStatus; 
         const statusBadge = document.getElementById('petStatus');
         
         if (status === 'Sahiplendirildi') {
@@ -68,23 +67,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (token) {
             // -- GİRİŞ YAPILMIŞSA: Bilgileri Göster --
-            // PostgreSQL aliasları bazen küçük harfe çevirir (ownerName -> ownername)
             const oName = pet.ownername || pet.ownerName || pet.users_name;
             const oEmail = pet.owneremail || pet.ownerEmail || pet.users_email || "";
-            const oPhone = pet.ownerphone || pet.ownerPhone || pet.users_phone;
+            // Telefon değişkeni silindi
 
             document.getElementById('ownerName').innerText = oName;
             document.getElementById('ownerEmail').innerText = oEmail;
             
-            const phoneLink = document.getElementById('ownerPhone');
-
-            if (oPhone) {
-                phoneLink.href = `tel:${oPhone}`;
-                phoneLink.querySelector('span').innerText = oPhone;
-                phoneLink.classList.remove('d-none');
-            } else {
-                phoneLink.classList.add('d-none');
-            }
+            // Telefon linki ve kontrolü silindi
 
             // Eğer sahiplendirilmişse butonu pasif yap
             if (status === 'Sahiplendirildi') {

@@ -24,18 +24,26 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto align-items-center">
-        <li class="nav-item"><a class="nav-link active" href="index.html">Ana Sayfa</a></li>
-        <li class="nav-item"><a class="nav-link" href="about.html">Hakkımızda</a></li>
-        <li class="nav-item"><a class="nav-link" href="vets.html"><i class="fa-solid fa-user-doctor me-1"></i> Veteriner Bul</a></li>
-        <li class="nav-item"><a class="nav-link" href="breeding.html">Eş Bul</a></li>
-        <li class="nav-item"><a class="nav-link" href="pets.html">Sahiplen</a></li> 
-        <li class="nav-item"><a class="nav-link" href="caretakers.html">Bakıcılar</a></li>
-<li class="nav-item position-relative">
-    <a class="nav-link" href="messages.html">Mesajlar</a>
-    <span id="navMsgBadge" class="notification-dot d-none"></span>
-</li>        <li class="nav-item"><a class="nav-link" href="profile.html"><i class="fa-solid fa-user me-1"></i> Profilim</a></li>
+        <li class="nav-item"><a class="nav-link active" href="index.html" data-lang="navbar_home">Ana Sayfa</a></li>
+        <li class="nav-item"><a class="nav-link" href="about.html" data-lang="navbar_about">Hakkımızda</a></li>
+        <li class="nav-item"><a class="nav-link" href="vets.html" data-lang="navbar_vets"><i class="fa-solid fa-user-doctor me-1"></i> Veteriner Bul</a></li>
+        <li class="nav-item"><a class="nav-link" href="breeding.html" data-lang="navbar_breeding">Eş Bul</a></li>
+        <li class="nav-item"><a class="nav-link" href="pets.html" data-lang="navbar_adopt">Sahiplen</a></li> 
+        <li class="nav-item"><a class="nav-link" href="caretakers.html" data-lang="navbar_caretaker">Bakıcılar</a></li>
+        
+        <li class="nav-item position-relative">
+            <a class="nav-link" href="messages.html" data-lang="navbar_messages">Mesajlar</a>
+            <span id="navMsgBadge" class="notification-dot d-none"></span>
+        </li>
+        
+        <li class="nav-item"><a class="nav-link" href="profile.html" data-lang="navbar_profile"><i class="fa-solid fa-user me-1"></i> Profilim</a></li>
+        
         <li class="nav-item ms-2">
-             <a href="#" class="btn btn-outline-danger rounded-pill px-4 py-1" style="border-color: #A64D32; color: #A64D32; font-size: 0.85rem;">ÇIKIŞ</a>
+             <a href="#" class="btn btn-outline-danger rounded-pill px-4 py-1" style="border-color: #A64D32; color: #A64D32; font-size: 0.85rem;" data-lang="navbar_logout">ÇIKIŞ</a>
+        </li>
+
+        <li class="nav-item ms-2">
+            <button id="langToggleBtn" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold">🇺🇸 EN</button>
         </li>
       </ul>
     </div>
@@ -46,21 +54,21 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-10">
-                <h1 class="mb-2">Bir can, bir yuva ♡</h1>
-                <p class="mb-5">ONUN EVİ SENSİN</p>
+                <h1 class="mb-2" data-lang="hero_title">Bir can, bir yuva ♡</h1>
+                <p class="mb-5" data-lang="hero_subtitle">ONUN EVİ SENSİN</p>
                 
                 <div class="d-flex justify-content-center gap-3 flex-wrap">
                     <a href="pets.html" class="btn btn-custom btn-rust">
-                        <i class="fa-solid fa-dog me-2"></i> SAHİPLEN
+                        <i class="fa-solid fa-dog me-2"></i> <span data-lang="btn_adopt">SAHİPLEN</span>
                     </a>
                     <a href="breeding.html" class="btn btn-custom btn-taupe">
-                        <i class="fa-solid fa-heart me-2"></i> EŞ BUL
+                        <i class="fa-solid fa-heart me-2"></i> <span data-lang="btn_breed">EŞ BUL</span>
                     </a>
                     <a href="caretakers.html" class="btn btn-custom btn-earth">
-                        <i class="fa-solid fa-user-nurse me-2"></i> BAKICI BUL
+                        <i class="fa-solid fa-user-nurse me-2"></i> <span data-lang="btn_caretaker">BAKICI BUL</span>
                     </a>
                     <a href="vets.html" class="btn btn-custom btn-coffee">
-                        <i class="fa-solid fa-user-doctor me-2"></i> VETERİNER
+                        <i class="fa-solid fa-user-doctor me-2"></i> <span data-lang="btn_vet">VETERİNER</span>
                     </a>
                 </div>
             </div>
@@ -74,11 +82,11 @@
             <div class="col-lg-8">
                 <i class="fa-solid fa-paw fa-3x mb-3" style="color: #A64D32;"></i>
                 
-                <h2 class="section-title mb-3">Biz Kimiz?</h2>
-                <p class="lead text-muted mb-4" style="font-size: 1.1rem;">
+                <h2 class="section-title mb-3" data-lang="about_title">Biz Kimiz?</h2>
+                <p class="lead text-muted mb-4" style="font-size: 1.1rem;" data-lang="about_desc1">
                     PİTO, patili dostlarımızı sıcak yuvalara kavuşturmak ve yalnız kalplerini sevgiyle doldurmak için yola çıkmış bir iyilik hareketidir.
                 </p>
-                <p class="text-muted">
+                <p class="text-muted" data-lang="about_desc2">
                     Amacımız, sahipsiz canlara umut olmak, onlara hak ettikleri değeri vermek ve hayvan severleri güvenli bir platformda buluşturmaktır. 
                 </p>
             </div>
@@ -90,16 +98,16 @@
   <div class="container">
     <div class="d-flex justify-content-between align-items-end mb-4">
         <div>
-            <h2 class="section-title mb-0"><i class="fa-solid fa-house-chimney me-2"></i>Yuva Arayanlar</h2>
-            <p class="text-muted small mb-0">Sıcak bir yuva bekleyen dostlarımız.</p>
+            <h2 class="section-title mb-0" data-lang="sec_adopt_title"><i class="fa-solid fa-house-chimney me-2"></i>Yuva Arayanlar</h2>
+            <p class="text-muted small mb-0" data-lang="sec_adopt_sub">Sıcak bir yuva bekleyen dostlarımız.</p>
         </div>
-        <a href="pets.html" class="btn btn-outline-clay btn-sm px-4 py-2">TÜMÜNÜ GÖR</a>
+        <a href="pets.html" class="btn btn-outline-clay btn-sm px-4 py-2" data-lang="btn_see_all">TÜMÜNÜ GÖR</a>
     </div>
     
     <div class="row g-4 justify-content-center" id="adoptionContainer">
       <div class="col-12 text-center py-4">
           <div class="spinner-border" style="color: #A64D32;" role="status"></div>
-          <p class="text-muted mt-2">Yükleniyor...</p>
+          <p class="text-muted mt-2" data-lang="loading">Yükleniyor...</p>
       </div>
     </div>
   </div>
@@ -109,16 +117,16 @@
     <div class="container">
         <div class="d-flex justify-content-between align-items-end mb-4">
             <div>
-                <h3 class="section-title mb-0">
+                <h3 class="section-title mb-0" data-lang="sec_breed_title">
                     <i class="fa-solid fa-heart me-2"></i> Eş Arayanlar
                 </h3>
-                <p class="text-muted mb-0 small">Kendi türünden bir arkadaş arayanlar.</p>
+                <p class="text-muted mb-0 small" data-lang="sec_breed_sub">Kendi türünden bir arkadaş arayanlar.</p>
             </div>
-            <a href="breeding.html" class="btn btn-outline-clay btn-sm px-4 py-2">TÜMÜNÜ GÖR</a>
+            <a href="breeding.html" class="btn btn-outline-clay btn-sm px-4 py-2" data-lang="btn_see_all">TÜMÜNÜ GÖR</a>
         </div>
 
         <div class="row g-4 justify-content-center" id="breedingContainer">
-            </div>
+        </div>
     </div>
 </section>
 
@@ -126,10 +134,10 @@
         <div class="container">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h3 class="fw-bold mb-0 text-dark-brown">🧑‍🍼 Bakıcılar</h3>
-                    <p class="text-muted small mb-0">Patili dostunuza gözü gibi bakacak uzmanlar</p>
+                    <h3 class="fw-bold mb-0 text-dark-brown" data-lang="sec_care_title">🧑‍🍼 Bakıcılar</h3>
+                    <p class="text-muted small mb-0" data-lang="sec_care_sub">Patili dostunuza gözü gibi bakacak uzmanlar</p>
                 </div>
-                <a href="caretakers.html" class="btn btn-outline-dark rounded-pill px-4">Tümünü Gör</a>
+                <a href="caretakers.html" class="btn btn-outline-dark rounded-pill px-4" data-lang="btn_see_all">Tümünü Gör</a>
             </div>
             <div id="caretakersShowcase" class="row g-4 justify-content-center">
                 <div class="col-12 text-center"><div class="spinner-border text-secondary"></div></div>
@@ -141,10 +149,10 @@
         <div class="container">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h3 class="fw-bold mb-0 text-dark-brown">🏥 Veteriner Klinikleri</h3>
-                    <p class="text-muted small mb-0">En yakın sağlık noktaları</p>
+                    <h3 class="fw-bold mb-0 text-dark-brown" data-lang="sec_vet_title">🏥 Veteriner Klinikleri</h3>
+                    <p class="text-muted small mb-0" data-lang="sec_vet_sub">En yakın sağlık noktaları</p>
                 </div>
-                <a href="vets.html" class="btn btn-outline-danger rounded-pill px-4" style="border-color: #A64D32; color: #A64D32;">Tümünü Gör</a>
+                <a href="vets.html" class="btn btn-outline-danger rounded-pill px-4" style="border-color: #A64D32; color: #A64D32;" data-lang="btn_see_all">Tümünü Gör</a>
             </div>
             <div id="vetsShowcase" class="row g-4 justify-content-center">
                 <div class="col-12 text-center"><div class="spinner-border text-danger"></div></div>
@@ -156,7 +164,7 @@
   <div class="container">
     <div class="d-flex justify-content-center gap-4 mb-3">
     
-    <a href="https://www.instagram.com/SENIN_KULLANICI_ADIN" target="_blank" class="social-icon">
+    <a href="https://www.instagram.com/officialpitopet?igsh=aDZrcW1wdnBhY3kw&utm_source=qr" target="_blank" class="social-icon">
         <i class="fa-brands fa-instagram fa-lg"></i>
     </a>
 
@@ -170,11 +178,13 @@
 
 </div>
     <h3 style="font-family: 'Playfair Display', serif; margin-bottom: 0.5rem;">🐾 P İ T O</h3>
-    <p class="mb-0 small opacity-75">Sevgiyle Tasarlandı &copy; 2025</p>
+    <p class="mb-0 small opacity-75" data-lang="footer_text">Sevgiyle Tasarlandı &copy; 2025</p>
   </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="js/lang.js"></script>
 <script src="js/index.js"></script>
 
 </body>
