@@ -233,15 +233,82 @@ app.delete('/api/pets/:id', authenticateToken, (req, res) => deleteItem('pets', 
 app.delete('/api/breeding-pets/:id', authenticateToken, (req, res) => deleteItem('breeding_pets', req.params.id, req.user.id, res));
 app.delete('/api/caretakers/:id', authenticateToken, (req, res) => deleteItem('caretakers', req.params.id, req.user.id, res));
 app.delete('/api/vets/:id', authenticateToken, (req, res) => deleteItem('vets', req.params.id, req.user.id, res));
-
+// 1. MESAJLARI GETİR (Gelen Kutusu)
 app.get('/api/my-messages', authenticateToken, async (req, res) => {
-    try { const sql = `SELECT m.*, s.name as sender_name, r.name as receiver_name, COALESCE(p.name, bp.name, 'Genel Sohbet') as pet_name, m.post_type FROM messages m LEFT JOIN users s ON m.sender_id = s.id LEFT JOIN users r ON m.receiver_id = r.id LEFT JOIN pets p ON m.pet_id = p.id LEFT JOIN breeding_pets bp ON m.pet_id = bp.id WHERE m.receiver_id = $1 OR m.sender_id = $2 ORDER BY m.createdAt DESC`; const result = await pool.query(sql, [req.user.id, req.user.id]); res.json(result.rows); } catch (err) { res.status(500).json({ error: err.message }); }
+    try {
+        const sql = `
+            SELECT 
+                m.*, 
+                s.name as sender_name, 
+                r.name as receiver_name, 
+                COALESCE(p.name, bp.name, 'Genel Sohbet') as pet_name,
+                m.post_type,
+                m.is_read
+            FROM messages m
+            LEFT JOIN users s ON m.sender_id = s.id
+            LEFT JOIN users r ON m.receiver_id = r.id
+            LEFT JOIN pets p ON m.pet_id = p.id
+            LEFT JOIN breeding_pets bp ON m.pet_id = bp.id
+            WHERE m.receiver_id = $1 OR m.sender_id = $2
+            ORDER BY m.createdAt DESC
+        `;
+        const result = await pool.query(sql, [req.user.id, req.user.id]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error("Inbox Hatası:", err);
+        res.status(500).json({ error: err.message });
+    }
 });
+// 2. SOHBET DETAYI
 app.get('/api/messages/thread/:otherId/:petId', authenticateToken, async (req, res) => {
-    try { const sql = `SELECT * FROM messages WHERE ((sender_id = $1 AND receiver_id = $2) OR (sender_id = $3 AND receiver_id = $4)) AND pet_id = $5 ORDER BY createdAt ASC`; const result = await pool.query(sql, [req.user.id, req.params.otherId, req.params.otherId, req.user.id, req.params.petId]); res.json(result.rows); } catch (err) { res.status(500).json({ error: err.message }); }
+    try {
+        const otherId = parseInt(req.params.otherId);
+        const petId = parseInt(req.params.petId);
+
+        const sql = `
+            SELECT * FROM messages 
+            WHERE 
+                ((sender_id = $1 AND receiver_id = $2) OR (sender_id = $3 AND receiver_id = $4)) 
+                AND pet_id = $5 
+            ORDER BY createdAt ASC
+        `;
+        const result = await pool.query(sql, [req.user.id, otherId, otherId, req.user.id, petId]);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
+// 3. MESAJ GÖNDER (BUG DÜZELTİLDİ: 0 ID Sorunu)
 app.post('/api/messages', authenticateToken, async (req, res) => {
-    const { receiver_id, pet_id, post_type, message } = req.body; const rId = receiver_id || req.body.receiverId; const pId = pet_id || req.body.petId; if (!rId || !message) return res.status(400).json({ message: "Eksik bilgi." }); try { const sql = `INSERT INTO messages (sender_id, receiver_id, pet_id, post_type, message) VALUES ($1, $2, $3, $4, $5) RETURNING *`; const result = await pool.query(sql, [req.user.id, rId, pId, post_type || 'adoption', message]); res.status(201).json({ message: "Mesaj gönderildi", id: result.rows[0].id }); } catch (err) { res.status(500).json({ message: "Hata" }); }
+    // Hem camelCase hem snake_case desteği
+    const receiver_id = req.body.receiver_id !== undefined ? req.body.receiver_id : req.body.receiverId;
+    
+    // Pet ID 0 ise (Genel Sohbet) bunu koru, yoksa undefined olur
+    let pet_id = req.body.pet_id;
+    if (req.body.petId !== undefined) pet_id = req.body.petId;
+    if (pet_id === undefined || pet_id === null) pet_id = 0; // Varsayılan 0 olsun
+
+    const { message, post_type } = req.body;
+
+    if (!receiver_id || !message) {
+        return res.status(400).json({ message: "Eksik bilgi: Alıcı veya mesaj yok." });
+    }
+
+    try {
+        // is_read sütunu yoksa hata verebilir, veritabanına eklediğinden emin ol
+        // Eğer is_read sütunu yoksa SQL sorgusundan ', is_read' ve ', FALSE' kısımlarını sil.
+        const sql = `
+            INSERT INTO messages (sender_id, receiver_id, pet_id, post_type, message, is_read) 
+            VALUES ($1, $2, $3, $4, $5, FALSE) 
+            RETURNING *
+        `;
+        const result = await pool.query(sql, [req.user.id, receiver_id, pet_id, post_type || 'adoption', message]);
+        
+        res.status(201).json({ message: "Mesaj gönderildi", data: result.rows[0] });
+    } catch (err) {
+        console.error("Mesaj Gönderme Hatası:", err);
+        res.status(500).json({ message: "Veritabanı hatası: " + err.message });
+    }
 });
 
 app.listen(PORT, '0.0.0.0', () => {
