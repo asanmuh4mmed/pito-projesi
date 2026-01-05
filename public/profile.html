@@ -17,13 +17,17 @@
 <nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top">
     <div class="container">
         <a class="navbar-brand fw-bold" href="index.html">🐾 P İ T O</a>
-        <div class="d-flex gap-2">
-            <a href="index.html" class="btn btn-sm btn-outline-secondary rounded-pill">Ana Sayfa</a>
-<li class="nav-item position-relative">
-    <a class="nav-link" href="messages.html">Mesajlar</a>
-    <span id="navMsgBadge" class="notification-dot d-none"></span>
-</li>
-            <button id="logoutBtn" class="btn btn-sm btn-outline-danger rounded-pill">Çıkış Yap</button>
+        <div class="d-flex gap-2 align-items-center">
+            <a href="index.html" class="btn btn-sm btn-outline-secondary rounded-pill" data-lang="navbar_home">Ana Sayfa</a>
+            
+            <div class="position-relative">
+                <a class="btn btn-sm btn-outline-secondary rounded-pill border-0" href="messages.html" data-lang="navbar_messages">Mesajlar</a>
+                <span id="navMsgBadge" class="notification-dot d-none" style="top: 0; right: 0;"></span>
+            </div>
+
+            <button id="logoutBtn" class="btn btn-sm btn-outline-danger rounded-pill" data-lang="navbar_logout">Çıkış Yap</button>
+            
+            <button id="langToggleBtn" class="btn btn-sm btn-outline-dark rounded-pill fw-bold ms-2">🇺🇸 EN</button>
         </div>
     </div>
 </nav>
@@ -36,17 +40,17 @@
                     <img id="displayProfileImg" src="https://via.placeholder.com/150?text=Profil" alt="Profil">
                 </div>
                 
-                <h3 id="profileName" class="fw-bold mb-1">Yükleniyor...</h3>
+                <h3 id="profileName" class="fw-bold mb-1">...</h3>
                 <p id="profileEmail" class="text-muted small mb-1">...</p>
                 <p id="profilePhone" class="text-secondary fw-bold small mb-4">...</p>
                 
                 <button id="btnOpenEditProfile" class="btn btn-clay w-100 rounded-pill mb-2">
-                    <i class="fa-solid fa-pen-to-square me-2"></i>Profili Düzenle
+                    <i class="fa-solid fa-pen-to-square me-2"></i><span data-lang="btn_edit_profile">Profili Düzenle</span>
                 </button>
                 
                 <div class="mt-4 border-top pt-3">
-                    <small class="text-muted">Aktif İlan Sayısı</small>
-                    <h2 id="adCount" class="fw-bold text-clay">0</h2>
+                    <small class="text-muted" data-lang="lbl_active_ads_count"></small>
+                    <h2 id="adCount" class="fw-bold text-clay"></h2>
                 </div>
             </div>
         </div>
@@ -54,9 +58,9 @@
         <div class="col-lg-8">
             
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="fw-bold mb-0 text-dark-brown">🐶 Sahiplendirme İlanlarım</h4>
+                <h4 class="fw-bold mb-0 text-dark-brown" data-lang="header_my_adoption">🐶 Sahiplendirme İlanlarım</h4>
                 <a href="add-pet.html" class="btn btn-sm btn-outline-dark rounded-pill">
-                    <i class="fa-solid fa-plus me-1"></i> Yeni Ekle
+                    <i class="fa-solid fa-plus me-1"></i> <span data-lang="btn_add_new">Yeni Ekle</span>
                 </a>
             </div>
 
@@ -69,49 +73,49 @@
             <hr class="text-muted opacity-25"> 
 
             <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
-                <h4 class="fw-bold mb-0 text-clay">❤️ Eş Arayan İlanlarım</h4>
+                <h4 class="fw-bold mb-0 text-clay" data-lang="header_my_breeding">❤️ Eş Arayan İlanlarım</h4>
                 <a href="add-breeding.html" class="btn btn-sm btn-outline-danger rounded-pill border-clay text-clay">
-                    <i class="fa-solid fa-plus me-1"></i> İlan Ekle
+                    <i class="fa-solid fa-plus me-1"></i> <span data-lang="btn_add_ad">İlan Ekle</span>
                 </a>
             </div>
 
             <div id="myBreedingContainer" class="row g-3 mb-5">
                 <div class="col-12 text-center py-4">
-                    <p class="text-muted">Eş arayan ilanlar yükleniyor...</p>
+                    <p class="text-muted" data-lang="loading_breeding">Eş arayan ilanlar yükleniyor...</p>
                 </div>
             </div>
 
             <hr class="text-muted opacity-25">
 
             <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
-                <h4 class="fw-bold mb-0 text-dark-brown">🧑‍🍼 Bakıcılık İlanlarım</h4>
-                <a href="caretakers.html" class="btn btn-sm btn-outline-dark rounded-pill">
-                    <i class="fa-solid fa-plus me-1"></i> Hizmet Ekle
+                <h4 class="fw-bold mb-0 text-dark-brown" data-lang="header_my_caretaker">🧑‍🍼 Bakıcılık İlanlarım</h4>
+                <a href="become-caretaker.html" class="btn btn-sm btn-outline-dark rounded-pill">
+                    <i class="fa-solid fa-plus me-1"></i> <span data-lang="btn_add_service">Hizmet Ekle</span>
                 </a>
             </div>
 
             <div id="myCaretakersContainer" class="row g-3">
                 <div class="col-12 text-center py-4">
-                    <p class="text-muted">Bakıcı ilanları yükleniyor...</p>
+                    <p class="text-muted" data-lang="loading_caretaker">Bakıcı ilanları yükleniyor...</p>
                 </div>
             </div>
 
             <hr class="text-muted opacity-25">
 
             <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
-                <h4 class="fw-bold mb-0 text-dark-brown">
+                <h4 class="fw-bold mb-0 text-dark-brown" data-lang="header_my_vets">
                     <i class="fa-solid fa-user-doctor me-2"></i>Veteriner Klinik İlanlarım
                 </h4>
-                <a href="vets.html" class="btn btn-sm btn-outline-dark rounded-pill">
-                    <i class="fa-solid fa-plus me-1"></i> Klinik Ekle
+                <a href="add-vet.html" class="btn btn-sm btn-outline-dark rounded-pill">
+                    <i class="fa-solid fa-plus me-1"></i> <span data-lang="btn_add_clinic">Klinik Ekle</span>
                 </a>
             </div>
             <div id="myVetsContainer" class="row g-4">
                 <div class="col-12 text-center py-4">
-                    <p class="text-muted">Veteriner ilanları yükleniyor...</p>
+                    <p class="text-muted" data-lang="loading_vets">Veteriner ilanları yükleniyor...</p>
                 </div>
             </div>
-            </div>
+        </div>
     </div>
 </div>
 
@@ -119,30 +123,30 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 rounded-4 shadow">
             <div class="modal-header border-0 pb-0">
-                <h5 class="fw-bold px-3 pt-3 text-clay">Profili Güncelle</h5>
+                <h5 class="fw-bold px-3 pt-3 text-clay" data-lang="modal_edit_profile_title">Profili Güncelle</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
                 <form id="editProfileForm">
                     <div class="mb-3">
-                        <label class="fw-bold small">Ad Soyad</label>
+                        <label class="fw-bold small" data-lang="lbl_fullname">Ad Soyad</label>
                         <input type="text" id="editName" class="form-control rounded-3" required>
                     </div>
                     <div class="mb-3">
-                        <label class="fw-bold small">Telefon</label>
+                        <label class="fw-bold small" data-lang="lbl_phone_simple">Telefon</label>
                         <input type="tel" id="editPhone" class="form-control rounded-3">
                     </div>
                     
                     <div class="mb-4">
-                        <label class="fw-bold small">Profil Resmi</label>
+                        <label class="fw-bold small" data-lang="lbl_profile_pic">Profil Resmi</label>
                         <input type="file" id="editImageFile" class="form-control mb-2" accept="image/*">
                         <div id="imagePreviewContainer" class="text-center d-none p-2 bg-light rounded-3">
                             <img id="imagePreview" src="" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%;">
-                            <p class="small text-muted mt-1 mb-0">Yeni Resim Seçildi</p>
+                            <p class="small text-muted mt-1 mb-0" data-lang="msg_new_pic_selected">Yeni Resim Seçildi</p>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-clay w-100 rounded-pill py-2">Kaydet</button>
+                    <button type="submit" class="btn btn-clay w-100 rounded-pill py-2" data-lang="btn_save">Kaydet</button>
                 </form>
             </div>
         </div>
@@ -154,11 +158,11 @@
         <div class="modal-content rounded-4 border-0 p-3 text-center">
             <div class="modal-body">
                 <i class="fa-solid fa-trash-can fa-3x text-danger mb-3"></i>
-                <h5>Silmek istediğine emin misin?</h5>
-                <p class="text-muted small">Bu işlem geri alınamaz.</p>
+                <h5 data-lang="modal_delete_title">Silmek istediğine emin misin?</h5>
+                <p class="text-muted small" data-lang="modal_delete_desc">Bu işlem geri alınamaz.</p>
                 <div class="d-flex justify-content-center gap-2 mt-4">
-                    <button class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Vazgeç</button>
-                    <button id="confirmDeleteBtn" class="btn btn-danger rounded-pill px-4">Sil</button>
+                    <button class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal" data-lang="btn_cancel">Vazgeç</button>
+                    <button id="confirmDeleteBtn" class="btn btn-danger rounded-pill px-4" data-lang="btn_delete">Sil</button>
                 </div>
             </div>
         </div>
@@ -167,7 +171,7 @@
 
 <footer class="footer mt-5" style="background: #4E342E; padding: 2rem 0; border-top: 5px solid #A64D32;">
     <div class="container text-center text-white">
-        <p class="mb-0" style="opacity: 0.8;">🕊️ <strong>PİTO</strong> - Hayvan Haklarını Korur &copy; 2025</p>
+        <p class="mb-0" style="opacity: 0.8;" data-lang="footer_text">🕊️ <strong>PİTO</strong> - Hayvan Haklarını Korur &copy; 2025</p>
     </div>
 </footer>
 
