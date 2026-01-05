@@ -28,6 +28,10 @@
         <li class="nav-item"><a class="nav-link" href="breeding.html">Eş Bul</a></li>
         <li class="nav-item"><a class="nav-link active" href="pets.html">Sahiplen</a></li> 
         <li class="nav-item"><a class="nav-link" href="caretakers.html">Bakıcılar</a></li>
+        <li class="nav-item position-relative">
+    <a class="nav-link" href="messages.html">Mesajlar</a>
+    <span id="navMsgBadge" class="notification-dot d-none"></span>
+</li>
         <li class="nav-item ms-lg-3">
             <a href="add-pet.html" class="btn btn-primary rounded-pill px-4 shadow-sm">
                 <i class="fa-solid fa-plus me-1"></i> İlan Ver
@@ -51,13 +55,12 @@
 <div class="container">
     <div class="card border-0 shadow-sm mb-5" style="background-color: #fff;">
         <div class="card-body p-4">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-4">
-                    <label class="form-label fw-bold small text-uppercase" style="color: var(--primary-clay); letter-spacing: 1px;">
-                        <i class="fa-solid fa-paw me-1"></i> Tür Seçimi
-                    </label>
-                    <select id="filterSpecies" class="form-select border-0 bg-light" style="padding: 12px;">
-                        <option value="all">🐶 🐱 Tüm Dostlarımız</option>
+            <div class="row g-3">
+                
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small text-muted">TÜR</label>
+                    <select id="filterSpecies" class="form-select border-0 bg-light py-2">
+                        <option value="all">Tümü</option>
                         <option value="Kedi">Kedi</option>
                         <option value="Köpek">Köpek</option>
                         <option value="Kuş">Kuş</option>
@@ -65,20 +68,32 @@
                     </select>
                 </div>
                 
-                <div class="col-md-4">
-                    <label class="form-label fw-bold small text-uppercase" style="color: var(--primary-clay); letter-spacing: 1px;">
-                        <i class="fa-solid fa-venus-mars me-1"></i> Cinsiyet
-                    </label>
-                    <select id="filterGender" class="form-select border-0 bg-light" style="padding: 12px;">
-                        <option value="all">Hepsi</option>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small text-muted">CİNSİYET</label>
+                    <select id="filterGender" class="form-select border-0 bg-light py-2">
+                        <option value="all">Farketmez</option>
                         <option value="Dişi">Dişi</option>
                         <option value="Erkek">Erkek</option>
                     </select>
                 </div>
-                
-                <div class="col-md-4">
-                    <button id="btnReset" class="btn btn-outline-primary w-100 py-2" style="border-radius: 8px;">
-                        <i class="fa-solid fa-rotate-left me-2"></i> FİLTRELERİ SIFIRLA
+
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small text-muted">ŞEHİR</label>
+                    <input list="cityOptions" id="filterCity" class="form-control border-0 bg-light py-2" placeholder="Şehir Ara...">
+                    <datalist id="cityOptions">
+                        </datalist>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small text-muted">İLÇE</label>
+                    <select id="filterDistrict" class="form-select border-0 bg-light py-2" disabled>
+                        <option value="">İlçe Seç</option>
+                    </select>
+                </div>
+
+                <div class="col-12 mt-3">
+                    <button id="btnReset" class="btn btn-outline-secondary w-100 rounded-pill py-2">
+                        <i class="fa-solid fa-filter-circle-xmark me-2"></i> Filtreleri Temizle
                     </button>
                 </div>
             </div>

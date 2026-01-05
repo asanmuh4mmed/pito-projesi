@@ -222,3 +222,50 @@ window.logout = function() {
     localStorage.removeItem('user');
     window.location.href = 'index.html';
 }
+
+// --- BİLDİRİM KONTROL SİSTEMİ ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Sayfa açılınca kontrol et
+    checkGlobalUnreadMessages();
+    
+    // Her 5 saniyede bir tekrar kontrol et (Canlı bildirim için)
+    setInterval(checkGlobalUnreadMessages, 5000);
+});
+
+async function checkGlobalUnreadMessages() {
+    const token = localStorage.getItem('token');
+    const badge = document.getElementById('navMsgBadge');
+    
+    // Token yoksa veya badge elementi bulunamadıysa dur
+    if (!token || !badge) return;
+
+    // Token'dan ID çözümle
+    let myId = null;
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        myId = payload.id;
+    } catch (e) { return; }
+
+    try {
+        // Backend'den mesajları sor
+        const response = await fetch('https://pito-projesi.onrender.com/api/my-messages', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const messages = await response.json();
+            
+            // Bana gelen (receiver_id == ben) ve okunmamış (is_read == false) mesaj var mı?
+            const hasUnread = messages.some(m => m.receiver_id === myId && m.is_read === false);
+            
+            if (hasUnread) {
+                badge.classList.remove('d-none'); // Noktayı GÖSTER
+            } else {
+                badge.classList.add('d-none');    // Noktayı GİZLE
+            }
+        }
+    } catch (error) {
+        // Sessizce hata yakala (Kullanıcıya göstermeye gerek yok)
+        console.log("Bildirim kontrolü pas geçildi.");
+    }
+}

@@ -849,3 +849,27 @@ footer a:hover {
     border: none;
     box-shadow: 0 10px 20px rgba(0,0,0,0.05);
 }
+
+/* Sosyal Medya İkonları Stili */
+.social-icon {
+    color: #e0d8c8; /* PITO'nun krem rengi */
+    transition: all 0.3s ease;
+    text-decoration: none; /* Alt çizgiyi kaldırır */
+}
+
+.social-icon:hover {
+    color: #A64D32; /* Üzerine gelince PITO turuncusu olsun */
+    transform: translateY(-3px); /* Hafif yukarı zıplama efekti */
+}
+/* Navbar Bildirim Noktası */
+.notification-dot {
+    position: absolute;
+    top: 5px;       /* Yukarıdan mesafe */
+    right: 0px;     /* Sağdan mesafe */
+    width: 10px;
+    height: 10px;
+    background-color: #dc3545; /* Kırmızı */
+    border: 2px solid #ffffff; /* Beyaz çerçeve */
+    border-radius: 50%;        /* Yuvarlak */
+    z-index: 10;
+}

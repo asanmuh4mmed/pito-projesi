@@ -1,8 +1,6 @@
-// --- js/add-breeding.js (İL/İLÇE GÜNCELLİ) ---
-
 const API_URL = 'https://pito-projesi.onrender.com';
 
-// 81 İL VE İLÇE VERİTABANI
+// --- 81 İL VE İLÇE VERİTABANI ---
 const cityData = {
     "Adana": ["Aladağ", "Ceyhan", "Çukurova", "Feke", "İmamoğlu", "Karaisalı", "Karataş", "Kozan", "Pozantı", "Saimbeyli", "Sarıçam", "Seyhan", "Tufanbeyli", "Yumurtalık", "Yüreğir"],
     "Adıyaman": ["Besni", "Çelikhan", "Gerger", "Gölbaşı", "Kahta", "Merkez", "Samsat", "Sincik", "Tut"],
@@ -89,38 +87,38 @@ const cityData = {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- 0. ŞEHİR / İLÇE DOLDURMA ---
-    const cityListElement = document.getElementById('cityOptions');
-    const cityInputElement = document.getElementById('cityInput');
+    // --- 0. ŞEHİR / İLÇE DOLDURMA (GÜNCELLENDİ: Select Kutusu İçin) ---
+    const citySelectElement = document.getElementById('cityInput'); // Artık Select kutusu
     const districtSelectElement = document.getElementById('districtSelect');
 
-    if(cityListElement) {
-        // Sayfa açılınca şehirleri datalist'e ekle
+    if(citySelectElement) {
+        // Sayfa açılınca şehirleri select kutusuna ekle
         for (const city in cityData) {
             const option = document.createElement('option');
             option.value = city;
-            cityListElement.appendChild(option);
+            option.textContent = city;
+            citySelectElement.appendChild(option);
         }
 
-        // Kullanıcı bir şehir yazdığında/seçtiğinde çalışacak kod
-        cityInputElement.addEventListener('input', function() {
+        // Kullanıcı bir şehir seçtiğinde çalışacak kod (Change Event)
+        citySelectElement.addEventListener('change', function() {
             const selectedCity = this.value;
             
-            // Önce ilçe kutusunu temizle ve kilitle
+            // İlçe kutusunu temizle
             districtSelectElement.innerHTML = '<option value="" selected disabled>İlçe seçiniz</option>';
-            districtSelectElement.disabled = true;
-
-            // Eğer geçerli bir şehir seçildiyse
+            
+            // Eğer geçerli bir şehir seçildiyse ilçeleri doldur
             if (cityData[selectedCity]) {
                 districtSelectElement.disabled = false; // Kilidi aç
                 
-                // O şehrin ilçelerini ekle
                 cityData[selectedCity].forEach(district => {
                     const option = document.createElement('option');
                     option.value = district;
                     option.textContent = district;
                     districtSelectElement.appendChild(option);
                 });
+            } else {
+                districtSelectElement.disabled = true;
             }
         });
     }
@@ -180,25 +178,18 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('age', document.getElementById('age').value);
             formData.append('gender', document.getElementById('gender').value);
             
-            // Şehir ve İlçe Bilgisini Description'a veya Breed'e ekle (Location sütunu yoksa)
-            // Örn: "İstanbul / Kadıköy - Asıl Açıklama..."
+            // Şehir ve İlçe Bilgisi
             const cityVal = document.getElementById('cityInput').value;
             const distVal = document.getElementById('districtSelect').value;
             const originalDesc = document.getElementById('description').value;
 
-            // Eğer ilçe seçilmemişse sadece şehir, seçilmişse ikisi bir
             const fullLocation = distVal ? `${cityVal} / ${distVal}` : cityVal;
             
-            // Backend'de ayrı 'location' sütunu varsa bunu kullan:
-            // formData.append('location', fullLocation); 
-            
-            // YOKSA: Açıklamanın başına ekliyoruz ki kaybolmasın:
+            // Açıklamanın başına konumu ekle
             formData.append('description', `[Konum: ${fullLocation}] \n${originalDesc}`);
-            
-            // --- KRİTİK 1: Profilde görünmesi için User ID ---
             formData.append('user_id', user.id); 
 
-            // --- KRİTİK 2: Dosya Gönderimi ---
+            // Dosya Gönderimi
             const fileInput = document.getElementById('petImage');
             if (fileInput.files.length > 0) {
                  formData.append('petImage', fileInput.files[0]);
