@@ -33,57 +33,57 @@
             <div class="card shadow border-0 rounded-4 p-5">
                 <div class="text-center mb-4">
                     <a href="caretakers.html" class="btn btn-sm btn-outline-secondary mb-3 rounded-pill">
-                        <i class="fa-solid fa-arrow-left"></i> Geri Dön
+                        <i class="fa-solid fa-arrow-left"></i> <span data-lang="btn_back">Geri Dön</span>
                     </a>
-                    <h2 class="fw-bold" style="color: #A64D32;">Bakıcı Başvurusu</h2>
-                    <p class="text-muted">Minik dostlara yuva olun.</p>
+                    <h2 class="fw-bold" style="color: #A64D32;" data-lang="page_become_caretaker_title">Bakıcı Başvurusu</h2>
+                    <p class="text-muted" data-lang="page_become_caretaker_subtitle">Minik dostlara yuva olun.</p>
                 </div>
 
                 <form id="becomeCaretakerForm">
                     <div class="row g-3">
                         
                         <div class="col-12">
-                            <label class="form-label fw-bold small text-muted">İlan Başlığı</label>
-                            <input type="text" id="title" class="form-control" placeholder="Örn: Tecrübeli Kedi Sever" required>
+                            <label class="form-label fw-bold small text-muted" data-lang="lbl_ad_title">İlan Başlığı</label>
+                            <input type="text" id="title" class="form-control" placeholder="Örn: Tecrübeli Kedi Sever" data-lang="ph_ad_title" required>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold small text-muted">Şehir</label>
+                            <label class="form-label fw-bold small text-muted" data-lang="lbl_city">Şehir</label>
                             <select id="citySelect" class="form-select" required>
-                                <option value="" selected disabled>Şehir Seçiniz...</option>
-                                </select>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small text-muted">İlçe</label>
-                            <select id="districtSelect" class="form-select" disabled required>
-                                <option value="" selected disabled>Önce şehir seçiniz</option>
+                                <option value="" selected disabled data-lang="opt_select_city">Şehir Seçiniz...</option>
                             </select>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold small text-muted">Deneyim (Yıl)</label>
-                            <input type="number" id="experience" class="form-control" placeholder="2" required>
+                            <label class="form-label fw-bold small text-muted" data-lang="lbl_district">İlçe</label>
+                            <select id="districtSelect" class="form-select" disabled required>
+                                <option value="" selected disabled data-lang="opt_select_city_first">Önce şehir seçiniz</option>
+                            </select>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold small text-muted">Ücret (₺)</label>
-                            <input type="number" id="price" class="form-control" placeholder="500" required>
+                            <label class="form-label fw-bold small text-muted" data-lang="lbl_experience">Deneyim (Yıl)</label>
+                            <input type="number" id="experience" class="form-control" placeholder="2" data-lang="ph_experience" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted" data-lang="lbl_price">Ücret (₺)</label>
+                            <input type="number" id="price" class="form-control" placeholder="500" data-lang="ph_price" required>
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label fw-bold small text-muted">Kapak Fotoğrafı</label>
+                            <label class="form-label fw-bold small text-muted" data-lang="lbl_cover_photo">Kapak Fotoğrafı</label>
                             <input type="file" id="caretakerImage" class="form-control" accept="image/*" required>
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label fw-bold small text-muted">Hakkında</label>
-                            <textarea id="description" class="form-control" rows="4" placeholder="Kendini tanıt..." required></textarea>
+                            <label class="form-label fw-bold small text-muted" data-lang="lbl_about_me">Hakkında</label>
+                            <textarea id="description" class="form-control" rows="4" placeholder="Kendini tanıt..." data-lang="ph_about_me" required></textarea>
                         </div>
 
                         <div class="col-12 mt-4">
                             <button type="submit" class="btn w-100 py-3 rounded-pill text-white fw-bold shadow-sm" style="background-color: #A64D32;">
-                                BAŞVURUYU TAMAMLA
+                                <span data-lang="btn_complete_application">BAŞVURUYU TAMAMLA</span>
                             </button>
                         </div>
                     </div>
@@ -95,6 +95,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/become-caretaker.js"></script>
+<script src="js/lang.js"></script>
 
 </body>
 </html>

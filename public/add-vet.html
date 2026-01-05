@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        /* Listelerin daha profesyonel ve kaydırılabilir görünmesi için */
         .form-select {
             border-radius: 10px;
             padding: 12px;
@@ -27,7 +26,7 @@
     <div class="container">
         <a class="navbar-brand fw-bold" href="index.html" style="color: #A64D32;">🐾 P İ T O</a>
         <a href="vets.html" class="btn btn-sm btn-outline-secondary rounded-pill">
-            <i class="fa-solid fa-arrow-left"></i> Listeye Dön
+            <i class="fa-solid fa-arrow-left"></i> <span data-lang="btn_back_list">Listeye Dön</span>
         </a>
     </div>
 </nav>
@@ -37,47 +36,47 @@
         <div class="col-md-6">
             <div class="card shadow border-0 rounded-4">
                 <div class="card-body p-5">
-                    <h3 class="fw-bold text-center mb-4" style="color: #A64D32;">🏥 Klinik Ekle</h3>
+                    <h3 class="fw-bold text-center mb-4" style="color: #A64D32;" data-lang="page_add_vet_title">🏥 Klinik Ekle</h3>
                     
                     <form id="addVetForm">
                         <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">Klinik Adı</label>
-                            <input type="text" name="clinicName" class="form-control" required placeholder="Örn: Can Dostlar Veteriner Kliniği" style="border-radius: 10px; padding: 12px;">
+                            <label class="form-label fw-bold small text-muted" data-lang="lbl_clinic_name">Klinik Adı</label>
+                            <input type="text" name="clinicName" class="form-control" required placeholder="Örn: Can Dostlar Veteriner Kliniği" data-lang="ph_clinic_name" style="border-radius: 10px; padding: 12px;">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">Hekim Adı Soyadı</label>
-                            <input type="text" name="vetName" class="form-control" required placeholder="Örn: Vet. Hekim Ahmet Yılmaz" style="border-radius: 10px; padding: 12px;">
+                            <label class="form-label fw-bold small text-muted" data-lang="lbl_vet_name">Hekim Adı Soyadı</label>
+                            <input type="text" name="vetName" class="form-control" required placeholder="Örn: Vet. Hekim Ahmet Yılmaz" data-lang="ph_vet_name" style="border-radius: 10px; padding: 12px;">
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">Şehir</label>
+                            <label class="form-label fw-bold small text-muted" data-lang="lbl_city">Şehir</label>
                             <select id="citySelect" name="cityInput" class="form-select" required>
-                                <option value="" selected disabled>Şehir Seçiniz...</option>
-                                </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">İlçe</label>
-                            <select id="districtSelect" name="districtSelect" class="form-select" required disabled>
-                                <option value="" selected disabled>Önce şehir seçiniz</option>
+                                <option value="" selected disabled data-lang="opt_select_city">Şehir Seçiniz...</option>
                             </select>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">Telefon Numarası</label>
+                            <label class="form-label fw-bold small text-muted" data-lang="lbl_district">İlçe</label>
+                            <select id="districtSelect" name="districtSelect" class="form-select" required disabled>
+                                <option value="" selected disabled data-lang="opt_select_city_first">Önce şehir seçiniz</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted" data-lang="lbl_phone">Telefon Numarası</label>
                             <input type="tel" name="phone" class="form-control" placeholder="0555 123 45 67" required style="border-radius: 10px; padding: 12px;">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">Açık Adres</label>
-                            <textarea name="address" class="form-control" rows="3" placeholder="Mahalle, Cadde, No..." required style="border-radius: 10px; padding: 12px;"></textarea>
+                            <label class="form-label fw-bold small text-muted" data-lang="lbl_address">Açık Adres</label>
+                            <textarea name="address" class="form-control" rows="3" placeholder="Mahalle, Cadde, No..." data-lang="ph_address" required style="border-radius: 10px; padding: 12px;"></textarea>
                         </div>
                         <div class="mb-4">
-                            <label class="form-label fw-bold small text-muted">Klinik Fotoğrafı</label>
+                            <label class="form-label fw-bold small text-muted" data-lang="lbl_clinic_photo">Klinik Fotoğrafı</label>
                             <input type="file" name="vetImage" class="form-control" style="border-radius: 10px; padding: 8px;">
                         </div>
 
                         <button type="submit" class="btn w-100 text-white fw-bold py-3 rounded-pill shadow-sm" style="background-color: #A64D32; font-size: 1.1rem; transition: transform 0.2s;">
-                            KAYDET VE YAYINLA
+                            <span data-lang="btn_save_publish">KAYDET VE YAYINLA</span>
                         </button>
                     </form>
                 </div>
@@ -259,6 +258,7 @@
         }
     });
 </script>
+<script src="js/lang.js"></script>
 
 </body>
 </html>

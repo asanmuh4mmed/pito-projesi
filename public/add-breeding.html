@@ -19,7 +19,7 @@
         <a class="navbar-brand fw-bold" href="index.html" style="color: #A64D32; font-family: 'Playfair Display', serif;">🐾 P İ T O</a>
         <div class="ms-auto">
             <a href="profile.html" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-bold" style="border-color: #D7CCC8; color: #8D6E63;">
-                <i class="fa-solid fa-arrow-left me-1"></i> İptal
+                <i class="fa-solid fa-arrow-left me-1"></i> <span data-lang="btn_cancel">İptal</span>
             </a>
         </div>
     </div>
@@ -31,7 +31,7 @@
             <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
                 <div class="card-header border-0 p-4 text-center text-white position-relative" style="background-color: #A64D32;">
                     <i class="fa-solid fa-heart fa-3x mb-2 text-white-50"></i>
-                    <h3 class="fw-bold mb-1" style="font-family: 'Playfair Display', serif;">Eş Arayan İlanı Oluştur</h3>
+                    <h3 class="fw-bold mb-1" style="font-family: 'Playfair Display', serif;" data-lang="page_breeding_add_title">Eş Arayan İlanı Oluştur</h3>
                 </div>
                 
                 <div class="card-body p-5 bg-white">
@@ -43,7 +43,7 @@
                                     <div id="uploadPlaceholder">
                                         <i class="fa-solid fa-camera fa-2x mb-2" style="color: #8D6E63;"></i>
                                         <br>
-                                        <span class="text-muted fw-bold small">Fotoğraf Yükle</span>
+                                        <span class="text-muted fw-bold small" data-lang="lbl_upload_photo">Fotoğraf Yükle</span>
                                     </div>
                                     <img id="previewImg" class="d-none w-100 h-100 object-fit-cover rounded-4">
                                 </div>
@@ -53,62 +53,62 @@
 
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="fw-bold small text-muted mb-1">Dostunun Adı</label>
-                                <input type="text" id="name" class="form-control form-control-earth rounded-3" placeholder="Örn: Pamuk" required>
+                                <label class="fw-bold small text-muted mb-1" data-lang="lbl_pet_name">Dostunun Adı</label>
+                                <input type="text" id="name" class="form-control form-control-earth rounded-3" placeholder="Örn: Pamuk" data-lang="ph_pet_name" required>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="fw-bold small text-muted mb-1">Türü</label>
+                                <label class="fw-bold small text-muted mb-1" data-lang="lbl_species">Türü</label>
                                 <select id="species" class="form-select form-select-earth rounded-3" required>
-                                    <option value="" selected disabled>Seçiniz</option>
-                                    <option value="Kedi">Kedi</option>
-                                    <option value="Köpek">Köpek</option>
-                                    <option value="Kuş">Kuş</option>
-                                    <option value="Diğer">Diğer</option>
+                                    <option value="" selected disabled data-lang="opt_select">Seçiniz</option>
+                                    <option value="Kedi" data-lang="opt_cat">Kedi</option>
+                                    <option value="Köpek" data-lang="opt_dog">Köpek</option>
+                                    <option value="Kuş" data-lang="opt_bird">Kuş</option>
+                                    <option value="Diğer" data-lang="opt_other">Diğer</option>
                                 </select>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="fw-bold small text-muted mb-1">Şehir</label>
+                                <label class="fw-bold small text-muted mb-1" data-lang="lbl_city">Şehir</label>
                                 <select class="form-select form-select-earth rounded-3" id="cityInput" required>
-                                    <option value="" selected disabled>Şehir Seçiniz</option>
+                                    <option value="" selected disabled data-lang="opt_select_city">Şehir Seçiniz</option>
                                     </select>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="fw-bold small text-muted mb-1">İlçe</label>
+                                <label class="fw-bold small text-muted mb-1" data-lang="lbl_district">İlçe</label>
                                 <select class="form-select form-select-earth rounded-3" id="districtSelect" disabled required>
-                                    <option value="" selected disabled>Önce şehir seçiniz</option>
+                                    <option value="" selected disabled data-lang="opt_select_city_first">Önce şehir seçiniz</option>
                                 </select>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="fw-bold small text-muted mb-1">Irkı (Cinsi)</label>
-                                <input type="text" id="breed" class="form-control form-control-earth rounded-3" placeholder="Örn: Golden, Tekir..." required>
+                                <label class="fw-bold small text-muted mb-1" data-lang="lbl_breed">Irkı (Cinsi)</label>
+                                <input type="text" id="breed" class="form-control form-control-earth rounded-3" placeholder="Örn: Golden, Tekir..." data-lang="ph_breed" required>
                             </div>
 
                             <div class="col-md-3">
-                                <label class="fw-bold small text-muted mb-1">Yaşı</label>
+                                <label class="fw-bold small text-muted mb-1" data-lang="lbl_age">Yaşı</label>
                                 <input type="number" id="age" class="form-control form-control-earth rounded-3" placeholder="2" required>
                             </div>
 
                             <div class="col-md-3">
-                                <label class="fw-bold small text-muted mb-1">Cinsiyeti</label>
+                                <label class="fw-bold small text-muted mb-1" data-lang="lbl_gender">Cinsiyeti</label>
                                 <select id="gender" class="form-select form-select-earth rounded-3" required>
-                                    <option value="Dişi">Dişi</option>
-                                    <option value="Erkek">Erkek</option>
+                                    <option value="Dişi" data-lang="opt_female">Dişi</option>
+                                    <option value="Erkek" data-lang="opt_male">Erkek</option>
                                 </select>
                             </div>
 
                             <div class="col-12">
-                                <label class="fw-bold small text-muted mb-1">Hakkında & Beklentiler</label>
-                                <textarea id="description" class="form-control form-control-earth rounded-3" rows="4" placeholder="Dostunun karakterinden ve aradığın eş özelliklerinden bahset..." required></textarea>
+                                <label class="fw-bold small text-muted mb-1" data-lang="lbl_desc">Hakkında & Beklentiler</label>
+                                <textarea id="description" class="form-control form-control-earth rounded-3" rows="4" placeholder="Dostunun karakterinden ve aradığın eş özelliklerinden bahset..." data-lang="ph_desc" required></textarea>
                             </div>
                         </div>
 
                         <div class="mt-4 pt-3">
                             <button type="submit" class="btn w-100 rounded-pill py-3 fw-bold text-white shadow-sm btn-earth-primary">
-                                <i class="fa-solid fa-check me-2"></i> İlanı Yayınla
+                                <i class="fa-solid fa-check me-2"></i> <span data-lang="btn_publish">İlanı Yayınla</span>
                             </button>
                         </div>
 
@@ -121,6 +121,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/add-breeding.js"></script>
+<script src="js/lang.js"></script>
 
 </body>
 </html>

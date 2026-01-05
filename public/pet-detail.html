@@ -17,14 +17,22 @@
 <nav class="navbar navbar-expand-lg sticky-top shadow-sm" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);">
     <div class="container">
         <a class="navbar-brand fw-bold" href="index.html" style="color: #A64D32; font-family: 'Playfair Display', serif;">🐾 P İ T O</a>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="fa-solid fa-bars" style="color: #A64D32;"></span>
+        </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto align-items-center">
-                <li class="nav-item"><a class="nav-link" href="index.html">Ana Sayfa</a></li>
-                <li class="nav-item"><a class="nav-link" href="pets.html">Sahiplen</a></li>
-<li class="nav-item position-relative">
-    <a class="nav-link" href="messages.html">Mesajlar</a>
-    <span id="navMsgBadge" class="notification-dot d-none"></span>
-</li>            </ul>
+                <li class="nav-item"><a class="nav-link" href="index.html" data-lang="navbar_home">Ana Sayfa</a></li>
+                <li class="nav-item"><a class="nav-link" href="pets.html" data-lang="navbar_adopt">Sahiplen</a></li>
+                <li class="nav-item position-relative">
+                    <a class="nav-link" href="messages.html" data-lang="navbar_messages">Mesajlar</a>
+                    <span id="navMsgBadge" class="notification-dot d-none"></span>
+                </li>
+                
+                <li class="nav-item ms-2">
+                    <button id="langToggleBtn" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold">🇺🇸 EN</button>
+                </li>
+            </ul>
         </div>
     </div>
 </nav>
@@ -32,14 +40,14 @@
 <div class="container my-5 py-4">
     <div id="loadingSpinner" class="text-center py-5">
         <div class="spinner-border" style="color: #A64D32; width: 3rem; height: 3rem;" role="status"></div>
-        <p class="mt-3 text-muted lead">Dostumuzun bilgileri getiriliyor...</p>
+        <p class="mt-3 text-muted lead" data-lang="loading_pet_detail">Dostumuzun bilgileri getiriliyor...</p>
     </div>
 
     <div id="errorAlert" class="alert d-none text-center p-5 mx-auto shadow-sm" style="border-radius: 25px; max-width: 600px; background-color: #F9F6F0; border: 2px dashed #A64D32;">
         <i class="fa-solid fa-paw fa-4x mb-4" style="color: #A64D32;"></i>
-        <h3 style="color: #4E342E;">İlan Bulunamadı</h3>
-        <p class="text-muted">Aradığınız ilan yayından kaldırılmış veya silinmiş olabilir.</p>
-        <a href="pets.html" class="btn btn-outline-danger mt-3 rounded-pill px-4" style="color: #A64D32; border-color: #A64D32;">İlanlara Dön</a>
+        <h3 style="color: #4E342E;" data-lang="err_pet_not_found">İlan Bulunamadı</h3>
+        <p class="text-muted" data-lang="err_pet_removed">Aradığınız ilan yayından kaldırılmış veya silinmiş olabilir.</p>
+        <a href="pets.html" class="btn btn-outline-danger mt-3 rounded-pill px-4" style="color: #A64D32; border-color: #A64D32;" data-lang="btn_back_to_ads">İlanlara Dön</a>
     </div>
 
     <div id="petDetailContent" class="row g-5 align-items-start d-none">
@@ -47,7 +55,7 @@
             <div class="pet-image-card">
                 <img id="petImage" src="" alt="Pet Detay">
                 <div class="position-absolute top-0 end-0 m-4">
-                      <span id="petStatus" class="badge px-4 py-2 shadow-sm">Müsait</span>
+                      <span id="petStatus" class="badge px-4 py-2 shadow-sm" data-lang="badge_available">Müsait</span>
                 </div>
             </div>
         </div>
@@ -56,33 +64,32 @@
             <div class="pet-info-card">
                 <div>
                     <h1 id="petName" class="display-4 pet-name-title mb-1">...</h1>
-                    <p class="text-muted mb-4"><i class="fa-solid fa-heart me-1" style="color: #A64D32;"></i> Yeni ailesini bekliyor</p>
+                    <p class="text-muted mb-4"><i class="fa-solid fa-heart me-1" style="color: #A64D32;"></i> <span data-lang="lbl_waiting_family">Yeni ailesini bekliyor</span></p>
                 </div>
 
                 <div class="d-flex flex-wrap gap-3 mb-2">
                     <span class="otantik-badge"><i class="fa-solid fa-paw"></i> <span id="petSpecies">-</span></span>
                     <span class="otantik-badge"><i class="fa-solid fa-venus-mars"></i> <span id="petGender">-</span></span>
-                    <span class="otantik-badge"><i class="fa-solid fa-cake-candles"></i> <span id="petAge">-</span> Yaşında</span>
+                    <span class="otantik-badge"><i class="fa-solid fa-cake-candles"></i> <span id="petAge">-</span> <span data-lang="lbl_age_suffix">Yaşında</span></span>
                 </div>
 
                 <div class="story-box">
-                    <span class="story-label">HİKAYESİ</span>
+                    <span class="story-label" data-lang="lbl_story_caps">HİKAYESİ</span>
                     <p id="petStory" class="story-text mb-0">...</p>
                 </div>
 
                 <div class="owner-box-otantik">
                     <div class="owner-avatar-circle"><i class="fa-solid fa-user-shield"></i></div>
                     <div class="flex-grow-1">
-                        <small class="text-uppercase text-muted fw-bold" style="letter-spacing: 1px;">İlan Sahibi</small>
+                        <small class="text-uppercase text-muted fw-bold" style="letter-spacing: 1px;" data-lang="lbl_owner_caps">İlan Sahibi</small>
                         <h5 id="ownerName" class="fw-bold mb-0" style="color: #3E2723;">...</h5>
                         <small id="ownerEmail" class="text-muted d-block"></small>
-                        <a id="ownerPhone" href="#" class="small text-decoration-none fw-bold" style="color: #A64D32;"><i class="fa-brands fa-whatsapp"></i> <span></span></a>
                     </div>
                 </div>
 
                 <div id="contactBtn">
                     <button class="btn btn-message w-100 shadow-sm" onclick="openMessageModal()">
-                        <i class="fa-solid fa-paper-plane me-2"></i> Sahiplenmek İçin Mesaj Gönder
+                        <i class="fa-solid fa-paper-plane me-2"></i> <span data-lang="btn_msg_adopt">Sahiplenmek İçin Mesaj Gönder</span>
                     </button>
                 </div>
             </div>
@@ -94,16 +101,18 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0" style="border-radius: 25px; background-color: #F9F6F0;">
       <div class="modal-header border-0 p-4 pb-0">
-        <h5 class="fw-bold" style="color: #A64D32; font-family: 'Playfair Display', serif;">Mesaj Gönder</h5>
+        <h5 class="fw-bold" style="color: #A64D32; font-family: 'Playfair Display', serif;" data-lang="modal_msg_title">Mesaj Gönder</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-4">
-        <p class="small text-muted mb-3"><strong id="modalPetName" style="color: #3E2723;"></strong> için ilan sahibine mesajınız:</p>
-        <textarea id="messageText" class="form-control border-0 shadow-sm" rows="5" style="border-radius: 15px; color: #3E2723;" placeholder="Merhaba, bu dostumuzu sahiplenmek istiyorum..."></textarea>
+        <p class="small text-muted mb-3">
+            <strong id="modalPetName" style="color: #3E2723;"></strong> <span data-lang="lbl_msg_context">için ilan sahibine mesajınız:</span>
+        </p>
+        <textarea id="messageText" class="form-control border-0 shadow-sm" rows="5" style="border-radius: 15px; color: #3E2723;" placeholder="Merhaba, bu dostumuzu sahiplenmek istiyorum..." data-lang="ph_adopt_msg"></textarea>
       </div>
       <div class="modal-footer border-0 p-4 pt-0">
-        <button type="button" class="btn rounded-pill px-4 fw-bold" style="color: #8D6E63; background: transparent;" data-bs-dismiss="modal">Vazgeç</button>
-        <button type="button" class="btn btn-primary rounded-pill px-4 border-0" style="background-color: #A64D32;" onclick="sendMessage()">Gönder</button>
+        <button type="button" class="btn rounded-pill px-4 fw-bold" style="color: #8D6E63; background: transparent;" data-bs-dismiss="modal" data-lang="btn_cancel">Vazgeç</button>
+        <button type="button" class="btn btn-primary rounded-pill px-4 border-0" style="background-color: #A64D32;" onclick="sendMessage()" data-lang="btn_send">Gönder</button>
       </div>
     </div>
   </div>
@@ -111,11 +120,17 @@
 
 <footer class="footer mt-5" style="background: #4E342E; padding: 2rem 0; border-top: 5px solid #A64D32;">
     <div class="container text-center text-white">
-        <p class="mb-0" style="opacity: 0.8;">🕊️ <strong>PİTO</strong> - Hayvan Haklarını Korur &copy; 2025</p>
+        <div class="d-flex justify-content-center gap-4 mb-3">
+            <a href="https://instagram.com" target="_blank" class="social-icon text-white"><i class="fa-brands fa-instagram fa-lg"></i></a>
+            <a href="https://twitter.com" target="_blank" class="social-icon text-white"><i class="fa-brands fa-twitter fa-lg"></i></a>
+            <a href="https://facebook.com" target="_blank" class="social-icon text-white"><i class="fa-brands fa-facebook fa-lg"></i></a>
+        </div>
+        <p class="mb-0" style="opacity: 0.8;" data-lang="footer_text">🕊️ <strong>PİTO</strong> - Hayvan Haklarını Korur &copy; 2025</p>
     </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/pet-detail.js"></script>
+<script src="js/lang.js"></script>
 </body>
 </html>

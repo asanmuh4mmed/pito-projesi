@@ -6,10 +6,8 @@
     <title>PİTO - Bakıcılar</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;500;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
-    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="caretakers-page"> 
@@ -26,16 +24,16 @@
     
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto align-items-center">
-        <li class="nav-item"><a class="nav-link" href="index.html">Ana Sayfa</a></li>
-        <li class="nav-item"><a class="nav-link" href="pets.html">Sahiplen</a></li>
+        <li class="nav-item"><a class="nav-link" href="index.html" data-lang="navbar_home">Ana Sayfa</a></li>
+        <li class="nav-item"><a class="nav-link" href="pets.html" data-lang="navbar_adopt">Sahiplen</a></li>
         <li class="nav-item position-relative">
-    <a class="nav-link" href="messages.html">Mesajlar</a>
-    <span id="navMsgBadge" class="notification-dot d-none"></span>
-</li>
-        <li class="nav-item"><a class="nav-link active fw-bold" href="caretakers.html" style="color: #A64D32;">Bakıcılar</a></li>
+            <a class="nav-link" href="messages.html" data-lang="navbar_messages">Mesajlar</a>
+            <span id="navMsgBadge" class="notification-dot d-none"></span>
+        </li>
+        <li class="nav-item"><a class="nav-link active fw-bold" href="caretakers.html" style="color: #A64D32;" data-lang="navbar_caretaker">Bakıcılar</a></li>
         <li class="nav-item ms-lg-3">
             <a href="become-caretaker.html" class="btn btn-sm rounded-pill px-4 py-2 shadow-sm btn-earth-primary">
-                <i class="fa-solid fa-hand-holding-heart me-1"></i> Bakıcı Ol
+                <i class="fa-solid fa-hand-holding-heart me-1"></i> <span data-lang="btn_become_caretaker">Bakıcı Ol</span>
             </a>
         </li>
       </ul>
@@ -47,23 +45,23 @@
     
     <div class="row align-items-end mb-5">
         <div class="col-md-7">
-            <h1 class="display-5 page-title fw-bold" style="font-family: 'Playfair Display', serif; color: #3E2723;">Güvenilir Bakıcılar</h1>
-            <p class="text-muted lead" style="color: #8D6E63 !important;">Dostlarınızı emanet edebileceğiniz sevgi dolu yuvalar.</p>
+            <h1 class="display-5 page-title fw-bold" style="font-family: 'Playfair Display', serif; color: #3E2723;" data-lang="hero_caretaker_title">Güvenilir Bakıcılar</h1>
+            <p class="text-muted lead" style="color: #8D6E63 !important;" data-lang="hero_caretaker_subtitle">Dostlarınızı emanet edebileceğiniz sevgi dolu yuvalar.</p>
         </div>
         
         <div class="col-md-5">
             <label class="fw-bold small text-muted text-uppercase mb-2" style="color: #A64D32 !important;">
-                <i class="fa-solid fa-filter me-2"></i>Konuma Göre Filtrele
+                <i class="fa-solid fa-filter me-2"></i><span data-lang="lbl_filter_location">Konuma Göre Filtrele</span>
             </label>
             <div class="d-flex gap-2">
                 <div class="flex-grow-1">
-                    <input list="cityOptions" id="filterCity" class="form-control border-0 shadow-sm py-3" placeholder="Şehir ara..." style="border-radius: 15px;">
+                    <input list="cityOptions" id="filterCity" class="form-control border-0 shadow-sm py-3" placeholder="Şehir ara..." data-lang="ph_search_city" style="border-radius: 15px;">
                     <datalist id="cityOptions">
                         </datalist>
                 </div>
                 <div class="flex-grow-1">
                     <select id="filterDistrict" class="form-select border-0 shadow-sm py-3" style="border-radius: 15px;" disabled>
-                        <option value="">İlçe Seç</option>
+                        <option value="" data-lang="opt_select_district">İlçe Seç</option>
                     </select>
                 </div>
             </div>
@@ -73,7 +71,7 @@
     <div id="caretakerList" class="row g-4">
         <div class="col-12 text-center py-5">
             <div class="spinner-border text-earth" role="status" style="color: #A64D32;"></div>
-            <p class="mt-3 text-muted fw-bold">Bakıcılar yükleniyor...</p>
+            <p class="mt-3 text-muted fw-bold" data-lang="loading_caretakers">Bakıcılar yükleniyor...</p>
         </div>
     </div>
 
@@ -85,7 +83,7 @@
       
       <div class="modal-header p-4 border-0">
         <h5 class="modal-title fw-bold" style="color: #A64D32; font-family: 'Playfair Display', serif;">
-            <i class="fa-solid fa-address-card me-2"></i>İletişim Bilgileri
+            <i class="fa-solid fa-address-card me-2"></i><span data-lang="modal_contact_title">İletişim Bilgileri</span>
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
       </div>
@@ -95,32 +93,18 @@
             <div class="avatar-circle mb-3 mx-auto bg-white text-earth d-flex align-items-center justify-content-center rounded-circle shadow-sm" style="width: 90px; height: 90px; font-size: 2.5rem; color: #A64D32;">
                 <i class="fa-solid fa-user"></i>
             </div>
-            <h3 id="modalName" class="fw-bold" style="color: #3E2723; font-family: 'Playfair Display', serif;">Bakıcı İsmi</h3>
-            <span class="badge px-3 py-2 rounded-pill mt-2" style="background-color: #8D6E63; font-weight: 500;">Müsait</span>
+            <h3 id="modalName" class="fw-bold" style="color: #3E2723; font-family: 'Playfair Display', serif;">...</h3>
+            <span class="badge px-3 py-2 rounded-pill mt-2" style="background-color: #8D6E63; font-weight: 500;" data-lang="badge_available">Müsait</span>
         </div>
 
         <div class="row g-3 mb-2">
             <div class="col-12">
                 <div class="info-box d-flex align-items-center p-3 bg-white rounded-4 shadow-sm border border-light">
                     <div class="p-3 rounded-circle me-3" style="background-color: #EFEBE9; color: #A64D32;">
-                        <i class="fa-solid fa-phone fa-lg"></i>
-                    </div>
-                    <div>
-                        <small class="text-muted d-block fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 1px;">Telefon</small>
-                        <a id="modalPhoneLink" href="#" class="text-decoration-none fw-bold fs-5 stretched-link" style="color: #3E2723;">
-                            <span id="modalPhone">...</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-12">
-                <div class="info-box d-flex align-items-center p-3 bg-white rounded-4 shadow-sm border border-light">
-                    <div class="p-3 rounded-circle me-3" style="background-color: #EFEBE9; color: #A64D32;">
                         <i class="fa-solid fa-envelope fa-lg"></i>
                     </div>
                     <div>
-                        <small class="text-muted d-block fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 1px;">E-posta</small>
+                        <small class="text-muted d-block fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 1px;" data-lang="lbl_email">E-posta</small>
                         <a id="modalEmailLink" href="#" class="text-decoration-none fw-bold" style="color: #3E2723;">
                             <span id="modalEmail">...</span>
                         </a>
@@ -136,14 +120,14 @@
 
 <footer class="footer mt-5" style="background: #4E342E; padding: 2rem 0; border-top: 5px solid #A64D32;">
     <div class="container text-center text-white">
-        <p class="mb-0" style="opacity: 0.8;">🕊️ <strong>PİTO</strong> - Hayvan Haklarını Korur &copy; 2025</p>
+        <p class="mb-0" style="opacity: 0.8;" data-lang="footer_text">🕊️ <strong>PİTO</strong> - Hayvan Haklarını Korur &copy; 2025</p>
     </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/caretakers.js"></script>
+<script src="js/lang.js"></script>
 
 </body>
 </html>

@@ -11,7 +11,7 @@
     <nav class="navbar navbar-dark bg-dark mb-4">
         <div class="container">
             <a class="navbar-brand" href="index.html">🐾 PİTO</a>
-            <a href="pets.html" class="btn btn-outline-light btn-sm">Listeye Dön</a>
+            <a href="pets.html" class="btn btn-outline-light btn-sm" data-lang="btn_back_list">Listeye Dön</a>
         </div>
     </nav>
 
@@ -20,55 +20,55 @@
             <div class="col-md-8 col-lg-6">
                 <div class="card shadow">
                     <div class="card-header bg-warning text-dark">
-                        <h4 class="mb-0 fw-bold">✏️ İlanı Düzenle</h4>
+                        <h4 class="mb-0 fw-bold" data-lang="page_edit_pet_title">✏️ İlanı Düzenle</h4>
                     </div>
                     <div class="card-body">
                         <form id="editPetForm">
                             <div class="mb-3">
-                                <label class="form-label">İsim</label>
+                                <label class="form-label" data-lang="lbl_name_generic">İsim</label>
                                 <input type="text" id="name" class="form-control" required>
                             </div>
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Tür</label>
+                                    <label class="form-label" data-lang="lbl_species">Tür</label>
                                     <select id="species" class="form-select" required>
-                                        <option value="Kedi">Kedi</option>
-                                        <option value="Köpek">Köpek</option>
-                                        <option value="Kuş">Kuş</option>
-                                        <option value="Diğer">Diğer</option>
+                                        <option value="Kedi" data-lang="opt_cat">Kedi</option>
+                                        <option value="Köpek" data-lang="opt_dog">Köpek</option>
+                                        <option value="Kuş" data-lang="opt_bird">Kuş</option>
+                                        <option value="Diğer" data-lang="opt_other">Diğer</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Cinsiyet</label>
+                                    <label class="form-label" data-lang="lbl_gender">Cinsiyet</label>
                                     <select id="gender" class="form-select" required>
-                                        <option value="Dişi">Dişi</option>
-                                        <option value="Erkek">Erkek</option>
+                                        <option value="Dişi" data-lang="opt_female">Dişi</option>
+                                        <option value="Erkek" data-lang="opt_male">Erkek</option>
                                     </select>
                                 </div>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Yaş</label>
+                                <label class="form-label" data-lang="lbl_age">Yaş</label>
                                 <input type="number" id="age" class="form-control" required>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Hikaye</label>
+                                <label class="form-label" data-lang="lbl_story_simple">Hikaye</label>
                                 <textarea id="story" class="form-control" rows="4" required></textarea>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Resim URL</label>
+                                <label class="form-label" data-lang="lbl_image_url">Resim URL</label>
                                 <input type="url" id="imageUrl" class="form-control" required>
                             </div>
 
                             <div class="mb-3 text-center">
-                                <label class="form-label text-muted small">Önizleme:</label><br>
+                                <label class="form-label text-muted small" data-lang="lbl_preview">Önizleme:</label><br>
                                 <img id="previewImage" src="" class="img-thumbnail d-none" style="max-height: 200px;">
                             </div>
 
-                            <button type="submit" class="btn btn-warning w-100 fw-bold">Değişiklikleri Kaydet</button>
+                            <button type="submit" class="btn btn-warning w-100 fw-bold" data-lang="btn_save_changes">Değişiklikleri Kaydet</button>
                         </form>
                     </div>
                 </div>
@@ -77,5 +77,6 @@
     </div>
 
     <script src="js/edit-pet.js"></script>
+    <script src="js/lang.js"></script>
 </body>
 </html>
