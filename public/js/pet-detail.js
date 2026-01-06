@@ -1,4 +1,4 @@
-// --- js/pet-detail.js (SUPABASE UYUMLU) ---
+// --- js/pet-detail.js (SUPABASE UYUMLU - PROFİL LİNKLİ) ---
 
 // Global Değişkenler
 let currentPetOwnerId = null;
@@ -69,13 +69,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             // -- GİRİŞ YAPILMIŞSA: Bilgileri Göster --
             const oName = pet.ownername || pet.ownerName || pet.users_name;
             const oEmail = pet.owneremail || pet.ownerEmail || pet.users_email || "";
-            // Telefon değişkeni silindi
+            
+            // +++ GÜNCELLEME: İsim alanını Tıklanabilir Link Yapıyoruz +++
+            const ownerNameEl = document.getElementById('ownerName');
+            ownerNameEl.innerHTML = `
+                <a href="user-profile.html?id=${pet.user_id}" class="text-decoration-none hover-link" style="color: #3E2723;">
+                    ${oName} <i class="fa-solid fa-arrow-up-right-from-square small ms-1 text-muted"></i>
+                </a>
+            `;
+            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-            document.getElementById('ownerName').innerText = oName;
             document.getElementById('ownerEmail').innerText = oEmail;
             
-            // Telefon linki ve kontrolü silindi
-
             // Eğer sahiplendirilmişse butonu pasif yap
             if (status === 'Sahiplendirildi') {
                 contactBtnArea.innerHTML = `
@@ -141,6 +146,7 @@ async function sendMessage() {
     }
 
     const sendBtn = document.querySelector('#messageModal .btn-primary');
+    const sendBtnOriginalText = sendBtn.innerText;
     sendBtn.disabled = true;
     sendBtn.innerText = "Gönderiliyor...";
 
@@ -174,6 +180,6 @@ async function sendMessage() {
         alert("Sunucu hatası.");
     } finally {
         sendBtn.disabled = false;
-        sendBtn.innerText = "Gönder";
+        sendBtn.innerText = sendBtnOriginalText || "Gönder";
     }
 }
