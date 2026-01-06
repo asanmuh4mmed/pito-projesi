@@ -67,15 +67,27 @@
             display: flex;
             flex-direction: column;
         }
-        .sender-icon {
-            width: 50px; height: 50px;
-            background: var(--parchment);
-            color: var(--primary-clay);
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 50%; font-size: 1.2rem;
+        
+        /* Yeni Profil Resmi Stili */
+        .chat-profile-img {
+            width: 45px; 
+            height: 45px; 
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid var(--primary-clay);
         }
+
         .btn-clay { background-color: var(--primary-clay); color: white; border-radius: 50px; }
         .btn-clay:hover { background-color: var(--clay-light); color: white; }
+        
+        /* Tıklanabilir Header Stili */
+        .chat-header-clickable {
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .chat-header-clickable:hover {
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
@@ -122,13 +134,14 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content shadow-lg" style="border-radius: 25px;">
             <div class="modal-header px-4 py-3">
-                <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-clay text-white d-flex align-items-center justify-content-center me-3" style="width:45px; height:45px; background:var(--primary-clay)">
-                        <i class="fa-solid fa-user"></i>
+                <div class="d-flex align-items-center chat-header-clickable" onclick="goToProfile()">
+                    <div class="me-3">
+                        <img id="chatHeaderImg" src="https://via.placeholder.com/50" class="chat-profile-img">
                     </div>
                     <div>
                         <h5 class="fw-bold mb-0" id="chatPartnerName">...</h5>
                         <span class="badge bg-light text-dark border" id="chatSubjectName">...</span>
+                        <small class="d-block text-muted" style="font-size: 0.7rem;">Profile gitmek için tıkla</small>
                     </div>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -149,7 +162,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    const API_URL = 'https://pito-projesi.onrender.com';
+    const API_URL = 'https://pitopets.com'; // Burayı kendi URL'in ile değiştir
     let myId = null;
     let currentChatPartner = null;
     let currentPetId = null;
@@ -185,6 +198,14 @@
         });
     });
 
+    // --- YENİ EKLENEN: Profile Gitme Fonksiyonu ---
+    function goToProfile() {
+        if(currentChatPartner) {
+            window.location.href = `user-profile.html?id=${currentChatPartner}`;
+        }
+    }
+    // ----------------------------------------------
+
     async function fetchMessages() {
         const container = document.getElementById('messagesList');
         const token = localStorage.getItem('token');
@@ -197,7 +218,7 @@
             
             if (!Array.isArray(messages) || messages.length === 0) {
                 container.innerHTML = '<div class="text-center py-5 opacity-50"><h3 data-lang="msg_no_messages">Henüz mesajınız yok.</h3></div>';
-                applyLang(); // Dil fonksiyonunu tetikle
+                applyLang(); 
                 return;
             }
 
@@ -222,19 +243,31 @@
 
             container.innerHTML = uniqueThreads.map(msg => {
                 let otherName = msg.sender_id === myId ? (msg.receiver_name || "İlan Sahibi") : msg.sender_name;
-                // Diğer isim "İlan Sahibi" veya "Kullanıcı" ise çeviri etiketi ekleyelim (Basit çözüm)
+                
+                // +++ RESİM URL ALMA +++
+                // API'den gelen mesaj objesinde sender_image veya receiver_image olması lazım.
+                // Eğer yoksa API'yi güncellemen gerekir ama şimdilik backend yapına göre varsayalım.
+                // Not: Senin API'nde 'sender_image' alanı olmayabilir, bu yüzden profil linki için placeholder kullanıyoruz.
+                // Backend 'sender_image' dönüyorsa burayı güncelle.
+                
+                // Şimdilik API_URL + profil resmi varsayımı (eğer backend gönderiyorsa)
+                // Backend'in şu anki hali profil resmini dönmüyor olabilir. 
+                // Eğer dönmüyorsa API'deki /api/my-messages rotasına 'u.profileImageUrl' eklemen gerekir.
+                // Şimdilik varsayılan resim koyuyoruz, eğer backend düzeltilirse burası güncellenmeli.
+                let otherImage = 'https://via.placeholder.com/150?text=User'; 
+                // ++++++++++++++++++++++
+
                 let displayOtherName = otherName;
                 if(!msg.sender_name && msg.sender_id === myId) displayOtherName = '<span data-lang="role_owner">İlan Sahibi</span>';
 
                 const pId = msg.pet_id || 0;
                 const chatPartnerId = msg.sender_id === myId ? msg.receiver_id : msg.sender_id;
                 const unreadClass = (msg.receiver_id === myId && msg.is_read === false) ? "border-start border-5 border-danger" : "";
-
-                // Pet İsmi veya Genel Sohbet Etiketi
                 const petLabel = msg.pet_name || '<span data-lang="chat_general">Genel Sohbet</span>';
 
+                // Kartın içine resmi de gönderiyoruz (openChat fonksiyonuna)
                 return `
-                    <div class="card message-card shadow-sm mb-3 ${unreadClass}" onclick="openChat(${chatPartnerId}, ${pId}, '${otherName.replace(/'/g, "\\'")}')">
+                    <div class="card message-card shadow-sm mb-3 ${unreadClass}" onclick="openChat(${chatPartnerId}, ${pId}, '${otherName.replace(/'/g, "\\'")}', '${otherImage}')">
                         <div class="card-body p-3 d-flex align-items-center">
                             <div class="sender-icon me-3">
                                 <i class="fa-solid ${pId === 0 ? 'fa-user-nurse' : 'fa-paw'}"></i>
@@ -255,7 +288,7 @@
                     </div>`;
             }).join('');
             
-            applyLang(); // Yükleme bitince çeviriyi uygula
+            applyLang();
 
         } catch (error) { 
             console.error("Mesaj listesi hatası:", error);
@@ -264,29 +297,53 @@
         }
     }
 
-    async function openChat(otherId, petId, otherName) {
+    // +++ GÜNCELLENEN OPEN CHAT FONKSİYONU +++
+    async function openChat(otherId, petId, otherName, otherImage) {
         currentChatPartner = otherId;
         currentPetId = petId;
         
         document.getElementById('chatPartnerName').innerText = otherName;
         
-        // Modal Başlığı (Dinamik Çeviri Desteği için basit kontrol)
+        // Resmi Güncelle
+        const imgEl = document.getElementById('chatHeaderImg');
+        
+        // Eğer backend resim verirse onu kullan, yoksa o kişinin profil verisini çekmek gerekir.
+        // Hızlı çözüm: Profili o an fetch et (Bu en garanti yoldur)
+        fetchUserProfileImage(otherId);
+
         const subjectElem = document.getElementById('chatSubjectName');
         if(petId === 0) {
             subjectElem.innerHTML = '<span data-lang="chat_general">Genel Sohbet</span>';
         } else {
             subjectElem.innerText = `İlan #${petId}`;
         }
-        applyLang(); // Modal açılınca çeviriyi tazele
+        applyLang();
         
         chatModalInstance.show();
         await loadChatHistory();
-        
         markAsRead(otherId, petId);
 
         clearInterval(chatRefreshInterval);
         chatRefreshInterval = setInterval(loadChatHistory, 3000);
     }
+
+    // +++ YENİ: Anlık Profil Resmi Çekme (Veri bütünlüğü için) +++
+    async function fetchUserProfileImage(userId) {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_URL}/api/users/profile/${userId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const data = await res.json();
+            
+            const imgEl = document.getElementById('chatHeaderImg');
+            if (data.user && data.user.profileimageurl) {
+                const imgUrl = data.user.profileimageurl.startsWith('http') ? data.user.profileimageurl : `${API_URL}${data.user.profileimageurl}`;
+                imgEl.src = imgUrl;
+            } else {
+                imgEl.src = 'https://via.placeholder.com/150?text=User';
+            }
+        } catch (e) { console.error("Profil resmi çekilemedi", e); }
+    }
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     async function loadChatHistory() {
         const token = localStorage.getItem('token');
@@ -385,7 +442,6 @@
         } catch (e) {}
     }
 
-    // JS ile yüklenen içeriklerin çevrilmesi için yardımcı fonksiyon
     function applyLang() {
         if(typeof changeLanguage === 'function') {
             const currentLang = localStorage.getItem('pito_lang') || 'tr';
