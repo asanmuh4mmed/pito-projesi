@@ -46,11 +46,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+// js/breeding-detail.js içindeki renderPetDetail fonksiyonunu bununla değiştir:
+
 function renderPetDetail(pet, token) {
     // 1. Resim Ayarı
     const rawImg = pet.imageurl || pet.imageUrl;
     let finalImage = 'https://via.placeholder.com/600x500?text=Resim+Yok';
-    
     if (rawImg) {
         finalImage = rawImg.startsWith('http') ? rawImg : `${API_URL}${rawImg}`;
     }
@@ -58,9 +59,7 @@ function renderPetDetail(pet, token) {
     const imgElem = document.getElementById('petImage');
     if (imgElem) {
         imgElem.src = finalImage;
-        imgElem.onerror = function() {
-             this.src = 'https://via.placeholder.com/600x500?text=Resim+Yuklenemedi';
-        };
+        imgElem.onerror = function() { this.src = 'https://via.placeholder.com/600x500?text=Resim+Yuklenemedi'; };
     }
 
     // 2. Metin Bilgileri
@@ -71,38 +70,41 @@ function renderPetDetail(pet, token) {
     setText('petAge', pet.age || '0');
     setText('petDescription', pet.description || "Açıklama girilmemiş.");
 
-    // 3. İlan Sahibi Bilgileri ve Güvenlik
+    // 3. İlan Sahibi Bilgileri
     const ownerCardBody = document.querySelector('.bg-white.p-4.rounded-4.shadow-sm.border');
     const messageBtn = document.querySelector('button[onclick="openMessageModal()"]');
 
     if (token) {
-        // --- GİRİŞ YAPILMIŞSA BİLGİLERİ GÖSTER ---
+        // --- GİRİŞ YAPILMIŞSA ---
+        // Konsola yazdıralım ki çalıştığını görelim (F12 Console sekmesine bakabilirsin)
+        console.log("Kullanıcı giriş yapmış, isim linke çevriliyor..."); 
+
         const oName = pet.ownername || pet.ownerName || pet.users_name || "Kullanıcı";
         const oEmail = pet.owneremail || pet.ownerEmail || pet.users_email;
 
-        // +++ İSMİ LİNKE ÇEVİRME KISMI (BURASI EKLENDİ) +++
+        // >> İSMİ LİNKE ÇEVİRME (MAVİ RENK TESTİ İLE) <<
         const ownerNameEl = document.getElementById('ownerName');
         if(ownerNameEl) {
+            // Rengi bilerek 'text-primary' (Mavi) yapıyoruz ki değişimi fark et.
             ownerNameEl.innerHTML = `
-                <a href="user-profile.html?id=${pet.user_id}" class="text-decoration-none hover-link" style="color: #3E2723;">
-                    ${oName} <i class="fa-solid fa-arrow-up-right-from-square small ms-1 text-muted"></i>
+                <a href="user-profile.html?id=${pet.user_id}" class="text-decoration-none fw-bold text-primary" style="cursor: pointer;">
+                    ${oName} <i class="fa-solid fa-arrow-up-right-from-square small ms-1"></i>
                 </a>
             `;
         }
-        // ++++++++++++++++++++++++++++++++++++++++++++++++++
 
         setLink('displayEmail', oEmail, 'mailto');
-
         if(messageBtn) messageBtn.style.display = 'block';
+
     } else {
-        // --- GİRİŞ YAPILMAMIŞSA GİZLE ---
+        // --- GİRİŞ YAPILMAMIŞSA ---
         if (ownerCardBody) {
             ownerCardBody.innerHTML = getLockedProfileHTML();
         }
         if(messageBtn) messageBtn.style.display = 'none';
     }
 
-    // Yükleme ekranını kapat, içeriği aç
+    // Yükleme ekranını kapat
     const spinner = document.getElementById('loadingSpinner');
     const content = document.getElementById('petDetailContent');
     if(spinner) spinner.classList.add('d-none');
