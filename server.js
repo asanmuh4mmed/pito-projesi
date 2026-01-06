@@ -5,8 +5,8 @@ const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const { createClient } = require('@supabase/supabase-js');
-const nodemailer = require('nodemailer'); // Mail paketi
-const crypto = require('crypto'); // Şifreli kod üretmek için
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 const path = require('path');
 require('dotenv').config();
 
@@ -14,17 +14,16 @@ const app = express();
 // Dosyanın EN ALT KISMI
 const PORT = process.env.PORT || 10000;
 
-
 const SECRET_KEY = 'pito_gizli_anahtar';
 
-// --- MAİL GÖNDERME AYARLARI (GÜVENLİ & SSL) ---
+// --- MAİL GÖNDERME AYARLARI ---
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
-  port: 465,               // Google için güvenli port
-  secure: true,            // 465 portu için true olmalı
+  port: 465,
+  secure: true,
   auth: {
-    user: process.env.EMAIL_USER, // Render Environment'tan çeker
-    pass: process.env.EMAIL_PASS  // Render Environment'tan çeker
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
@@ -35,9 +34,8 @@ const pool = new Pool({
     ssl: { rejectUnauthorized: false }
 });
 
-// --- SUPABASE STORAGE (RESİM YÜKLEME) ---
+// --- SUPABASE STORAGE ---
 const SUPABASE_URL = 'https://sjmmyusbauvithzthpvo.supabase.co';
-// DİKKAT: Az önce bulduğun 'sb_publishable_...' anahtarını buraya tekrar yapıştır!
 const SUPABASE_KEY = 'sb_publishable_lCJAyrxh_u6tig0X9MNcnQ_yqzMZ5Q1'; 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -45,7 +43,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(__dirname));
-// Eğer dosyalar 'public' klasöründeyse oraya da bak:
 app.use(express.static(path.join(__dirname, 'public')));
 
 const upload = multer({
@@ -64,11 +61,9 @@ async function uploadToSupabase(file) {
     return publicUrlData.publicUrl;
 }
 
-// Tabloları oluştur (Zaten varsa ellemez)
 const createTables = async () => {
     try {
         console.log("✅ Veritabanı bağlantısı kontrol ediliyor...");
-        // isVerified sütunu yoksa eklemeyi veritabanı panelinden SQL ile yaptık, burası sadece başlatma kontrolü.
     } catch (err) { console.error("Başlatma hatası:", err); }
 };
 createTables();
@@ -86,68 +81,28 @@ const authenticateToken = (req, res, next) => {
 
 // ================= ROTALAR =================
 
-// 1. KAYIT OL (Mailsiz, Otomatik Onaylı - TEMİZ VERSİYON)
+// 1. KAYIT OL
 app.post('/api/register', upload.single('profileImage'), async (req, res) => {
     const { name, email, phone, password } = req.body;
-    
-    // Veritabanı yapısı bozulmasın diye rastgele bir kod üretiyoruz (kullanmayacağız)
     const verificationToken = crypto.randomBytes(32).toString('hex');
 
     try {
         const profileImageUrl = await uploadToSupabase(req.file);
-        
-        // isVerified = 1 (ONAYLI) olarak kaydediyoruz.
         await pool.query(
             `INSERT INTO users (name, email, phone, password, profileImageUrl, isVerified, verificationToken) VALUES ($1, $2, $3, $4, $5, 1, $6)`,
             [name, email, phone, password, profileImageUrl, verificationToken]
         );
-
-        // Mail gönderme kodu YOK. Direkt başarı mesajı veriyoruz.
         res.status(201).json({ message: "Kayıt başarılı! Giriş yapabilirsiniz." });
-
     } catch (err) {
         if (err.code === '23505') {
             return res.status(400).json({ message: "Bu e-posta zaten kayıtlı." });
         }
-        console.error("Kayıt hatası:", err); // Hatayı konsola yazdır ki Render loglarında görelim
+        console.error("Kayıt hatası:", err);
         res.status(500).json({ error: "Sunucu hatası oluştu." });
     }
 });
 
-// 2. E-POSTA DOĞRULAMA ROTASI
-app.get('/api/verify-email', async (req, res) => {
-    const { token } = req.query;
-    
-    if (!token) return res.send("<h1>Geçersiz Link ❌</h1>");
-
-    try {
-        // Token'ı bul, kullanıcıyı onayla (1 yap), token'ı sil (tek kullanımlık olsun)
-        const result = await pool.query(
-            `UPDATE users SET isVerified = 1, verificationToken = NULL WHERE verificationToken = $1 RETURNING name`,
-            [token]
-        );
-
-        if (result.rowCount === 0) {
-            return res.send("<h1>Bu link geçersiz veya süresi dolmuş. ❌</h1>");
-        }
-
-        // Başarılı Sayfası
-        res.send(`
-            <div style="text-align: center; font-family: Arial; margin-top: 50px;">
-                <h1 style="color: #28a745;">Tebrikler ${result.rows[0].name}! 🎉</h1>
-                <p style="font-size: 18px;">Hesabın başarıyla doğrulandı.</p>
-                <br>
-                <a href="http://localhost:3001/login.html" style="background-color: #A64D32; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 18px;">Giriş Yap</a>
-            </div>
-        `);
-
-    } catch (err) {
-        console.error(err);
-        res.send("<h1>Bir hata oluştu.</h1>");
-    }
-});
-
-// 3. GİRİŞ YAP (Doğrulama Kontrolü Eklendi)
+// 2. GİRİŞ YAP
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -156,10 +111,8 @@ app.post('/api/login', async (req, res) => {
 
         if (!user) return res.status(401).json({ message: "Hatalı e-posta veya şifre!" });
 
-        // DOĞRULAMA KONTROLÜ
-        // Veritabanından gelen değer bazen 'isverified' (küçük harf) olabilir, her ikisini de kontrol edelim.
         if (user.isverified === 0 || user.isVerified === 0) {
-            return res.status(403).json({ message: "Lütfen önce e-posta adresinize gelen linke tıklayarak hesabınızı doğrulayın." });
+            return res.status(403).json({ message: "Lütfen önce hesabınızı doğrulayın." });
         }
 
         const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: '24h' });
@@ -167,7 +120,7 @@ app.post('/api/login', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// --- DİĞER STANDART ROTALAR ---
+// --- KULLANICI ROTALARI ---
 app.get('/api/auth/me', authenticateToken, async (req, res) => {
     try { const result = await pool.query("SELECT id, name, email, phone, profileImageUrl FROM users WHERE id = $1", [req.user.id]); res.json(result.rows[0]); } catch (err) { res.sendStatus(500); }
 });
@@ -189,6 +142,7 @@ app.put('/api/auth/me', authenticateToken, upload.single('newProfileImage'), asy
     } catch (err) { res.status(500).json({ message: "Hata" }); }
 });
 
+// --- GET ROTALARI ---
 app.get('/api/pets', async (req, res) => {
     try { const result = await pool.query("SELECT *, 'Sahiplendirme' as tur FROM pets ORDER BY id DESC"); res.json(result.rows); } catch (err) { res.status(500).json({ message: err.message }); }
 });
@@ -202,6 +156,7 @@ app.get('/api/vets', async (req, res) => {
     try { const sql = `SELECT v.*, u.name as ownerName, u.profileImageUrl as ownerImage FROM vets v LEFT JOIN users u ON v.user_id = u.id ORDER BY v.createdAt DESC`; const result = await pool.query(sql); res.json(result.rows); } catch (err) { res.status(500).json({ message: "Hata" }); }
 });
 
+// --- POST ROTALARI ---
 app.post('/api/pets', authenticateToken, upload.single('petImage'), async (req, res) => {
     const { name, species, age, gender, story } = req.body;
     try { const imageUrl = await uploadToSupabase(req.file); await pool.query(`INSERT INTO pets (user_id, name, species, age, gender, story, imageUrl) VALUES ($1, $2, $3, $4, $5, $6, $7)`, [req.user.id, name, species, age, gender, story, imageUrl]); res.status(201).json({ message: "İlan eklendi!" }); } catch (err) { res.status(500).json({ message: err.message }); }
@@ -219,13 +174,56 @@ app.post('/api/vets', authenticateToken, upload.single('vetImage'), async (req, 
     try { const imageUrl = await uploadToSupabase(req.file); await pool.query(`INSERT INTO vets (user_id, clinicName, vetName, city, phone, address, imageUrl) VALUES ($1, $2, $3, $4, $5, $6, $7)`, [req.user.id, clinicName, vetName, city, phone, address, imageUrl]); res.status(201).json({ message: "Klinik başarıyla eklendi!" }); } catch (err) { res.status(500).json({ message: "Veritabanı hatası" }); }
 });
 
-app.get('/api/pets/:id', async (req, res) => {
-    try { const result = await pool.query(`SELECT p.*, u.name as ownerName, u.email as ownerEmail, u.phone as ownerPhone FROM pets p LEFT JOIN users u ON p.user_id = u.id WHERE p.id = $1`, [req.params.id]); if (result.rows.length === 0) return res.status(404).json({ message: "Bulunamadı" }); res.json(result.rows[0]); } catch (err) { res.status(500).json({ message: "Hata" }); }
-});
-app.get('/api/breeding-pets/:id', async (req, res) => {
-    try { const result = await pool.query(`SELECT bp.*, u.name as ownerName, u.email as ownerEmail, u.phone as ownerPhone FROM breeding_pets bp LEFT JOIN users u ON bp.user_id = u.id WHERE bp.id = $1`, [req.params.id]); if (result.rows.length === 0) return res.status(404).json({ message: "Bulunamadı" }); res.json(result.rows[0]); } catch (err) { res.status(500).json({ message: err.message }); }
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++ YENİ EKLENEN YORUM VE PUANLAMA ROTALARI BURADA +++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+// 1. Bir Veterinerin Yorumlarını Getir (GET)
+app.get('/api/reviews/:vetId', async (req, res) => {
+    const { vetId } = req.params;
+    try {
+        // Yorumları çekerken kullanıcı ismini (u.name) de alıyoruz
+        const sql = `
+            SELECT r.*, u.name as user_name 
+            FROM reviews r 
+            LEFT JOIN users u ON r.user_id = u.id 
+            WHERE r.vet_id = $1 
+            ORDER BY r.created_at DESC
+        `;
+        const result = await pool.query(sql, [vetId]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error("Yorum Getirme Hatası:", err);
+        res.status(500).json({ message: "Yorumlar alınamadı." });
+    }
 });
 
+// 2. Yeni Yorum Yap (POST) - Sadece Giriş Yapanlar
+app.post('/api/reviews', authenticateToken, async (req, res) => {
+    const { vet_id, rating, comment } = req.body;
+    const user_id = req.user.id; // Token'dan gelen kullanıcı ID
+
+    if (!vet_id || !rating || !comment) {
+        return res.status(400).json({ message: "Eksik bilgi gönderildi." });
+    }
+
+    try {
+        const sql = `
+            INSERT INTO reviews (vet_id, user_id, rating, comment) 
+            VALUES ($1, $2, $3, $4) 
+            RETURNING *
+        `;
+        await pool.query(sql, [vet_id, user_id, rating, comment]);
+        res.status(201).json({ message: "Yorum başarıyla kaydedildi!" });
+    } catch (err) {
+        console.error("Yorum Kaydetme Hatası:", err);
+        res.status(500).json({ message: "Sunucu hatası oluştu." });
+    }
+});
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+// --- SİLME ROTALARI ---
 const deleteItem = async (table, id, userId, res) => {
     try { const result = await pool.query(`DELETE FROM ${table} WHERE id = $1 AND user_id = $2`, [id, userId]); if (result.rowCount === 0) return res.status(404).json({ message: "Silinemedi veya yetkiniz yok" }); res.json({ message: "Silindi" }); } catch (err) { res.status(500).json({ message: err.message }); }
 };
@@ -233,17 +231,13 @@ app.delete('/api/pets/:id', authenticateToken, (req, res) => deleteItem('pets', 
 app.delete('/api/breeding-pets/:id', authenticateToken, (req, res) => deleteItem('breeding_pets', req.params.id, req.user.id, res));
 app.delete('/api/caretakers/:id', authenticateToken, (req, res) => deleteItem('caretakers', req.params.id, req.user.id, res));
 app.delete('/api/vets/:id', authenticateToken, (req, res) => deleteItem('vets', req.params.id, req.user.id, res));
-// 1. MESAJLARI GETİR (Gelen Kutusu)
+
+// --- MESAJLAŞMA ROTALARI ---
 app.get('/api/my-messages', authenticateToken, async (req, res) => {
     try {
         const sql = `
-            SELECT 
-                m.*, 
-                s.name as sender_name, 
-                r.name as receiver_name, 
-                COALESCE(p.name, bp.name, 'Genel Sohbet') as pet_name,
-                m.post_type,
-                m.is_read
+            SELECT m.*, s.name as sender_name, r.name as receiver_name, 
+            COALESCE(p.name, bp.name, 'Genel Sohbet') as pet_name, m.post_type, m.is_read
             FROM messages m
             LEFT JOIN users s ON m.sender_id = s.id
             LEFT JOIN users r ON m.receiver_id = r.id
@@ -254,61 +248,31 @@ app.get('/api/my-messages', authenticateToken, async (req, res) => {
         `;
         const result = await pool.query(sql, [req.user.id, req.user.id]);
         res.json(result.rows);
-    } catch (err) {
-        console.error("Inbox Hatası:", err);
-        res.status(500).json({ error: err.message });
-    }
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
-// 2. SOHBET DETAYI
+
 app.get('/api/messages/thread/:otherId/:petId', authenticateToken, async (req, res) => {
     try {
         const otherId = parseInt(req.params.otherId);
         const petId = parseInt(req.params.petId);
-
-        const sql = `
-            SELECT * FROM messages 
-            WHERE 
-                ((sender_id = $1 AND receiver_id = $2) OR (sender_id = $3 AND receiver_id = $4)) 
-                AND pet_id = $5 
-            ORDER BY createdAt ASC
-        `;
+        const sql = `SELECT * FROM messages WHERE ((sender_id = $1 AND receiver_id = $2) OR (sender_id = $3 AND receiver_id = $4)) AND pet_id = $5 ORDER BY createdAt ASC`;
         const result = await pool.query(sql, [req.user.id, otherId, otherId, req.user.id, petId]);
         res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
-// 3. MESAJ GÖNDER (BUG DÜZELTİLDİ: 0 ID Sorunu)
-app.post('/api/messages', authenticateToken, async (req, res) => {
-    // Hem camelCase hem snake_case desteği
-    const receiver_id = req.body.receiver_id !== undefined ? req.body.receiver_id : req.body.receiverId;
-    
-    // Pet ID 0 ise (Genel Sohbet) bunu koru, yoksa undefined olur
-    let pet_id = req.body.pet_id;
-    if (req.body.petId !== undefined) pet_id = req.body.petId;
-    if (pet_id === undefined || pet_id === null) pet_id = 0; // Varsayılan 0 olsun
 
+app.post('/api/messages', authenticateToken, async (req, res) => {
+    const receiver_id = req.body.receiver_id !== undefined ? req.body.receiver_id : req.body.receiverId;
+    let pet_id = req.body.pet_id !== undefined ? req.body.pet_id : (req.body.petId || 0);
     const { message, post_type } = req.body;
 
-    if (!receiver_id || !message) {
-        return res.status(400).json({ message: "Eksik bilgi: Alıcı veya mesaj yok." });
-    }
+    if (!receiver_id || !message) return res.status(400).json({ message: "Eksik bilgi" });
 
     try {
-        // is_read sütunu yoksa hata verebilir, veritabanına eklediğinden emin ol
-        // Eğer is_read sütunu yoksa SQL sorgusundan ', is_read' ve ', FALSE' kısımlarını sil.
-        const sql = `
-            INSERT INTO messages (sender_id, receiver_id, pet_id, post_type, message, is_read) 
-            VALUES ($1, $2, $3, $4, $5, FALSE) 
-            RETURNING *
-        `;
+        const sql = `INSERT INTO messages (sender_id, receiver_id, pet_id, post_type, message, is_read) VALUES ($1, $2, $3, $4, $5, FALSE) RETURNING *`;
         const result = await pool.query(sql, [req.user.id, receiver_id, pet_id, post_type || 'adoption', message]);
-        
         res.status(201).json({ message: "Mesaj gönderildi", data: result.rows[0] });
-    } catch (err) {
-        console.error("Mesaj Gönderme Hatası:", err);
-        res.status(500).json({ message: "Veritabanı hatası: " + err.message });
-    }
+    } catch (err) { res.status(500).json({ message: "Hata: " + err.message }); }
 });
 
 app.listen(PORT, '0.0.0.0', () => {
