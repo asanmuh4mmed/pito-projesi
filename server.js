@@ -144,7 +144,18 @@ app.put('/api/auth/me', authenticateToken, upload.single('newProfileImage'), asy
 
 // --- GET ROTALARI ---
 app.get('/api/pets', async (req, res) => {
-    try { const result = await pool.query("SELECT *, 'Sahiplendirme' as tur FROM pets ORDER BY id DESC"); res.json(result.rows); } catch (err) { res.status(500).json({ message: err.message }); }
+    try { 
+        const sql = `
+            SELECT p.*, u.name as ownerName, 'Sahiplendirme' as tur 
+            FROM pets p 
+            LEFT JOIN users u ON p.user_id = u.id 
+            ORDER BY p.id DESC
+        `;
+        const result = await pool.query(sql); 
+        res.json(result.rows); 
+    } catch (err) { 
+        res.status(500).json({ message: err.message }); 
+    }
 });
 // --- server.js içine EKLENECEK KOD ---
 
