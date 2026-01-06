@@ -146,6 +146,36 @@ app.put('/api/auth/me', authenticateToken, upload.single('newProfileImage'), asy
 app.get('/api/pets', async (req, res) => {
     try { const result = await pool.query("SELECT *, 'Sahiplendirme' as tur FROM pets ORDER BY id DESC"); res.json(result.rows); } catch (err) { res.status(500).json({ message: err.message }); }
 });
+// --- server.js içine EKLENECEK KOD ---
+
+// TEKİL İLAN GETİR (Detay Sayfası İçin)
+app.get('/api/pets/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        // LEFT JOIN kullanarak ilan sahibinin bilgilerini de çekiyoruz
+        const sql = `
+            SELECT 
+                p.*, 
+                u.name as ownerName, 
+                u.email as ownerEmail, 
+                u.profileImageUrl as ownerImage 
+            FROM pets p 
+            LEFT JOIN users u ON p.user_id = u.id 
+            WHERE p.id = $1
+        `;
+        
+        const result = await pool.query(sql, [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: "İlan bulunamadı" });
+        }
+
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error("Detay hatası:", err);
+        res.status(500).json({ message: "Sunucu hatası" });
+    }
+});
 app.get('/api/breeding-pets', async (req, res) => {
     try { const sql = `SELECT bp.*, u.name as ownerName, u.profileImageUrl as ownerImage FROM breeding_pets bp LEFT JOIN users u ON bp.user_id = u.id ORDER BY bp.id DESC`; const result = await pool.query(sql); res.json(result.rows); } catch (err) { res.status(500).json({ message: err.message }); }
 });
