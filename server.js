@@ -179,6 +179,36 @@ app.get('/api/pets/:id', async (req, res) => {
 app.get('/api/breeding-pets', async (req, res) => {
     try { const sql = `SELECT bp.*, u.name as ownerName, u.profileImageUrl as ownerImage FROM breeding_pets bp LEFT JOIN users u ON bp.user_id = u.id ORDER BY bp.id DESC`; const result = await pool.query(sql); res.json(result.rows); } catch (err) { res.status(500).json({ message: err.message }); }
 });
+// --- server.js içine EKLENECEK KISIM ---
+
+// TEKİL EŞ İLANI GETİR (Detay Sayfası İçin)
+app.get('/api/breeding-pets/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const sql = `
+            SELECT 
+                bp.*, 
+                u.name as ownerName, 
+                u.email as ownerEmail, 
+                u.profileImageUrl as ownerImage 
+            FROM breeding_pets bp 
+            LEFT JOIN users u ON bp.user_id = u.id 
+            WHERE bp.id = $1
+        `;
+        
+        const result = await pool.query(sql, [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: "Eş ilanı bulunamadı" });
+        }
+
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error("Breeding detay hatası:", err);
+        res.status(500).json({ message: "Sunucu hatası" });
+    }
+});
+
 app.get('/api/caretakers', async (req, res) => {
     try { const sql = `SELECT c.*, u.name, u.phone, u.email FROM caretakers c JOIN users u ON c.user_id = u.id`; const result = await pool.query(sql); res.json(result.rows); } catch (err) { res.status(500).json({ error: err.message }); }
 });
