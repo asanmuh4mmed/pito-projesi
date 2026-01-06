@@ -157,13 +157,10 @@ app.get('/api/pets', async (req, res) => {
         res.status(500).json({ message: err.message }); 
     }
 });
-// --- server.js içine EKLENECEK KOD ---
 
-// TEKİL İLAN GETİR (Detay Sayfası İçin)
 app.get('/api/pets/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        // LEFT JOIN kullanarak ilan sahibinin bilgilerini de çekiyoruz
         const sql = `
             SELECT 
                 p.*, 
@@ -187,12 +184,11 @@ app.get('/api/pets/:id', async (req, res) => {
         res.status(500).json({ message: "Sunucu hatası" });
     }
 });
+
 app.get('/api/breeding-pets', async (req, res) => {
     try { const sql = `SELECT bp.*, u.name as ownerName, u.profileImageUrl as ownerImage FROM breeding_pets bp LEFT JOIN users u ON bp.user_id = u.id ORDER BY bp.id DESC`; const result = await pool.query(sql); res.json(result.rows); } catch (err) { res.status(500).json({ message: err.message }); }
 });
-// --- server.js içine EKLENECEK KISIM ---
 
-// TEKİL EŞ İLANI GETİR (Detay Sayfası İçin)
 app.get('/api/breeding-pets/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -245,15 +241,10 @@ app.post('/api/vets', authenticateToken, upload.single('vetImage'), async (req, 
     try { const imageUrl = await uploadToSupabase(req.file); await pool.query(`INSERT INTO vets (user_id, clinicName, vetName, city, phone, address, imageUrl) VALUES ($1, $2, $3, $4, $5, $6, $7)`, [req.user.id, clinicName, vetName, city, phone, address, imageUrl]); res.status(201).json({ message: "Klinik başarıyla eklendi!" }); } catch (err) { res.status(500).json({ message: "Veritabanı hatası" }); }
 });
 
-// +++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// +++ YENİ EKLENEN YORUM VE PUANLAMA ROTALARI BURADA +++
-// +++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-// 1. Bir Veterinerin Yorumlarını Getir (GET)
+// --- YORUMLAR ---
 app.get('/api/reviews/:vetId', async (req, res) => {
     const { vetId } = req.params;
     try {
-        // Yorumları çekerken kullanıcı ismini (u.name) de alıyoruz
         const sql = `
             SELECT r.*, u.name as user_name 
             FROM reviews r 
@@ -269,10 +260,9 @@ app.get('/api/reviews/:vetId', async (req, res) => {
     }
 });
 
-// 2. Yeni Yorum Yap (POST) - Sadece Giriş Yapanlar
 app.post('/api/reviews', authenticateToken, async (req, res) => {
     const { vet_id, rating, comment } = req.body;
-    const user_id = req.user.id; // Token'dan gelen kullanıcı ID
+    const user_id = req.user.id; 
 
     if (!vet_id || !rating || !comment) {
         return res.status(400).json({ message: "Eksik bilgi gönderildi." });
@@ -291,8 +281,6 @@ app.post('/api/reviews', authenticateToken, async (req, res) => {
         res.status(500).json({ message: "Sunucu hatası oluştu." });
     }
 });
-
-// +++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // --- SİLME ROTALARI ---
 const deleteItem = async (table, id, userId, res) => {
@@ -355,7 +343,7 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
 app.get('/api/users/profile/:id', async (req, res) => {
     const targetUserId = parseInt(req.params.id);
     
-    // İstek atan kişi giriş yapmış mı kontrol edelim (Takip durumunu anlamak için)
+    // İstek atan kişi giriş yapmış mı kontrol edelim
     const authHeader = req.headers['authorization'];
     let currentUserId = null;
     
@@ -368,7 +356,6 @@ app.get('/api/users/profile/:id', async (req, res) => {
     }
 
     try {
-        // A) Kullanıcı Bilgilerini Çek (Şifre ve Telefon HARİÇ)
         const userRes = await pool.query(
             `SELECT id, name, profileImageUrl, about_me, createdAt FROM users WHERE id = $1`, 
             [targetUserId]
@@ -377,11 +364,9 @@ app.get('/api/users/profile/:id', async (req, res) => {
         if (userRes.rows.length === 0) return res.status(404).json({ message: "Kullanıcı bulunamadı" });
         const user = userRes.rows[0];
 
-        // B) Takipçi Sayılarını Çek
         const followerCountRes = await pool.query(`SELECT COUNT(*) FROM follows WHERE following_id = $1`, [targetUserId]);
         const followingCountRes = await pool.query(`SELECT COUNT(*) FROM follows WHERE follower_id = $1`, [targetUserId]);
 
-        // C) Ben bu kişiyi takip ediyor muyum?
         let isFollowing = false;
         if (currentUserId) {
             const followCheck = await pool.query(
@@ -391,7 +376,6 @@ app.get('/api/users/profile/:id', async (req, res) => {
             isFollowing = followCheck.rows.length > 0;
         }
 
-        // D) Kullanıcının İlanlarını Çek (Sahiplendirme & Eş Bulma)
         const petsRes = await pool.query(`SELECT *, 'adoption' as type FROM pets WHERE user_id = $1`, [targetUserId]);
         const breedingRes = await pool.query(`SELECT *, 'breeding' as type FROM breeding_pets WHERE user_id = $1`, [targetUserId]);
 
@@ -402,7 +386,7 @@ app.get('/api/users/profile/:id', async (req, res) => {
                 following: parseInt(followingCountRes.rows[0].count),
                 isFollowing: isFollowing
             },
-            listings: [...petsRes.rows, ...breedingRes.rows] // İlanları birleştir
+            listings: [...petsRes.rows, ...breedingRes.rows] 
         });
 
     } catch (err) {
@@ -411,7 +395,7 @@ app.get('/api/users/profile/:id', async (req, res) => {
     }
 });
 
-// 2. TAKİP ET / TAKİBİ BIRAK (TOGGLE) (POST)
+// 2. TAKİP ET / TAKİBİ BIRAK (TOGGLE) (GÜNCELLENDİ - BİLDİRİMLİ)
 app.post('/api/users/follow', authenticateToken, async (req, res) => {
     const { targetId } = req.body;
     const myId = req.user.id;
@@ -421,25 +405,31 @@ app.post('/api/users/follow', authenticateToken, async (req, res) => {
     }
 
     try {
-        // Zaten takip ediyor mu?
         const check = await pool.query(
             `SELECT * FROM follows WHERE follower_id = $1 AND following_id = $2`,
             [myId, targetId]
         );
 
         if (check.rows.length > 0) {
-            // Evet ediyor -> TAKİBİ BIRAK (Sil)
+            // TAKİBİ BIRAK
             await pool.query(
                 `DELETE FROM follows WHERE follower_id = $1 AND following_id = $2`,
                 [myId, targetId]
             );
             res.json({ status: 'unfollowed', message: "Takip bırakıldı." });
         } else {
-            // Hayır etmiyor -> TAKİP ET (Ekle)
+            // TAKİP ET
             await pool.query(
                 `INSERT INTO follows (follower_id, following_id) VALUES ($1, $2)`,
                 [myId, targetId]
             );
+
+            // +++ BİLDİRİM EKLEME +++
+            await pool.query(
+                `INSERT INTO notifications (user_id, sender_id, type, message) VALUES ($1, $2, 'follow', 'seni takip etmeye başladı.')`,
+                [targetId, myId]
+            );
+            
             res.json({ status: 'followed', message: "Takip edildi." });
         }
     } catch (err) {
@@ -447,8 +437,6 @@ app.post('/api/users/follow', authenticateToken, async (req, res) => {
         res.status(500).json({ message: "İşlem başarısız." });
     }
 });
-
-// --- server.js EKLENECEK KISIM (Takipçi Listesi İçin) ---
 
 app.get('/api/users/connections/:id', async (req, res) => {
     const userId = parseInt(req.params.id);
@@ -479,6 +467,33 @@ app.get('/api/users/connections/:id', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Liste alınamadı" });
+    }
+});
+
+// --- BİLDİRİM ROTALARI (YENİ) ---
+app.get('/api/notifications', authenticateToken, async (req, res) => {
+    try {
+        const sql = `
+            SELECT n.*, u.name as sender_name, u.profileImageUrl as sender_image
+            FROM notifications n
+            JOIN users u ON n.sender_id = u.id
+            WHERE n.user_id = $1
+            ORDER BY n.created_at DESC
+        `;
+        const result = await pool.query(sql, [req.user.id]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Bildirimler alınamadı" });
+    }
+});
+
+app.put('/api/notifications/read', authenticateToken, async (req, res) => {
+    try {
+        await pool.query("UPDATE notifications SET is_read = TRUE WHERE user_id = $1", [req.user.id]);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ message: "Hata" });
     }
 });
 
