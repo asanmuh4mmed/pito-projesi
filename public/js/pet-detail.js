@@ -1,26 +1,32 @@
-// --- js/pet-detail.js (SUPABASE UYUMLU - PROFİL LİNKLİ) ---
+// --- js/pet-detail.js ---
 
 // Global Değişkenler
 let currentPetOwnerId = null;
 let currentPetId = null;
-const API_BASE_URL = 'https://pito-projesi.onrender.com';
+const API_BASE_URL = 'https://pitopets.com'; // Backend adresin
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // URL'den ID'yi al
     const urlParams = new URLSearchParams(window.location.search);
     const petId = urlParams.get('id');
 
+    // HTML Elemanları
     const loadingSpinner = document.getElementById('loadingSpinner');
     const content = document.getElementById('petDetailContent');
     const contactBtnArea = document.getElementById('contactBtn');
     const errorAlert = document.getElementById('errorAlert');
 
+    // ID yoksa direkt hata göster
     if (!petId) {
         showError();
         return;
     }
 
     try {
+        // Veriyi çek
         const response = await fetch(`${API_BASE_URL}/api/pets/${petId}`);
+        
+        // Eğer ilan veritabanında yoksa (404 hatası)
         if (!response.ok) throw new Error("İlan bulunamadı");
 
         const pet = await response.json();
@@ -28,9 +34,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentPetOwnerId = pet.user_id;
         currentPetId = pet.id;
 
-        // --- RESİM AYARLARI ---
+        // --- RESİM DOLDURMA ---
         const rawImg = pet.imageurl || pet.imageUrl;
-        let finalImage = 'https://via.placeholder.com/600x400?text=Resim+Yok';
+        let finalImage = 'https://via.placeholder.com/600x500?text=Resim+Yok';
         
         if (rawImg) {
             finalImage = rawImg.startsWith('http') 
@@ -39,60 +45,59 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         const imgElem = document.getElementById('petImage');
-        imgElem.src = finalImage;
-        imgElem.onerror = function() {
-            this.src = 'https://via.placeholder.com/600x400?text=Resim+Yuklenemedi';
-        };
+        if(imgElem) {
+            imgElem.src = finalImage;
+            imgElem.onerror = function() {
+                this.src = 'https://via.placeholder.com/600x500?text=Resim+Yuklenemedi';
+            };
+        }
 
-        // --- METİN İÇERİKLERİ ---
-        document.getElementById('petName').innerText = pet.name;
-        document.getElementById('petSpecies').innerText = pet.species;
-        document.getElementById('petGender').innerText = pet.gender;
-        document.getElementById('petAge').innerText = pet.age;
-        document.getElementById('petStory').innerText = pet.story || pet.description;
-        document.getElementById('modalPetName').innerText = pet.name;
+        // --- METİN BİLGİLERİ DOLDURMA ---
+        setText('petName', pet.name);
+        setText('petSpecies', pet.species);
+        setText('petGender', pet.gender);
+        setText('petAge', pet.age);
+        setText('petStory', pet.story || pet.description || "Hikayesi henüz eklenmemiş.");
+        setText('modalPetName', pet.name);
 
         // --- DURUM ROZETİ ---
         const status = pet.adoptionstatus || pet.adoptionStatus; 
         const statusBadge = document.getElementById('petStatus');
-        
-        if (status === 'Sahiplendirildi') {
-            statusBadge.innerText = "Yuva Buldu ❤️";
-            statusBadge.className = "badge bg-secondary mb-3 fs-6";
+        if (statusBadge && status === 'Sahiplendirildi') {
+            statusBadge.innerText = "Yuva Buldu 🏠";
+            statusBadge.className = "badge bg-secondary px-4 py-2 shadow-sm";
+            // Sahiplendirildiyse mesaj butonunu gizle
+            if(contactBtnArea) contactBtnArea.style.display = 'none';
         }
 
-        // --- GÜVENLİK VE GİZLİLİK KONTROLÜ ---
+        // --- GÜVENLİK VE SAHİP BİLGİSİ ---
         const token = localStorage.getItem('token');
         const ownerBox = document.querySelector('.owner-box-otantik'); 
 
         if (token) {
-            // -- GİRİŞ YAPILMIŞSA: Bilgileri Göster --
-            const oName = pet.ownername || pet.ownerName || pet.users_name;
-            const oEmail = pet.owneremail || pet.ownerEmail || pet.users_email || "";
+            // -- GİRİŞ YAPILMIŞSA --
+            const oName = pet.ownername || pet.ownerName || "İsimsiz Kullanıcı";
+            const oEmail = pet.owneremail || pet.ownerEmail || "E-posta gizli";
             
-            // +++ GÜNCELLEME: İsim alanını Tıklanabilir Link Yapıyoruz +++
+            // >> İSMİ LİNKE ÇEVİRME KISMI <<
             const ownerNameEl = document.getElementById('ownerName');
-            ownerNameEl.innerHTML = `
-                <a href="user-profile.html?id=${pet.user_id}" class="text-decoration-none hover-link" style="color: #3E2723;">
-                    ${oName} <i class="fa-solid fa-arrow-up-right-from-square small ms-1 text-muted"></i>
-                </a>
-            `;
-            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            if(ownerNameEl) {
+                ownerNameEl.innerHTML = `
+                    <a href="user-profile.html?id=${pet.user_id}" class="text-decoration-none hover-link" style="color: #3E2723;">
+                        ${oName} <i class="fa-solid fa-arrow-up-right-from-square small ms-1 text-muted"></i>
+                    </a>
+                `;
+            }
 
-            document.getElementById('ownerEmail').innerText = oEmail;
+            setText('ownerEmail', oEmail);
             
-            // Eğer sahiplendirilmişse butonu pasif yap
-            if (status === 'Sahiplendirildi') {
-                contactBtnArea.innerHTML = `
-                    <button class="btn btn-secondary w-100 p-3 rounded-4 disabled">
-                        Bu Dostumuz Sahiplendirildi
-                    </button>`;
-            } else {
+            // Mesaj butonu kontrolü
+            if (status !== 'Sahiplendirildi' && contactBtnArea) {
                 contactBtnArea.style.display = 'block';
             }
 
         } else {
-            // -- GİRİŞ YAPILMAMIŞSA: Bilgileri Gizle --
+            // -- GİRİŞ YAPILMAMIŞSA --
             if (ownerBox) {
                 ownerBox.innerHTML = `
                     <div class="text-center w-100 py-3">
@@ -108,9 +113,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             if(contactBtnArea) contactBtnArea.style.display = 'none';
         }
 
-        // Yükleme bitti
-        loadingSpinner.classList.add('d-none');
-        content.classList.remove('d-none');
+        // Yükleme ekranını kapat, içeriği göster
+        if(loadingSpinner) loadingSpinner.classList.add('d-none');
+        if(content) content.classList.remove('d-none');
 
     } catch (error) {
         console.error("Detay hatası:", error);
@@ -118,37 +123,49 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-function showError() {
-    document.getElementById('loadingSpinner').classList.add('d-none');
-    const errorAlert = document.getElementById('errorAlert');
-    if(errorAlert) errorAlert.classList.remove('d-none');
+// Yardımcı Fonksiyon: ID kontrolü yaparak text atama
+function setText(id, text) {
+    const el = document.getElementById(id);
+    if(el) el.innerText = text || '-';
 }
 
-// --- MESAJLAŞMA ---
+function showError() {
+    const spinner = document.getElementById('loadingSpinner');
+    const alertBox = document.getElementById('errorAlert');
+    if(spinner) spinner.classList.add('d-none');
+    if(alertBox) alertBox.classList.remove('d-none');
+}
+
+// --- MESAJLAŞMA FONKSİYONLARI ---
 function openMessageModal() {
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.href = 'login.html';
+        if(typeof Swal !== 'undefined') Swal.fire({icon:'warning', title:'Giriş Yapmalısın'});
+        else window.location.href = 'login.html';
         return;
     }
-    const modal = new bootstrap.Modal(document.getElementById('messageModal'));
-    modal.show();
+    const modalEl = document.getElementById('messageModal');
+    if(modalEl) {
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
 }
 
 async function sendMessage() {
-    const messageInput = document.getElementById('messageText');
-    const messageText = messageInput.value;
+    const msgInput = document.getElementById('messageText');
+    const msgText = msgInput.value;
     const token = localStorage.getItem('token');
 
-    if (!messageText.trim()) {
+    if (!msgText.trim()) {
         alert("Lütfen bir mesaj yazın.");
         return;
     }
 
     const sendBtn = document.querySelector('#messageModal .btn-primary');
-    const sendBtnOriginalText = sendBtn.innerText;
-    sendBtn.disabled = true;
-    sendBtn.innerText = "Gönderiliyor...";
+    if(sendBtn) {
+        sendBtn.disabled = true;
+        sendBtn.innerText = "Gönderiliyor...";
+    }
 
     try {
         const response = await fetch(`${API_BASE_URL}/api/messages`, {
@@ -161,16 +178,18 @@ async function sendMessage() {
                 receiver_id: currentPetOwnerId, 
                 pet_id: currentPetId,
                 post_type: 'adoption', 
-                message: messageText
+                message: msgText
             })
         });
 
         if (response.ok) {
-            alert("Mesajınız başarıyla iletildi! 🐾");
-            const modalElem = document.getElementById('messageModal');
-            const modalInstance = bootstrap.Modal.getInstance(modalElem);
-            modalInstance.hide();
-            messageInput.value = ""; 
+            if(typeof Swal !== 'undefined') Swal.fire({icon:'success', title:'Mesaj İletildi!'});
+            else alert("Mesajınız iletildi!");
+            
+            const modalEl = document.getElementById('messageModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if(modalInstance) modalInstance.hide();
+            msgInput.value = ""; 
         } else {
             const err = await response.json();
             alert("Hata: " + (err.message || "Mesaj gönderilemedi."));
@@ -179,7 +198,9 @@ async function sendMessage() {
         console.error("Mesaj hatası:", error);
         alert("Sunucu hatası.");
     } finally {
-        sendBtn.disabled = false;
-        sendBtn.innerText = sendBtnOriginalText || "Gönder";
+        if(sendBtn) {
+            sendBtn.disabled = false;
+            sendBtn.innerText = "Gönder";
+        }
     }
 }
