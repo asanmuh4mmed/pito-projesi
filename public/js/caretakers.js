@@ -196,7 +196,13 @@ async function loadCaretakers() {
                         <div class="position-relative">
                             <img src="${imgUrl}" class="card-img-top" style="height:250px; object-fit:cover;" onerror="this.src='https://via.placeholder.com/400x300?text=Resim+Yok'">
                             <div class="position-absolute bottom-0 start-0 w-100 p-3" style="background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);">
-                                <h5 class="fw-bold text-white mb-0">${displayName}</h5>
+                                
+                                <h5 class="fw-bold text-white mb-0">
+                                    <a href="user-profile.html?id=${c.user_id}" class="text-white text-decoration-none hover-link" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">
+                                        ${displayName}
+                                    </a>
+                                </h5>
+                                
                                 <small class="text-white-50">${c.title || 'Bakıcı'}</small>
                             </div>
                             <span class="badge bg-white text-dark position-absolute top-0 end-0 m-3 shadow-sm fw-bold">
@@ -222,7 +228,7 @@ async function loadCaretakers() {
                 </div>`;
         });
 
-        // --- BUTON TIKLAMA OLAYLARI (Aynı Kaldı) ---
+        // --- BUTON TIKLAMA OLAYLARI ---
         document.querySelectorAll('.contact-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const token = localStorage.getItem('token');

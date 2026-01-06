@@ -275,6 +275,108 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
     } catch (err) { res.status(500).json({ message: "Hata: " + err.message }); }
 });
 
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++ KULLANICI PROFİLİ VE TAKİP SİSTEMİ ROTALARI +++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+// 1. BAŞKASININ PROFİLİNİ GÖR (GET)
+app.get('/api/users/profile/:id', async (req, res) => {
+    const targetUserId = parseInt(req.params.id);
+    
+    // İstek atan kişi giriş yapmış mı kontrol edelim (Takip durumunu anlamak için)
+    const authHeader = req.headers['authorization'];
+    let currentUserId = null;
+    
+    if (authHeader) {
+        const token = authHeader.split(' ')[1];
+        try {
+            const decoded = jwt.verify(token, SECRET_KEY);
+            currentUserId = decoded.id;
+        } catch (e) { /* Token geçersizse null kalsın */ }
+    }
+
+    try {
+        // A) Kullanıcı Bilgilerini Çek (Şifre ve Telefon HARİÇ)
+        const userRes = await pool.query(
+            `SELECT id, name, profileImageUrl, about_me, createdAt FROM users WHERE id = $1`, 
+            [targetUserId]
+        );
+
+        if (userRes.rows.length === 0) return res.status(404).json({ message: "Kullanıcı bulunamadı" });
+        const user = userRes.rows[0];
+
+        // B) Takipçi Sayılarını Çek
+        const followerCountRes = await pool.query(`SELECT COUNT(*) FROM follows WHERE following_id = $1`, [targetUserId]);
+        const followingCountRes = await pool.query(`SELECT COUNT(*) FROM follows WHERE follower_id = $1`, [targetUserId]);
+
+        // C) Ben bu kişiyi takip ediyor muyum?
+        let isFollowing = false;
+        if (currentUserId) {
+            const followCheck = await pool.query(
+                `SELECT * FROM follows WHERE follower_id = $1 AND following_id = $2`, 
+                [currentUserId, targetUserId]
+            );
+            isFollowing = followCheck.rows.length > 0;
+        }
+
+        // D) Kullanıcının İlanlarını Çek (Sahiplendirme & Eş Bulma)
+        const petsRes = await pool.query(`SELECT *, 'adoption' as type FROM pets WHERE user_id = $1`, [targetUserId]);
+        const breedingRes = await pool.query(`SELECT *, 'breeding' as type FROM breeding_pets WHERE user_id = $1`, [targetUserId]);
+
+        res.json({
+            user: user,
+            stats: {
+                followers: parseInt(followerCountRes.rows[0].count),
+                following: parseInt(followingCountRes.rows[0].count),
+                isFollowing: isFollowing
+            },
+            listings: [...petsRes.rows, ...breedingRes.rows] // İlanları birleştir
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Profil yüklenirken hata oluştu" });
+    }
+});
+
+// 2. TAKİP ET / TAKİBİ BIRAK (TOGGLE) (POST)
+app.post('/api/users/follow', authenticateToken, async (req, res) => {
+    const { targetId } = req.body;
+    const myId = req.user.id;
+
+    if (parseInt(targetId) === myId) {
+        return res.status(400).json({ message: "Kendinizi takip edemezsiniz." });
+    }
+
+    try {
+        // Zaten takip ediyor mu?
+        const check = await pool.query(
+            `SELECT * FROM follows WHERE follower_id = $1 AND following_id = $2`,
+            [myId, targetId]
+        );
+
+        if (check.rows.length > 0) {
+            // Evet ediyor -> TAKİBİ BIRAK (Sil)
+            await pool.query(
+                `DELETE FROM follows WHERE follower_id = $1 AND following_id = $2`,
+                [myId, targetId]
+            );
+            res.json({ status: 'unfollowed', message: "Takip bırakıldı." });
+        } else {
+            // Hayır etmiyor -> TAKİP ET (Ekle)
+            await pool.query(
+                `INSERT INTO follows (follower_id, following_id) VALUES ($1, $2)`,
+                [myId, targetId]
+            );
+            res.json({ status: 'followed', message: "Takip edildi." });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "İşlem başarısız." });
+    }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Sunucu Render üzerinde aktif. Port: ${PORT}`);
 });
