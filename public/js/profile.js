@@ -1,15 +1,14 @@
-// --- js/profile.js (VETERİNER EKLENDİ) ---
+// --- js/profile.js (TAKİP SİSTEMİ EKLENDİ) ---
 
-const API_URL = 'https://pito-projesi.onrender.com';let currentDeleteId = null;
-let currentDeleteType = null; // 'pet', 'caretaker', 'breeding' veya 'vet'
+const API_URL = 'https://pito-projesi.onrender.com';
+let currentDeleteId = null;
+let currentDeleteType = null; 
 let currentUser = null;
 
-// Sayfa Yüklendiğinde Çalışacak Ana Fonksiyon
 document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
     
     if (!token) {
-        console.warn("Token bulunamadı, giriş sayfasına yönlendiriliyor.");
         window.location.href = 'login.html';
         return;
     }
@@ -17,28 +16,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupEventListeners();
 
     try {
+        // 1. Temel Bilgileri Al
         const userRes = await fetch(`${API_URL}/api/auth/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        if (userRes.status === 401 || userRes.status === 403) {
-            throw new Error("Oturum süresi dolmuş");
-        }
-
-        if (!userRes.ok) throw new Error("Kullanıcı bilgileri alınamadı");
+        if (!userRes.ok) throw new Error("Oturum süresi dolmuş");
 
         currentUser = await userRes.json();
         updateProfileUI(currentUser);
 
-        // Tüm ilan türlerini çek
+        // 2. Takip İstatistiklerini Al ve UI Güncelle (YENİ EKLENDİ)
+        await fetchUserStats(token, currentUser);
+
+        // 3. İlanları Çek
         await fetchMyPets(token, currentUser);
         await fetchMyBreedingAds(token, currentUser); 
         await fetchMyCaretakers(token, currentUser);
-        await fetchMyVets(token, currentUser); // <--- YENİ EKLENDİ
+        await fetchMyVets(token, currentUser);
 
     } catch (error) {
         console.error("Profil Yükleme Hatası:", error);
-        alert("Oturumunuzun süresi dolmuş veya sunucu hatası. Lütfen tekrar giriş yapın.");
         localStorage.removeItem('token'); 
         window.location.href = 'login.html';
     }
@@ -100,6 +98,83 @@ function updateProfileUI(user) {
         } else {
             imgEl.src = "https://via.placeholder.com/150?text=Profil";
         }
+    }
+}
+
+// +++ YENİ: TAKİPÇİ İSTATİSTİKLERİNİ ÇEKME +++
+async function fetchUserStats(token, user) {
+    try {
+        // Profil endpoint'i bize stats objesini de veriyor
+        const res = await fetch(`${API_URL}/api/users/profile/${user.id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        const followerEl = document.getElementById('myFollowerCount');
+        const followingEl = document.getElementById('myFollowingCount');
+
+        if(followerEl && data.stats) {
+            followerEl.querySelector('h5').innerText = data.stats.followers;
+            // Tıklayınca listeyi aç
+            followerEl.onclick = () => openConnectionsModal('followers');
+        }
+
+        if(followingEl && data.stats) {
+            followingEl.querySelector('h5').innerText = data.stats.following;
+            // Tıklayınca listeyi aç
+            followingEl.onclick = () => openConnectionsModal('following');
+        }
+
+    } catch (err) {
+        console.error("İstatistik Hatası:", err);
+    }
+}
+
+// +++ YENİ: TAKİP LİSTESİ MODALI AÇMA +++
+async function openConnectionsModal(type) {
+    const titleEl = document.getElementById('connectionsTitle');
+    const listEl = document.getElementById('connectionsList');
+    
+    // Modalı Aç
+    const modal = new bootstrap.Modal(document.getElementById('connectionsModal'));
+    modal.show();
+
+    titleEl.innerText = type === 'followers' ? 'Takipçilerim' : 'Takip Ettiklerim';
+    listEl.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-primary spinner-border-sm"></div></div>';
+
+    try {
+        const res = await fetch(`${API_URL}/api/users/connections/${currentUser.id}`);
+        const data = await res.json();
+        
+        const userList = type === 'followers' ? data.followers : data.following;
+        
+        listEl.innerHTML = ''; 
+
+        if (userList.length === 0) {
+            listEl.innerHTML = '<div class="text-center p-3 text-muted small">Listeniz boş.</div>';
+            return;
+        }
+
+        userList.forEach(u => {
+            const userImg = u.profileimageurl 
+                ? (u.profileimageurl.startsWith('http') ? u.profileimageurl : `${API_URL}${u.profileimageurl}`)
+                : 'https://via.placeholder.com/50';
+
+            // Listeye eleman ekle
+            const item = document.createElement('a');
+            item.href = `user-profile.html?id=${u.id}`; // Profile gitmek için link
+            item.className = "list-group-item list-group-item-action d-flex align-items-center gap-3 border-0 rounded-3 mb-1 p-2";
+            
+            item.innerHTML = `
+                <img src="${userImg}" class="rounded-circle object-fit-cover" width="40" height="40">
+                <span class="fw-bold text-dark small">${u.name}</span>
+            `;
+            listEl.appendChild(item);
+        });
+
+    } catch (err) {
+        console.error(err);
+        listEl.innerHTML = '<div class="text-danger p-2 small">Liste yüklenemedi.</div>';
     }
 }
 
@@ -266,17 +341,16 @@ async function fetchMyCaretakers(token, user) {
     }
 }
 
-// --- 4. VETERİNER İLANLARIM (YENİ FONKSİYON) ---
+// --- 4. VETERİNER İLANLARIM ---
 async function fetchMyVets(token, user) {
     const container = document.getElementById('myVetsContainer');
-    if (!container) return; // Eğer HTML'e eklemediysen hata vermesin
+    if (!container) return; 
 
     try {
         const res = await fetch(`${API_URL}/api/vets`);
         if (!res.ok) throw new Error("Vets fetch failed");
 
         const allVets = await res.json();
-        // Sadece bu kullanıcının eklediği klinikleri filtrele
         const myVets = allVets.filter(v => String(v.user_id) === String(user.id));
         
         container.innerHTML = "";
@@ -287,7 +361,6 @@ async function fetchMyVets(token, user) {
         }
 
         myVets.forEach(vet => {
-            // Resim Kontrolü
             const rawImg = vet.imageurl || vet.imageUrl;
             let imgUrl = 'https://images.pexels.com/photos/6235231/pexels-photo-6235231.jpeg?auto=compress&cs=tinysrgb&w=400';
             if (rawImg) {
@@ -359,7 +432,6 @@ async function handleConfirmDelete() {
     const token = localStorage.getItem('token');
     let endpoint = '';
     
-    // Silme Endpoint'leri (VET EKLENDİ)
     if (currentDeleteType === 'pet') endpoint = `${API_URL}/api/pets/${currentDeleteId}`;
     else if (currentDeleteType === 'breeding') endpoint = `${API_URL}/api/breeding-pets/${currentDeleteId}`;
     else if (currentDeleteType === 'caretaker') endpoint = `${API_URL}/api/caretakers/${currentDeleteId}`;

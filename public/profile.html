@@ -42,13 +42,23 @@
                 
                 <h3 id="profileName" class="fw-bold mb-1">...</h3>
                 <p id="profileEmail" class="text-muted small mb-1">...</p>
-                <p id="profilePhone" class="text-secondary fw-bold small mb-4">...</p>
+                <p id="profilePhone" class="text-secondary fw-bold small mb-3">...</p>
                 
+                <div class="d-flex justify-content-center gap-4 mb-4 py-2 border-top border-bottom" style="border-color: #e0e0e0 !important;">
+                    <div id="myFollowerCount" class="text-center px-2" style="cursor: pointer;">
+                        <h5 class="fw-bold mb-0 text-clay">0</h5>
+                        <small class="text-muted" style="font-size: 0.8rem;">Takipçi</small>
+                    </div>
+                    <div id="myFollowingCount" class="text-center px-2" style="cursor: pointer;">
+                        <h5 class="fw-bold mb-0 text-clay">0</h5>
+                        <small class="text-muted" style="font-size: 0.8rem;">Takip</small>
+                    </div>
+                </div>
                 <button id="btnOpenEditProfile" class="btn btn-clay w-100 rounded-pill mb-2">
                     <i class="fa-solid fa-pen-to-square me-2"></i><span data-lang="btn_edit_profile">Profili Düzenle</span>
                 </button>
                 
-                <div class="mt-4 border-top pt-3">
+                <div class="mt-4 pt-2">
                     <small class="text-muted" data-lang="lbl_active_ads_count"></small>
                     <h2 id="adCount" class="fw-bold text-clay"></h2>
                 </div>
@@ -169,6 +179,20 @@
     </div>
 </div>
 
+<div class="modal fade" id="connectionsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content border-0 rounded-4 shadow-lg" style="background-color: #F9F6F0;">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold" id="connectionsTitle" style="color: #A64D32;">Listesi</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div id="connectionsList" class="list-group list-group-flush rounded-4 p-2" style="max-height: 300px; overflow-y: auto;">
+            </div>
+      </div>
+    </div>
+  </div>
+</div>
 <footer class="footer mt-5" style="background: #4E342E; padding: 2rem 0; border-top: 5px solid #A64D32;">
     <div class="container text-center text-white">
         <p class="mb-0" style="opacity: 0.8;" data-lang="footer_text">🕊️ <strong>PİTO</strong> - Hayvan Haklarını Korur &copy; 2025</p>
