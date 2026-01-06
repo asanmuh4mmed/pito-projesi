@@ -88,8 +88,7 @@ const cityData = {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const list = document.getElementById('petsList'); 
-    
+    const list = document.getElementById('petsContainer'); // DÜZELTİLDİ    
     // --- ŞEHİR VE İLÇELERİ DOLDURMA ---
     const cityListElement = document.getElementById('cityOptions');
     const cityInputElement = document.getElementById('filterCity');
