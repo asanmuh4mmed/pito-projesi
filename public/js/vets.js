@@ -173,10 +173,28 @@ function setupContactButtons() {
 
 function filterVets() {
     const selectedCity = document.getElementById('cityFilter').value;
-    if (selectedCity === 'all') {
+    
+    // Eğer "Tüm Şehirler" seçildiyse hepsini göster
+    // (Dropdown'ın ilk elemanının value'su boş string, 'all' veya 'Tüm Şehirler' olabilir, hepsini kapsayalım)
+    if (selectedCity === 'all' || selectedCity === 'Tüm Şehirler' || selectedCity === '') {
         renderVets(allVets);
-    } else {
-        const filtered = allVets.filter(v => v.city === selectedCity);
-        renderVets(filtered);
+        return;
     }
+
+    const filtered = allVets.filter(v => {
+        // Veritabanındaki şehir bilgisini al (Yoksa boş string kabul et)
+        // Hem "city" hem "City" (büyük harf) ihtimalini kontrol ediyoruz.
+        const vetCityRaw = v.city || v.City || ""; 
+        
+        // Karşılaştırma yaparken büyük/küçük harf duyarlılığını ortadan kaldırıyoruz.
+        // Örneğin: Veride "erzincan" yazsa bile "Erzincan" seçimini eşleştirir.
+        const vetCity = vetCityRaw.toLocaleLowerCase('tr');
+        const searchCity = selectedCity.toLocaleLowerCase('tr');
+
+        // "Eşit mi?" (===) yerine "İçeriyor mu?" (includes) kullanıyoruz.
+        // Böylece "Erzincan / Merkez" verisi, "Erzincan" aramasında çıkar.
+        return vetCity.includes(searchCity);
+    });
+
+    renderVets(filtered);
 }
