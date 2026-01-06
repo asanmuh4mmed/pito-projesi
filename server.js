@@ -142,46 +142,22 @@ app.put('/api/auth/me', authenticateToken, upload.single('newProfileImage'), asy
     } catch (err) { res.status(500).json({ message: "Hata" }); }
 });
 
-// --- server.js GÜNCELLENMİŞ GET /api/pets ROTASI ---
+// --- GET ROTALARI ---
 app.get('/api/pets', async (req, res) => {
-    // İsteği yapan kullanıcının ID'sini al (Token varsa)
-    const authHeader = req.headers['authorization'];
-    let currentUserId = null;
-    if (authHeader) {
-        const token = authHeader.split(' ')[1];
-        try {
-            const decoded = jwt.verify(token, SECRET_KEY);
-            currentUserId = decoded.id;
-        } catch (e) { /* Token yoksa null kalır */ }
-    }
-
-    try {
+    try { 
         const sql = `
-            SELECT 
-                p.*, 
-                u.name as ownerName, 
-                'adoption' as tur,
-                (SELECT COUNT(*) FROM post_likes WHERE post_id = p.id AND post_type = 'adoption') as like_count,
-                (SELECT COUNT(*) FROM post_likes WHERE post_id = p.id AND post_type = 'adoption' AND user_id = $1) as is_liked
+            SELECT p.*, u.name as ownerName, 'Sahiplendirme' as tur 
             FROM pets p 
             LEFT JOIN users u ON p.user_id = u.id 
             ORDER BY p.id DESC
         `;
-        // currentUserId null ise $1 yerine null gider, sorun olmaz.
-        const result = await pool.query(sql, [currentUserId]); 
-        
-        // is_liked verisini boolean'a (true/false) çevirerek gönderelim
-        const finalRows = result.rows.map(row => ({
-            ...row,
-            is_liked: parseInt(row.is_liked) > 0
-        }));
-
-        res.json(finalRows); 
+        const result = await pool.query(sql); 
+        res.json(result.rows); 
     } catch (err) { 
-        console.error(err);
         res.status(500).json({ message: err.message }); 
     }
 });
+
 app.get('/api/pets/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -518,43 +494,6 @@ app.put('/api/notifications/read', authenticateToken, async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ message: "Hata" });
-    }
-});
-
-// --- BEĞENİ İŞLEMİ (TOGGLE: Varsa siler, yoksa ekler) ---
-app.post('/api/like', authenticateToken, async (req, res) => {
-    const { post_id, post_type } = req.body; // post_type: 'adoption' veya 'breeding'
-    const user_id = req.user.id;
-
-    try {
-        // Önce var mı diye kontrol et
-        const check = await pool.query(
-            `SELECT * FROM post_likes WHERE user_id = $1 AND post_id = $2 AND post_type = $3`,
-            [user_id, post_id, post_type]
-        );
-
-        if (check.rows.length > 0) {
-            // Zaten beğenilmiş -> SİL (Unlike)
-            await pool.query(
-                `DELETE FROM post_likes WHERE user_id = $1 AND post_id = $2 AND post_type = $3`,
-                [user_id, post_id, post_type]
-            );
-            res.json({ status: 'unliked' });
-        } else {
-            // Beğenilmemiş -> EKLE (Like)
-            await pool.query(
-                `INSERT INTO post_likes (user_id, post_id, post_type) VALUES ($1, $2, $3)`,
-                [user_id, post_id, post_type]
-            );
-            
-            // İsteğe bağlı: Bildirim gönder (İlan sahibine)
-            // ... buraya bildirim kodu eklenebilir ...
-
-            res.json({ status: 'liked' });
-        }
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "İşlem başarısız" });
     }
 });
 

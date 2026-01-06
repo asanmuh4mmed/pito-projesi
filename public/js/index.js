@@ -1,10 +1,12 @@
-// --- js/index.js (GÜNCELLENMİŞ VERSİYON) ---
+// --- js/index.js (GÜNCELLENMİŞ TAM SÜRÜM) ---
 
 const API_URL = 'https://pito-projesi.onrender.com';
 
 document.addEventListener('DOMContentLoaded', () => {
-    updateNavbar(); // Navbarı güncelle
-    loadShowcase(); // Vitrinleri doldur
+    updateNavbar();          // Navbarı güncelle
+    loadShowcase();          // Vitrinleri doldur
+    checkGlobalUnreadMessages(); // Mesaj bildirim kontrolü yap
+    setInterval(checkGlobalUnreadMessages, 5000); // 5 sn'de bir kontrol
 });
 
 // --- NAVBAR GÜNCELLEME ---
@@ -23,15 +25,18 @@ function updateNavbar() {
     `;
 
     if (token) {
-        // Giriş Yapmış
         navbarList.innerHTML = `
             ${commonLinks}
-            <li class="nav-item"><a class="nav-link fw-bold" href="messages.html">Mesajlar</a></li>
+            <li class="nav-item position-relative">
+                <a class="nav-link fw-bold" href="messages.html">
+                    Mesajlar
+                    <span id="navMsgBadge" class="position-absolute top-0 end-0 translate-middle p-1 bg-danger border border-light rounded-circle d-none"></span>
+                </a>
+            </li>
             <li class="nav-item"><a class="nav-link fw-bold" href="profile.html" style="color: #A64D32;">Profilim</a></li>
             <li class="nav-item ms-2"><button onclick="logout()" class="btn btn-sm btn-outline-danger rounded-pill px-3 mt-1">Çıkış</button></li>
         `;
     } else {
-        // Misafir
         navbarList.innerHTML = `
             ${commonLinks}
             <li class="nav-item ms-2"><a class="btn btn-sm btn-outline-primary rounded-pill px-3 mt-1" href="login.html">Giriş Yap</a></li>
@@ -48,7 +53,6 @@ async function loadShowcase() {
     const vetsContainer = document.getElementById('vetsShowcase');
 
     try {
-        // 1. SAHİPLENDİRME (İlk 3)
         if(adoptionContainer) {
             const res = await fetch(`${API_URL}/api/pets`);
             const data = await res.json();
@@ -56,21 +60,18 @@ async function loadShowcase() {
             renderPets(adoptionPets.slice(0, 3), adoptionContainer, 'adoption');
         }
 
-        // 2. EŞ BULMA (İlk 3)
         if(breedingContainer) {
             const res = await fetch(`${API_URL}/api/breeding-pets`);
             const data = await res.json();
             renderPets(data.slice(0, 3), breedingContainer, 'breeding');
         }
 
-        // 3. BAKICILAR (İlk 3)
         if(caretakersContainer) {
             const res = await fetch(`${API_URL}/api/caretakers`);
             const data = await res.json();
             renderCaretakers(data.slice(0, 3), caretakersContainer);
         }
 
-        // 4. VETERİNERLER (İlk 3)
         if(vetsContainer) {
             const res = await fetch(`${API_URL}/api/vets`);
             const data = await res.json();
@@ -83,7 +84,6 @@ async function loadShowcase() {
 }
 
 // --- KART OLUŞTURUCU FONKSİYONLAR ---
-
 function renderPets(pets, container, type) {
     container.innerHTML = '';
     if (!pets || pets.length === 0) {
@@ -98,11 +98,10 @@ function renderPets(pets, container, type) {
 
         let locationText = "Konum Yok";
         const sourceText = pet.location || pet.description || pet.story || "";
-        
+
         if (pet.location) {
             locationText = pet.location;
-        } 
-        else if (sourceText.includes('[Konum:')) {
+        } else if (sourceText.includes('[Konum:')) {
             const match = sourceText.match(/\[Konum:\s*(.*?)\]/);
             if (match && match[1]) locationText = match[1];
         }
@@ -151,9 +150,9 @@ function renderCaretakers(data, container) {
         <div class="col-md-4">
             <div class="card h-100 border-0 shadow-sm overflow-hidden card-hover-effect">
                 <div class="position-relative">
-                     <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-2 fw-bold">
+                    <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-2 fw-bold">
                         ${item.price} ₺ / Gün
-                     </span>
+                    </span>
                     <img src="${imgUrl}" class="card-img-top" style="height: 250px; object-fit: cover;">
                 </div>
                 <div class="card-body">
@@ -187,9 +186,9 @@ function renderVets(data, container) {
         <div class="col-md-4">
             <div class="card h-100 border-0 shadow-sm overflow-hidden card-hover-effect">
                 <div class="position-relative">
-                     <span class="badge bg-white text-dark position-absolute top-0 end-0 m-2 shadow-sm">
+                    <span class="badge bg-white text-dark position-absolute top-0 end-0 m-2 shadow-sm">
                         <i class="fa-solid fa-location-dot text-danger"></i> ${item.city || 'Konum Yok'}
-                     </span>
+                    </span>
                     <img src="${imgUrl}" class="card-img-top" style="height: 250px; object-fit: cover;">
                 </div>
                 <div class="card-body text-center">
@@ -202,6 +201,7 @@ function renderVets(data, container) {
     });
 }
 
+// Çıkış Fonksiyonu
 window.logout = function() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -209,14 +209,10 @@ window.logout = function() {
 }
 
 // --- BİLDİRİM KONTROL SİSTEMİ ---
-document.addEventListener('DOMContentLoaded', () => {
-    checkGlobalUnreadMessages();
-    setInterval(checkGlobalUnreadMessages, 5000);
-});
-
 async function checkGlobalUnreadMessages() {
     const token = localStorage.getItem('token');
     const badge = document.getElementById('navMsgBadge');
+    
     if (!token || !badge) return;
 
     let myId = null;
@@ -226,18 +222,15 @@ async function checkGlobalUnreadMessages() {
     } catch (e) { return; }
 
     try {
-        const response = await fetch('https://pito-projesi.onrender.com/api/my-messages', {
+        const response = await fetch(`${API_URL}/api/my-messages`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         
         if (response.ok) {
             const messages = await response.json();
             const hasUnread = messages.some(m => m.receiver_id === myId && m.is_read === false);
-            if (hasUnread) {
-                badge.classList.remove('d-none');
-            } else {
-                badge.classList.add('d-none');
-            }
+            if (hasUnread) badge.classList.remove('d-none');
+            else badge.classList.add('d-none');
         }
     } catch (error) {
         console.log("Bildirim kontrolü pas geçildi.");

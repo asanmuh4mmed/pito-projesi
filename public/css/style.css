@@ -958,29 +958,3 @@ footer a:hover {
     transform: translateY(-5px);
 }
 
-/* Kalp Butonu Stili */
-.btn-like {
-    border: none;
-    background: transparent;
-    transition: transform 0.2s;
-    padding: 0;
-}
-.btn-like:active {
-    transform: scale(1.3); /* Tıklayınca büyüme efekti */
-}
-.fa-heart {
-    font-size: 1.5rem;
-    transition: color 0.3s;
-}
-.text-liked {
-    color: #e91e63 !important; /* Dolu kalp rengi (Pembe/Kırmızı) */
-}
-.text-unliked {
-    color: #ccc; /* Boş kalp rengi (Gri) */
-}
-.like-count {
-    font-size: 0.9rem;
-    font-weight: bold;
-    color: #555;
-    margin-left: 5px;
-}
