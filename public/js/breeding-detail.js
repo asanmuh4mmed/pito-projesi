@@ -1,4 +1,4 @@
-// --- js/breeding-detail.js (SUPABASE UYUMLU) ---
+// --- js/breeding-detail.js (GÜNCELLENMİŞ VERSİYON) ---
 
 const API_URL = 'https://pito-projesi.onrender.com';
 let currentPetOwnerId = null;
@@ -76,18 +76,28 @@ function renderPetDetail(pet, token) {
     const messageBtn = document.querySelector('button[onclick="openMessageModal()"]');
 
     if (token) {
-        // Giriş yapılmışsa bilgileri göster
+        // --- GİRİŞ YAPILMIŞSA BİLGİLERİ GÖSTER ---
         const oName = pet.ownername || pet.ownerName || pet.users_name || "Kullanıcı";
-        // TELEFON BİLGİSİ SİLİNDİ
         const oEmail = pet.owneremail || pet.ownerEmail || pet.users_email;
 
-        setText('ownerName', oName);
-        // TELEFON SET EDİLMİYOR
+        // +++ GÜNCELLEME: İSMİ LİNKE ÇEVİR (ZORLA STİL VERİLDİ) +++
+        const ownerNameEl = document.getElementById('ownerName');
+        if(ownerNameEl) {
+            // Rengi mavi, altı çizili ve tıklanabilir yapıyoruz
+            ownerNameEl.innerHTML = `
+                <a href="user-profile.html?id=${pet.user_id}" 
+                   style="color: #0d6efd !important; text-decoration: underline !important; cursor: pointer;">
+                    ${oName} <i class="fa-solid fa-arrow-up-right-from-square small ms-1 text-muted"></i>
+                </a>
+            `;
+        }
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
         setLink('displayEmail', oEmail, 'mailto');
 
         if(messageBtn) messageBtn.style.display = 'block';
     } else {
-        // Giriş yapılmamışsa gizle
+        // --- GİRİŞ YAPILMAMIŞSA GİZLE ---
         if (ownerCardBody) {
             ownerCardBody.innerHTML = getLockedProfileHTML();
         }
@@ -213,7 +223,9 @@ async function sendMessage() {
         });
 
         if(res.ok) {
-            alert("Mesajınız iletildi! ❤️");
+            if(typeof Swal !== 'undefined') Swal.fire({icon: 'success', title: 'İletildi!', confirmButtonColor: '#A64D32'});
+            else alert("Mesajınız iletildi!");
+            
             const modalEl = document.getElementById('messageModal');
             const modal = bootstrap.Modal.getInstance(modalEl);
             modal.hide();
