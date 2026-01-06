@@ -448,6 +448,40 @@ app.post('/api/users/follow', authenticateToken, async (req, res) => {
     }
 });
 
+// --- server.js EKLENECEK KISIM (Takipçi Listesi İçin) ---
+
+app.get('/api/users/connections/:id', async (req, res) => {
+    const userId = parseInt(req.params.id);
+    try {
+        // 1. Beni Takip Edenler (Followers)
+        const followersSql = `
+            SELECT u.id, u.name, u.profileImageUrl 
+            FROM follows f 
+            JOIN users u ON f.follower_id = u.id 
+            WHERE f.following_id = $1
+        `;
+        
+        // 2. Benim Takip Ettiklerim (Following)
+        const followingSql = `
+            SELECT u.id, u.name, u.profileImageUrl 
+            FROM follows f 
+            JOIN users u ON f.following_id = u.id 
+            WHERE f.follower_id = $1
+        `;
+
+        const followers = await pool.query(followersSql, [userId]);
+        const following = await pool.query(followingSql, [userId]);
+
+        res.json({
+            followers: followers.rows,
+            following: following.rows
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Liste alınamadı" });
+    }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Sunucu Render üzerinde aktif. Port: ${PORT}`);
 });
