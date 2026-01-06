@@ -269,3 +269,126 @@ async function checkGlobalUnreadMessages() {
         console.log("Bildirim kontrolü pas geçildi.");
     }
 }
+
+// --- js/index.js GÜNCELLENMİŞ HALİ ---
+
+const API_URL = 'https://pitopets.com'; 
+
+async function fetchPets() {
+    const container = document.getElementById('petsContainer'); // HTML'deki container ID'si
+    const token = localStorage.getItem('token');
+    
+    // Token varsa header'a ekle (Beğeni durumu için)
+    const headers = {};
+    if(token) headers['Authorization'] = `Bearer ${token}`;
+
+    try {
+        const res = await fetch(`${API_URL}/api/pets`, { headers });
+        const pets = await res.json();
+        
+        container.innerHTML = '';
+        pets.forEach(pet => {
+            // Resim URL kontrolü
+            const rawImg = pet.imageurl || pet.imageUrl;
+            let imgUrl = rawImg ? (rawImg.startsWith('http') ? rawImg : `${API_URL}${rawImg}`) : 'https://via.placeholder.com/600';
+
+            // Kart HTML'ini oluştur
+            container.innerHTML += createCardHTML(pet, imgUrl);
+        });
+    } catch (error) {
+        console.error('Hata:', error);
+    }
+}
+
+function createCardHTML(pet, imgUrl) {
+    // Beğeni durumuna göre kalp ikonu
+    const heartClass = pet.is_liked ? 'fa-solid text-liked' : 'fa-regular text-unliked';
+    
+    return `
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden position-relative">
+            
+            <div class="position-absolute top-0 end-0 p-3" style="z-index: 10;">
+                <button class="btn-like bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center" 
+                        style="width: 40px; height: 40px;"
+                        onclick="toggleLike(this, ${pet.id}, 'adoption')">
+                    <i class="${heartClass} fa-heart"></i>
+                </button>
+                <div class="text-center mt-1">
+                    <span class="badge bg-white text-dark shadow-sm like-count-badge" id="count-${pet.id}">${pet.like_count}</span>
+                </div>
+            </div>
+
+            <img src="${imgUrl}" class="card-img-top" style="height: 250px; object-fit: cover;">
+            
+            <div class="card-body text-center">
+                <h5 class="fw-bold text-dark-brown">${pet.name}</h5>
+                <p class="text-muted small">${pet.species} • ${pet.age} Yaş</p>
+                <div class="text-clay small mb-3">
+                    <i class="fa-solid fa-location-dot me-1"></i> ${pet.city || 'Belirtilmemiş'}
+                </div>
+                <a href="pet-detail.html?id=${pet.id}" class="btn btn-outline-dark rounded-pill px-4">İncele</a>
+            </div>
+        </div>
+    </div>
+    `;
+}
+
+// --- BEĞENİ BUTONU FONKSİYONU ---
+async function toggleLike(btn, postId, postType) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert("Beğenmek için giriş yapmalısınız! 🐾");
+        window.location.href = 'login.html';
+        return;
+    }
+
+    const icon = btn.querySelector('i');
+    const countBadge = document.getElementById(`count-${postId}`);
+    let currentCount = parseInt(countBadge.innerText);
+
+    // 1. Optimistic UI (Sunucuyu beklemeden hemen rengi değiştir)
+    const isLiking = icon.classList.contains('fa-regular'); // Şu an boşsa beğeniyordur
+    
+    if (isLiking) {
+        icon.classList.remove('fa-regular', 'text-unliked');
+        icon.classList.add('fa-solid', 'text-liked');
+        countBadge.innerText = currentCount + 1;
+    } else {
+        icon.classList.remove('fa-solid', 'text-liked');
+        icon.classList.add('fa-regular', 'text-unliked');
+        countBadge.innerText = Math.max(0, currentCount - 1);
+    }
+
+    // 2. Arka planda sunucuya istek at
+    try {
+        const res = await fetch(`${API_URL}/api/like`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ post_id: postId, post_type: postType })
+        });
+
+        if (!res.ok) {
+            // Hata olursa işlemi geri al
+            throw new Error("Hata");
+        }
+    } catch (err) {
+        console.error(err);
+        // Hata durumunda eski haline döndür
+        if (isLiking) {
+            icon.classList.remove('fa-solid', 'text-liked');
+            icon.classList.add('fa-regular', 'text-unliked');
+            countBadge.innerText = currentCount;
+        } else {
+            icon.classList.remove('fa-regular', 'text-unliked');
+            icon.classList.add('fa-solid', 'text-liked');
+            countBadge.innerText = currentCount;
+        }
+    }
+}
+
+// Sayfa yüklenince ilanları çek
+document.addEventListener('DOMContentLoaded', fetchPets);
