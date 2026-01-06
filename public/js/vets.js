@@ -1,16 +1,52 @@
-// --- js/vets.js (SUPABASE UYUMLU) ---
+// --- js/vets.js (GÜNCELLENMİŞ - 81 İL EKLENDİ) ---
 
-const API_URL = 'https://pito-projesi.onrender.com';let allVets = [];
+const API_URL = 'https://pito-projesi.onrender.com';
+let allVets = [];
+
+// Türkiye'nin 81 İli Listesi
+const cities = [
+    "Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın", "Balıkesir",
+    "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli",
+    "Diyarbakır", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari",
+    "Hatay", "Isparta", "Mersin", "İstanbul", "İzmir", "Kars", "Kastamonu", "Kayseri", "Kırklareli", "Kırşehir",
+    "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Kahramanmaraş", "Mardin", "Muğla", "Muş", "Nevşehir",
+    "Niğde", "Ordu", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Tekirdağ", "Tokat", "Trabzon",
+    "Tunceli", "Şanlıurfa", "Uşak", "Van", "Yozgat", "Zonguldak", "Aksaray", "Bayburt", "Karaman", "Kırıkkale",
+    "Batman", "Şırnak", "Bartın", "Ardahan", "Iğdır", "Yalova", "Karabük", "Kilis", "Osmaniye", "Düzce"
+];
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Önce Şehirleri Yükle
+    loadCityOptions();
+
+    // 2. Verileri Çek
     await fetchVets();
     
-    // Filtreleme Dinleyicisi
+    // 3. Filtreleme Dinleyicisi
     const cityFilter = document.getElementById('cityFilter');
     if (cityFilter) {
         cityFilter.addEventListener('change', filterVets);
     }
 });
+
+// Şehirleri Dropdown'a Dolduran Fonksiyon
+function loadCityOptions() {
+    const citySelect = document.getElementById('cityFilter');
+    if (!citySelect) return;
+
+    // Mevcut seçenekleri (varsa) temizle ama ilk seçeneği (Tüm Şehirler) sakla
+    const firstOption = citySelect.options[0]; // "Tüm Şehirler" veya "All Cities"
+    citySelect.innerHTML = ''; 
+    citySelect.appendChild(firstOption);
+
+    // 81 İli ekle
+    cities.sort((a, b) => a.localeCompare(b, 'tr')).forEach(city => {
+        const option = document.createElement('option');
+        option.value = city;
+        option.textContent = city;
+        citySelect.appendChild(option);
+    });
+}
 
 async function fetchVets() {
     const container = document.getElementById('vetsContainer');
@@ -41,9 +77,6 @@ function renderVets(vets) {
 
     vets.forEach(vet => {
         // --- SUPABASE VERİ DÜZELTMELERİ ---
-        // PostgreSQL sütun isimlerini küçük harfe çevirebilir.
-        
-        // 1. Resim Kontrolü
         const rawImg = vet.imageurl || vet.imageUrl;
         let imgUrl = 'https://images.pexels.com/photos/6235231/pexels-photo-6235231.jpeg?auto=compress&cs=tinysrgb&w=400';
         
@@ -51,7 +84,6 @@ function renderVets(vets) {
             imgUrl = rawImg.startsWith('http') ? rawImg : `${API_URL}${rawImg}`;
         }
         
-        // 2. Metin Alanları Kontrolü (camelCase vs lowercase)
         const cName = vet.clinicname || vet.clinicName || "Klinik İsmi Yok";
         const vName = vet.vetname || vet.vetName || "Hekim İsmi Yok";
         const vCity = vet.city || "Şehir Yok";
@@ -72,7 +104,7 @@ function renderVets(vets) {
                     <h5 class="fw-bold mb-1" style="color: #3E2723; font-family: 'Playfair Display', serif;">${cName}</h5>
                     <p class="text-muted small mb-3"><i class="fa-solid fa-user-doctor me-1"></i> ${vName}</p>
                     
-                    <p class="small text-muted text-truncate mb-4">
+                    <p class="small text-muted mb-4">
                         <i class="fa-regular fa-map me-1"></i> ${vAddress}
                     </p>
 
@@ -99,7 +131,6 @@ function setupContactButtons() {
         btn.addEventListener('click', function() {
             const token = localStorage.getItem('token');
             
-            // --- GÜVENLİK KONTROLÜ ---
             if (!token) {
                 if(typeof Swal !== 'undefined') {
                     Swal.fire({
@@ -115,12 +146,10 @@ function setupContactButtons() {
                 return;
             }
 
-            // --- BİLGİLERİ AL VE MODAL'A YAZ ---
             const phone = this.getAttribute('data-phone');
             const clinic = this.getAttribute('data-clinic');
             const vetName = this.getAttribute('data-vet');
 
-            // Modal elemanlarını doldur
             const cNameEl = document.getElementById('modalClinicName');
             if(cNameEl) cNameEl.innerText = clinic;
 
@@ -133,7 +162,6 @@ function setupContactButtons() {
                 callBtn.innerHTML = `<i class="fa-solid fa-phone me-2"></i> ${phone} - Hemen Ara`;
             }
 
-            // Modalı Aç
             const modalElement = document.getElementById('contactModal');
             if(modalElement) {
                 const modal = new bootstrap.Modal(modalElement);
