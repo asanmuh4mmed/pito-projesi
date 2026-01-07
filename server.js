@@ -563,6 +563,29 @@ app.put('/api/notifications/read', authenticateToken, async (req, res) => {
     }
 });
 
+// server.js - DELETE /api/messages/thread/:otherId/:petId
+app.delete('/api/messages/thread/:otherId/:petId', authenticateToken, async (req, res) => {
+    const otherId = parseInt(req.params.otherId);
+    const petId = parseInt(req.params.petId);
+    const myId = req.user.id;
+
+    try {
+        // İki kişi arasındaki (belirli bir ilan için olan) tüm mesajları sil
+        const sql = `
+            DELETE FROM messages 
+            WHERE (
+                (sender_id = $1 AND receiver_id = $2) OR 
+                (sender_id = $3 AND receiver_id = $4)
+            ) AND pet_id = $5
+        `;
+        await pool.query(sql, [myId, otherId, otherId, myId, petId]);
+        res.json({ message: "Sohbet silindi." });
+    } catch (err) {
+        console.error("Silme hatası:", err);
+        res.status(500).json({ message: "Sunucu hatası" });
+    }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Sunucu Render üzerinde aktif. Port: ${PORT}`);
 });

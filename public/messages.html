@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.4/dist/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         :root { 
@@ -37,6 +38,7 @@
             cursor: pointer;
             margin-bottom: 0.8rem;
             border-left: 4px solid transparent;
+            position: relative; /* Silme butonu için */
         }
         .message-card:hover {
             transform: translateY(-2px);
@@ -45,6 +47,33 @@
         .message-card.unread {
             background-color: #fff8f6;
             border-left: 4px solid var(--primary-clay);
+        }
+
+        /* Silme Butonu Stili */
+        .delete-chat-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            color: #dc3545;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0; /* Varsayılan gizli */
+            transition: opacity 0.2s, background 0.2s;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .message-card:hover .delete-chat-btn {
+            opacity: 1; /* Üzerine gelince göster */
+        }
+        .delete-chat-btn:hover {
+            background: #dc3545;
+            color: white;
         }
 
         /* Sohbet Balonları */
@@ -57,7 +86,7 @@
             position: relative;
             line-height: 1.5;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            word-wrap: break-word; /* Uzun kelimeleri böl */
+            word-wrap: break-word;
         }
         
         .bubble-me { 
@@ -81,6 +110,7 @@
             border-radius: 12px;
             margin-bottom: 5px;
             display: block;
+            cursor: pointer;
         }
 
         #chatBody { 
@@ -153,6 +183,11 @@
             height: 80px;
             border-radius: 8px;
             border: 1px solid #ddd;
+        }
+        
+        /* Emoji Panelini Modalın Üstüne Çıkar */
+        .emoji-picker {
+            z-index: 10000 !important;
         }
     </style>
 </head>
@@ -241,7 +276,7 @@
                         <i class="fa-solid fa-paperclip"></i>
                     </button>
                     
-                    <button class="btn btn-light rounded-circle text-muted" id="emojiBtn">
+                    <button type="button" class="btn btn-light rounded-circle text-muted" id="emojiBtn">
                         <i class="fa-regular fa-face-smile"></i>
                     </button>
                     
@@ -265,28 +300,34 @@
     let currentPetId = null;
     let chatModalInstance = null; 
     let chatRefreshInterval = null;
-    let selectedMessageFile = null; // Seçilen resim dosyası için
+    let selectedMessageFile = null; 
 
-    // --- EMOJI SEÇİCİ ---
+    // --- EMOJI SEÇİCİ (GÜNCELLENDİ) ---
     document.addEventListener('DOMContentLoaded', () => {
-        const picker = new EmojiButton({
-            position: 'top-start',
-            theme: 'light',
-            autoHide: false
-        });
         const trigger = document.querySelector('#emojiBtn');
         const input = document.querySelector('#replyInput');
 
         if(trigger && input) {
+            const picker = new EmojiButton({
+                position: 'top-start',
+                theme: 'light',
+                autoHide: false,
+                zIndex: 10000 
+            });
+
             picker.on('emoji', selection => {
                 input.value += selection.emoji;
                 input.focus();
             });
-            trigger.addEventListener('click', () => picker.togglePicker(trigger));
+
+            trigger.addEventListener('click', (e) => {
+                e.preventDefault(); 
+                picker.togglePicker(trigger);
+            });
         }
     });
 
-    // --- RESİM ÖNİZLEME VE TEMİZLEME ---
+    // --- RESİM İŞLEMLERİ ---
     function previewMessageImage() {
         const fileInput = document.getElementById('messageFileInput');
         const previewContainer = document.getElementById('imagePreviewContainer');
@@ -329,7 +370,7 @@
 
         document.getElementById('chatModal').addEventListener('hidden.bs.modal', () => {
             clearInterval(chatRefreshInterval);
-            clearImage(); // Modal kapanınca resmi temizle
+            clearImage(); 
         });
 
         document.getElementById('replyInput').addEventListener('keypress', function (e) {
@@ -340,6 +381,42 @@
     function goToProfile() {
         if(currentChatPartner) {
             window.location.href = `user-profile.html?id=${currentChatPartner}`;
+        }
+    }
+
+    // --- SİLME FONKSİYONU (YENİ) ---
+    async function deleteChat(event, partnerId, petId) {
+        event.stopPropagation(); // Kartın tıklanmasını engelle (Sohbeti açmasın)
+        
+        const result = await Swal.fire({
+            title: 'Sohbeti Sil?',
+            text: "Bu kişiyle olan tüm mesajlaşma geçmişiniz silinecek!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Evet, Sil',
+            cancelButtonText: 'İptal'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${API_URL}/api/messages/thread/${partnerId}/${petId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    Swal.fire('Silindi!', 'Sohbet başarıyla silindi.', 'success');
+                    fetchMessages(); // Listeyi yenile
+                } else {
+                    Swal.fire('Hata', 'Silinirken bir sorun oluştu.', 'error');
+                }
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Hata', 'Sunucu hatası.', 'error');
+            }
         }
     }
 
@@ -390,21 +467,26 @@
                     }
                 } catch(e){}
 
-                // Mesaj önizlemesinde resim varsa "📷 Fotoğraf" yazsın
                 let displayMsg = msg.message;
                 if(!displayMsg && msg.image_url) displayMsg = "📷 Fotoğraf";
 
+                // --- KART YAPISI (SİLME BUTONU EKLENDİ) ---
                 return `
                     <div class="card message-card shadow-sm p-3 mb-2 ${unreadClass}" onclick="openChat(${partnerId}, ${pId}, '${otherName.replace(/'/g, "\\'")}')">
+                        
+                        <button class="delete-chat-btn" onclick="deleteChat(event, ${partnerId}, ${pId})" title="Sohbeti Sil">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+
                         <div class="d-flex align-items-center">
                             <img id="list-img-${partnerId}" src="https://via.placeholder.com/150?text=${otherName.charAt(0)}" class="rounded-circle me-3" width="50" height="50" style="object-fit:cover;">
                             <div class="flex-grow-1 overflow-hidden">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <h6 class="fw-bold mb-0 text-truncate">${otherName}</h6>
+                                    <h6 class="fw-bold mb-0 text-truncate" style="max-width: 70%;">${otherName}</h6>
                                     <small class="text-muted" style="font-size:0.7rem;">${dateStr}</small>
                                 </div>
                                 <div class="d-flex align-items-center justify-content-between">
-                                    <p class="text-muted small mb-0 text-truncate" style="max-width: 180px;">
+                                    <p class="text-muted small mb-0 text-truncate" style="max-width: 160px;">
                                         ${msg.sender_id === myId ? '<i class="fa-solid fa-check text-primary" style="font-size:0.7rem"></i> ' : ''} ${displayMsg}
                                     </p>
                                     ${msg.receiver_id === myId && msg.is_read === false ? '<span class="badge bg-danger rounded-circle p-1" style="width:8px; height:8px;"> </span>' : ''}
@@ -500,7 +582,6 @@
                     }
                 } catch(e){}
 
-                // Resim Gösterimi (Eğer varsa)
                 let imageHtml = "";
                 if (m.image_url) {
                     const imgSrc = m.image_url.startsWith('http') ? m.image_url : `${API_URL}${m.image_url}`;
@@ -526,16 +607,13 @@
         } catch (e) { console.error(e); }
     }
 
-    // --- MESAJ GÖNDERME FONKSİYONU (GÜNCELLENDİ) ---
     async function sendReply() {
         const input = document.getElementById('replyInput');
         const token = localStorage.getItem('token');
         const msgText = input.value.trim();
         
-        // Hem mesaj yok hem resim yoksa gönderme
         if (!msgText && !selectedMessageFile) return;
 
-        // Geçici olarak ekrana ekle (UX için)
         const chatBody = document.getElementById('chatBody');
         let tempImage = "";
         if (selectedMessageFile) {
@@ -553,7 +631,6 @@
         chatBody.scrollTop = chatBody.scrollHeight;
         input.value = ''; 
 
-        // FormData Oluştur (Resim gönderimi için şart)
         const formData = new FormData();
         formData.append('receiver_id', currentChatPartner);
         formData.append('pet_id', currentPetId);
@@ -565,12 +642,12 @@
         try {
             const response = await fetch(`${API_URL}/api/messages`, {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }, // Content-Type YAZMA!
+                headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
             });
 
             if (response.ok) {
-                clearImage(); // Resmi temizle
+                clearImage(); 
                 loadChatHistory(); 
                 fetchMessages();   
             }
