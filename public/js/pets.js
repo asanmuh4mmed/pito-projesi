@@ -1,4 +1,4 @@
-// --- js/pets.js (GÜNCELLENDİ: MAVİ TİK EKLENDİ) ---
+// --- js/pets.js (GÜNCEL - HARF DUYARLILIĞI DÜZELTİLDİ) ---
 
 const API_URL = 'https://pito-projesi.onrender.com';
 
@@ -95,14 +95,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const districtSelectElement = document.getElementById('filterDistrict');
 
     if(cityListElement) {
-        // Şehirleri ekle
         for (const city in cityData) {
             const option = document.createElement('option');
             option.value = city;
             cityListElement.appendChild(option);
         }
 
-        // Şehir seçilince ilçeleri doldur
         if (cityInputElement) {
             cityInputElement.addEventListener('input', function() {
                 const selectedCity = this.value;
@@ -118,7 +116,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         districtSelectElement.appendChild(option);
                     });
                 }
-                applyFilters(); // Her harfte filtrele
+                applyFilters(); 
             });
         }
     }
@@ -153,9 +151,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderPets(pets) {
-        // Eğer 'list' değişkeni yukarıda tanımlı değilse, burada tanımlayalım:
         const list = document.getElementById('petsContainer') || document.getElementById('list'); 
-        
         list.innerHTML = ''; 
 
         if (pets.length === 0) {
@@ -186,10 +182,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // --- 4. Sahip İsmi ve Mavi Tik Kontrolü ---
+            // Hem küçük harf (ownername) hem de büyük harf (ownerName) kontrolü yapılıyor
             const ownerName = pet.ownername || pet.ownerName || "İsimsiz Kullanıcı";
             
-            // Backend'den gelen veriye göre mavi tik kontrolü
-            const isVerified = (pet.ownerVerified === true || pet.ownerVerified === 1 || pet.ownerVerified === "true");
+            // Backend'den gelen veri 'ownerverified' (küçük harf) olabilir, her ikisini de kontrol ediyoruz
+            const verifiedData = pet.ownerVerified || pet.ownerverified;
+            const isVerified = (verifiedData === true || verifiedData === 1 || verifiedData === "true");
 
             // Mavi Tik İkonu (SVG)
             const verifiedBadge = isVerified ? 
@@ -238,21 +236,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- FİLTRELEME MANTIĞI ---
     function applyFilters() {
         const speciesVal = filterSpecies ? filterSpecies.value : 'all';
         const genderVal = filterGender ? filterGender.value : 'all';
-        
-        // Şehir ve İlçe Değerleri (Küçük harfe çeviriyoruz)
         const cityVal = cityInputElement ? cityInputElement.value.toLowerCase() : '';
         const distVal = districtSelectElement ? districtSelectElement.value.toLowerCase() : '';
 
         const filtered = allPetsData.filter(pet => {
-            // Tür ve Cinsiyet
             const matchSpecies = (speciesVal === 'all') || (pet.species === speciesVal);
             const matchGender = (genderVal === 'all') || (pet.gender === genderVal);
-
-            // Konum Arama (Story veya Location içinde)
             const fullText = (pet.location || "" + pet.story || "").toLowerCase();
             
             let matchLocation = true;
@@ -268,7 +260,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderPets(filtered);
     }
 
-    // Event Listeners
     if(filterSpecies) filterSpecies.addEventListener('change', applyFilters);
     if(filterGender) filterGender.addEventListener('change', applyFilters);
     if(districtSelectElement) districtSelectElement.addEventListener('change', applyFilters);
@@ -278,7 +269,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             filterSpecies.value = 'all';
             filterGender.value = 'all';
             if(cityInputElement) cityInputElement.value = '';
-            
             if(districtSelectElement) {
                 districtSelectElement.innerHTML = '<option value="">İlçe Seç</option>';
                 districtSelectElement.disabled = true;
@@ -287,6 +277,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Başlat
     loadPets();
 });
