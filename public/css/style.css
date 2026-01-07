@@ -958,3 +958,19 @@ footer a:hover {
     transform: translateY(-5px);
 }
 
+/* style.css dosyasının sonuna ekle */
+
+.verified-tick {
+    width: 16px; /* İkon boyutu */
+    height: 16px;
+    margin-left: 5px; /* İsim ile arasındaki boşluk */
+    vertical-align: text-bottom; /* İsimle aynı hizada durması için */
+    fill: #1da1f2; /* Resmi mavi onay rengi */
+}
+.verified-tick {
+    width: 20px;
+    height: 20px;
+    margin-left: 8px;
+    vertical-align: middle;
+    fill: #1da1f2; /* Mavi onay rengi */
+}

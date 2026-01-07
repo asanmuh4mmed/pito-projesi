@@ -1,4 +1,4 @@
-// --- js/profile.js (GÜNCEL - BİLDİRİM SİSTEMİ DAHİL) ---
+// --- js/profile.js (GÜNCEL - BİLDİRİM + MAVİ TİK DAHİL) ---
 
 const API_URL = 'https://pitopets.com'; 
 let currentDeleteId = null;
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await fetchMyCaretakers(token, currentUser);
         await fetchMyVets(token, currentUser);
 
-        // 4. BİLDİRİMLERİ KONTROL ET (YENİ)
+        // 4. BİLDİRİMLERİ KONTROL ET
         await checkNotifications(token);
 
     } catch (error) {
@@ -82,13 +82,29 @@ function setupEventListeners() {
     }
 }
 
+// --- GÜNCELLENEN KISIM BURASI (MAVİ TİK EKLENDİ) ---
 function updateProfileUI(user) {
     const nameEl = document.getElementById('profileName');
     const emailEl = document.getElementById('profileEmail');
     const phoneEl = document.getElementById('profilePhone');
     const imgEl = document.getElementById('displayProfileImg');
 
-    if(nameEl) nameEl.innerText = user.name || "İsimsiz";
+    // Mavi Tik SVG İkonu
+    const verifiedIconSVG = `
+    <svg class="verified-tick" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: #1da1f2; margin-left: 8px; vertical-align: middle;">
+        <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.416-.166-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 2.049 1.43 3.81 3.35 4.327a4.56 4.56 0 00-.238 1.402c0 2.21 1.71 4 3.818 4 .47 0 .92-.084 1.336-.25.62 1.333 1.926 2.25 3.437 2.25s2.816-.917 3.437-2.25c.416.166.866.25 1.336.25 2.11 0 3.818-1.79 3.818-4 0-.495-.084-.965-.238-1.402 1.92-.517 3.35-2.278 3.35-4.327zM12 17.5l-4.5-4.5 1.414-1.414L12 14.672l7.086-7.086 1.414 1.414L12 17.5z"/>
+    </svg>`;
+
+    if(nameEl) {
+        // innerText yerine innerHTML kullanıyoruz ki SVG çalışsın
+        nameEl.innerHTML = user.name || "İsimsiz";
+        
+        // Eğer kullanıcı veritabanında onaylıysa (is_verified: true) ikonu ekle
+        if (user.is_verified === true) {
+            nameEl.innerHTML += verifiedIconSVG;
+        }
+    }
+
     if(emailEl) emailEl.innerText = user.email || "";
     if(phoneEl) phoneEl.innerText = user.phone || "";
 
@@ -102,8 +118,9 @@ function updateProfileUI(user) {
         }
     }
 }
+// ----------------------------------------------------
 
-// +++ BİLDİRİM FONKSİYONLARI (YENİ) +++
+// +++ BİLDİRİM FONKSİYONLARI +++
 let notificationsData = [];
 
 async function checkNotifications(token) {
@@ -114,7 +131,6 @@ async function checkNotifications(token) {
         const data = await res.json();
         notificationsData = data;
 
-        // Okunmamış var mı?
         const hasUnread = data.some(n => !n.is_read);
         const badge = document.getElementById('notificationBadge');
         
@@ -133,9 +149,8 @@ window.openNotificationsModal = async function() {
     const badge = document.getElementById('notificationBadge');
 
     new bootstrap.Modal(modalEl).show();
-    if(badge) badge.classList.add('d-none'); // Kırmızı noktayı gizle
+    if(badge) badge.classList.add('d-none');
 
-    // Backend'e okundu bilgisi gönder
     const token = localStorage.getItem('token');
     fetch(`${API_URL}/api/notifications/read`, { method: 'PUT', headers: { 'Authorization': `Bearer ${token}` }});
 
@@ -151,9 +166,7 @@ window.openNotificationsModal = async function() {
             ? (notif.sender_image.startsWith('http') ? notif.sender_image : `${API_URL}${notif.sender_image}`)
             : 'https://via.placeholder.com/50';
         
-        const bgColor = notif.is_read ? 'bg-white' : 'bg-light'; // Okunmamışlar hafif gri
-        
-        // Tarih formatla
+        const bgColor = notif.is_read ? 'bg-white' : 'bg-light';
         const date = new Date(notif.created_at).toLocaleDateString('tr-TR', {day:'numeric', month:'short'});
 
         listEl.innerHTML += `
@@ -172,7 +185,6 @@ window.openNotificationsModal = async function() {
         `;
     });
 }
-// +++++++++++++++++++++++++++++++++++++
 
 async function fetchUserStats(token, user) {
     try {
@@ -231,11 +243,7 @@ async function openConnectionsModal(type) {
     } catch (err) { listEl.innerHTML = '<div class="text-danger p-2 small">Hata.</div>'; }
 }
 
-// --- İLAN ÇEKME FONKSİYONLARI (KISA VERSİYONLAR) ---
-// (Not: Yukarıdaki tam versiyonlarda yazdığım için burayı kısa geçiyorum, ama mantık aynı)
-
 async function fetchMyPets(token, user) {
-    // ... (Mevcut kodunun aynısı)
     const container = document.getElementById('myAdsContainer');
     if (!container) return;
     try {
@@ -280,7 +288,6 @@ async function fetchMyCaretakers(token, user) {
         myData.forEach(item => {
              const rawImg = item.imageurl || item.imageUrl;
              let imgUrl = rawImg ? (rawImg.startsWith('http') ? rawImg : `${API_URL}${rawImg}`) : 'https://via.placeholder.com/600';
-             // Bakıcı kartı özel olduğu için manuel ekliyorum
              container.innerHTML += `
             <div class="col-md-6 col-lg-4">
                 <div class="card h-100 shadow-sm border-0 border-warning overflow-hidden">
@@ -316,7 +323,6 @@ async function fetchMyVets(token, user) {
 }
 
 function createCardHTML(item, imgUrl, type, link, badge) {
-    // Genel Kart Oluşturucu
     let title = item.name || item.clinicName || item.clinicname;
     let subtitle = item.species ? `${item.species} • ${item.age} Yaş` : (item.vetname || item.vetName || '');
     
@@ -339,7 +345,6 @@ function createCardHTML(item, imgUrl, type, link, badge) {
     </div>`;
 }
 
-// Diğer Edit/Delete Modal Fonksiyonları Aynen Kalıyor (Zaten yukarıda tanımlı)
 function openEditProfileModal() {
     if (!currentUser) return;
     document.getElementById('editName').value = currentUser.name || "";
