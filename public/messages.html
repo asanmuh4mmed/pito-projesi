@@ -7,8 +7,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;500;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.4/dist/index.min.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script type="module">
+        import { EmojiButton } from 'https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.4/dist/index.min.js';
+        // Kütüphaneyi global pencere nesnesine atıyoruz ki aşağıdaki script erişebilsin
+        window.EmojiButton = EmojiButton;
+        // Yüklendiğini haber ver
+        window.dispatchEvent(new Event('emojiLibReady'));
+    </script>
 
     <style>
         :root { 
@@ -39,6 +47,7 @@
             margin-bottom: 0.8rem;
             border-left: 4px solid transparent;
             position: relative; /* Silme butonu için */
+            overflow: hidden;
         }
         .message-card:hover {
             transform: translateY(-2px);
@@ -49,31 +58,37 @@
             border-left: 4px solid var(--primary-clay);
         }
 
-        /* Silme Butonu Stili */
+        /* --- SİLME BUTONU STİLİ (YENİ) --- */
         .delete-chat-btn {
             position: absolute;
             top: 10px;
             right: 10px;
-            background: rgba(255, 255, 255, 0.9);
-            border: none;
-            color: #dc3545;
-            width: 28px;
-            height: 28px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #f0f0f0;
+            color: #dc3545;
             display: flex;
             align-items: center;
             justify-content: center;
-            opacity: 0; /* Varsayılan gizli */
-            transition: opacity 0.2s, background 0.2s;
+            opacity: 0; /* Gizli */
+            transform: translateX(10px);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 10;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .message-card:hover .delete-chat-btn {
-            opacity: 1; /* Üzerine gelince göster */
-        }
+        
         .delete-chat-btn:hover {
-            background: #dc3545;
+            background-color: #dc3545;
             color: white;
+            transform: scale(1.1) !important;
+        }
+
+        /* Kartın üzerine gelince butonu göster */
+        .message-card:hover .delete-chat-btn {
+            opacity: 1;
+            transform: translateX(0);
         }
 
         /* Sohbet Balonları */
@@ -104,7 +119,6 @@
             border: 1px solid #eee;
         }
 
-        /* Resim Önizleme Stili */
         .chat-image {
             max-width: 100%;
             border-radius: 12px;
@@ -185,10 +199,8 @@
             border: 1px solid #ddd;
         }
         
-        /* Emoji Panelini Modalın Üstüne Çıkar */
-        .emoji-picker {
-            z-index: 10000 !important;
-        }
+        /* Emojiyi Modalın üstüne çıkar */
+        .emoji-picker { z-index: 10000 !important; }
     </style>
 </head>
 <body>
@@ -302,17 +314,17 @@
     let chatRefreshInterval = null;
     let selectedMessageFile = null; 
 
-    // --- EMOJI SEÇİCİ (GÜNCELLENDİ) ---
-    document.addEventListener('DOMContentLoaded', () => {
+    // --- EMOJI BAŞLATICI (GÜNCELLENDİ) ---
+    function initEmojiPicker() {
         const trigger = document.querySelector('#emojiBtn');
         const input = document.querySelector('#replyInput');
 
-        if(trigger && input) {
+        if(trigger && input && window.EmojiButton) {
             const picker = new EmojiButton({
                 position: 'top-start',
                 theme: 'light',
                 autoHide: false,
-                zIndex: 10000 
+                zIndex: 10000 // Modalın üstünde görünsün
             });
 
             picker.on('emoji', selection => {
@@ -321,13 +333,20 @@
             });
 
             trigger.addEventListener('click', (e) => {
-                e.preventDefault(); 
+                e.preventDefault();
                 picker.togglePicker(trigger);
             });
         }
-    });
+    }
 
-    // --- RESİM İŞLEMLERİ ---
+    // Kütüphane yüklenince veya sayfa açılınca dene
+    window.addEventListener('emojiLibReady', initEmojiPicker);
+    document.addEventListener('DOMContentLoaded', () => {
+        // Eğer kütüphane zaten indiyse
+        if(window.EmojiButton) initEmojiPicker();
+    });
+    // ----------------------------------------
+
     function previewMessageImage() {
         const fileInput = document.getElementById('messageFileInput');
         const previewContainer = document.getElementById('imagePreviewContainer');
@@ -384,13 +403,14 @@
         }
     }
 
-    // --- SİLME FONKSİYONU (YENİ) ---
+    // --- SOHBET SİLME FONKSİYONU ---
     async function deleteChat(event, partnerId, petId) {
-        event.stopPropagation(); // Kartın tıklanmasını engelle (Sohbeti açmasın)
+        event.stopPropagation(); // Kartın tıklanmasını (chat açmayı) engelle
         
+        // SweetAlert Onayı
         const result = await Swal.fire({
             title: 'Sohbeti Sil?',
-            text: "Bu kişiyle olan tüm mesajlaşma geçmişiniz silinecek!",
+            text: "Bu kişiyle olan tüm mesajlaşma geçmişiniz kalıcı olarak silinecek.",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
@@ -408,14 +428,14 @@
                 });
 
                 if (res.ok) {
-                    Swal.fire('Silindi!', 'Sohbet başarıyla silindi.', 'success');
+                    Swal.fire('Silindi!', 'Sohbet silindi.', 'success');
                     fetchMessages(); // Listeyi yenile
                 } else {
-                    Swal.fire('Hata', 'Silinirken bir sorun oluştu.', 'error');
+                    Swal.fire('Hata', 'Silme işlemi başarısız.', 'error');
                 }
             } catch (e) {
                 console.error(e);
-                Swal.fire('Hata', 'Sunucu hatası.', 'error');
+                Swal.fire('Hata', 'Bağlantı hatası.', 'error');
             }
         }
     }
@@ -442,10 +462,7 @@
                 const otherId = msg.sender_id === myId ? msg.receiver_id : msg.sender_id;
                 const pId = msg.pet_id || 0; 
                 const threadKey = `${otherId}-${pId}`;
-                
-                if (!threads[threadKey]) {
-                    threads[threadKey] = msg;
-                }
+                if (!threads[threadKey]) threads[threadKey] = msg;
             });
 
             const uniqueThreads = Object.values(threads);
@@ -453,7 +470,6 @@
 
             container.innerHTML = uniqueThreads.map(msg => {
                 let otherName = msg.sender_id === myId ? (msg.receiver_name || "Kullanıcı") : msg.sender_name;
-                
                 const pId = msg.pet_id || 0;
                 const partnerId = msg.sender_id === myId ? msg.receiver_id : msg.sender_id;
                 const unreadClass = (msg.receiver_id === myId && msg.is_read === false) ? "unread" : "";
@@ -462,15 +478,13 @@
                 let dateStr = "";
                 try {
                     const d = new Date(msg.createdAt);
-                    if(!isNaN(d.getTime())) {
-                         dateStr = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
-                    }
+                    if(!isNaN(d.getTime())) dateStr = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
                 } catch(e){}
 
                 let displayMsg = msg.message;
                 if(!displayMsg && msg.image_url) displayMsg = "📷 Fotoğraf";
 
-                // --- KART YAPISI (SİLME BUTONU EKLENDİ) ---
+                // --- KART + SİLME BUTONU ---
                 return `
                     <div class="card message-card shadow-sm p-3 mb-2 ${unreadClass}" onclick="openChat(${partnerId}, ${pId}, '${otherName.replace(/'/g, "\\'")}')">
                         
@@ -518,7 +532,6 @@
                     const realImgUrl = data.user.profileimageurl.startsWith('http') 
                         ? data.user.profileimageurl 
                         : `${API_URL}${data.user.profileimageurl}`;
-                    
                     const imgElements = document.querySelectorAll(`#list-img-${userId}`);
                     imgElements.forEach(img => img.src = realImgUrl);
                 }
