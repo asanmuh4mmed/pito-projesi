@@ -1,43 +1,32 @@
+// --- js/user-profile.js (GÜNCEL - MAVİ TİK & MESLEK DAHİL) ---
+
 const API_URL = 'https://pitopets.com'; 
 let profileUserId = null;
-let myCurrentId = null; // Token'dan gelen kendi ID'miz
+let myCurrentId = null; 
 
-// Token'ı çözüp ID'yi alan yardımcı fonksiyon
 function parseJwt(token) {
-    try {
-        return JSON.parse(atob(token.split('.')[1]));
-    } catch (e) {
-        return null;
-    }
+    try { return JSON.parse(atob(token.split('.')[1])); } catch (e) { return null; }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
     
-    // 1. Token Kontrolü (Yoksa giriş ekranına at)
-    if (!token) {
-        window.location.href = 'login.html';
-        return;
-    }
+    if (!token) { window.location.href = 'login.html'; return; }
 
-    // 2. Token'dan Kendi ID'mizi Alalım
     const payload = parseJwt(token);
     if (payload && payload.id) {
         myCurrentId = payload.id;
     } else {
-        // Token bozuksa çıkış yap
         localStorage.removeItem('token');
         window.location.href = 'login.html';
         return;
     }
 
-    // 3. Hangi Profili Göstereceğiz? (URL'den veya Token'dan)
     const urlParams = new URLSearchParams(window.location.search);
-    
     if (urlParams.get('id')) {
-        profileUserId = urlParams.get('id'); // URL'deki ID
+        profileUserId = urlParams.get('id'); 
     } else {
-        profileUserId = myCurrentId; // URL boşsa kendi profilim
+        profileUserId = myCurrentId; 
     }
 
     await loadUserProfile();
@@ -65,90 +54,77 @@ async function loadUserProfile() {
 function renderProfile(data) {
     const user = data.user;
     const stats = data.stats;
-    
-    // Kendi profilimiz mi? (Token ID ile karşılaştırıyoruz)
     const isMe = (String(myCurrentId) === String(user.id));
 
-    // Temel Bilgiler
-    document.getElementById('profileName').innerText = user.name;
-    document.getElementById('profileAbout').innerText = user.about_me || "Henüz bir biyografi eklenmemiş.";
+    // --- 1. İSİM ve MAVİ TİK ---
+    const nameEl = document.getElementById('profileName');
+    nameEl.innerHTML = user.name; 
+
+    // Mavi Tik Ekleme (Eğer onaylıysa)
+    if (user.is_verified === true || user.is_verified === "true" || user.is_verified === 1) {
+        nameEl.innerHTML += `
+        <svg class="verified-tick" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: #1da1f2; margin-left: 8px; vertical-align: sub;">
+            <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.416-.166-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 2.049 1.43 3.81 3.35 4.327a4.56 4.56 0 00-.238 1.402c0 2.21 1.71 4 3.818 4 .47 0 .92-.084 1.336-.25.62 1.333 1.926 2.25 3.437 2.25s2.816-.917 3.437-2.25c.416.166.866.25 1.336.25 2.11 0 3.818-1.79 3.818-4 0-.495-.084-.965-.238-1.402 1.92-.517 3.35-2.278 3.35-4.327zM12 17.5l-4.5-4.5 1.414-1.414L12 14.672l7.086-7.086 1.414 1.414L12 17.5z"/>
+        </svg>`;
+    }
+
+    // --- 2. MESLEK ve BİYOGRAFİ ---
+    // Eğer meslek varsa ismin altında şık bir etiket olarak göster
+    const jobHTML = user.job_title 
+        ? `<div class="mb-2"><span class="badge bg-light text-dark border px-3 py-2" style="font-size: 0.9rem; letter-spacing: 0.5px;">${user.job_title}</span></div>` 
+        : '';
+        
+    document.getElementById('profileAbout').innerHTML = jobHTML + (user.about_me || "Henüz bir biyografi eklenmemiş.");
     
+    // --- 3. Profil Resmi ---
     const imgUrl = user.profileimageurl 
         ? (user.profileimageurl.startsWith('http') ? user.profileimageurl : `${API_URL}${user.profileimageurl}`)
         : 'https://via.placeholder.com/150';
     document.getElementById('profileImage').src = imgUrl;
 
-    // İstatistikler
+    // --- 4. İstatistikler ---
     const followerEl = document.getElementById('followerCount');
     const followingEl = document.getElementById('followingCount');
 
-    followerEl.innerHTML = `
-        <h4 class="fw-bold mb-0" style="color: #A64D32;">${stats.followers}</h4>
-        <small class="text-muted">Takipçi</small>
-    `;
-    followingEl.innerHTML = `
-        <h4 class="fw-bold mb-0" style="color: #A64D32;">${stats.following}</h4>
-        <small class="text-muted">Takip</small>
-    `;
+    followerEl.innerHTML = `<h4 class="fw-bold mb-0" style="color: #A64D32;">${stats.followers}</h4><small class="text-muted">Takipçi</small>`;
+    followingEl.innerHTML = `<h4 class="fw-bold mb-0" style="color: #A64D32;">${stats.following}</h4><small class="text-muted">Takip</small>`;
 
     followerEl.style.cursor = "pointer";
     followingEl.style.cursor = "pointer";
     followerEl.onclick = () => openConnectionsModal('followers');
     followingEl.onclick = () => openConnectionsModal('following');
 
-    // --- BUTON AYARLARI ---
+    // --- 5. Butonlar ---
     const btnContainer = document.getElementById('profileActionBtn');
     if (isMe) {
-        // Kendi profilimse Düzenle butonu (profile.html'e yönlendirir)
         btnContainer.innerHTML = `<a href="profile.html" class="btn btn-outline-secondary rounded-pill px-4">Profili Düzenle</a>`;
     } else {
-        // Başkasıysa Takip + Mesaj butonlarını göster
         updateFollowButton(stats.isFollowing);
     }
 }
 
 function updateFollowButton(isFollowing) {
     const btnContainer = document.getElementById('profileActionBtn');
-    let followBtnHTML = '';
+    let followBtnHTML = isFollowing 
+        ? `<button onclick="toggleFollow()" class="btn btn-secondary rounded-pill px-4 me-2">Takip Ediliyor</button>` 
+        : `<button onclick="toggleFollow()" class="btn btn-primary rounded-pill px-4 me-2" style="background-color: #A64D32; border:none;">Takip Et</button>`;
 
-    if (isFollowing) {
-        followBtnHTML = `<button onclick="toggleFollow()" class="btn btn-secondary rounded-pill px-4 me-2">Takip Ediliyor</button>`;
-    } else {
-        followBtnHTML = `<button onclick="toggleFollow()" class="btn btn-primary rounded-pill px-4 me-2" style="background-color: #A64D32; border:none;">Takip Et</button>`;
-    }
-
-    // Mesaj Butonunu Ekle
     const msgBtnHTML = `<button onclick="openMessageModal()" class="btn btn-outline-dark rounded-pill px-4"><i class="fa-regular fa-paper-plane me-2"></i>Mesaj</button>`;
-
     btnContainer.innerHTML = followBtnHTML + msgBtnHTML;
 }
 
 async function toggleFollow() {
     const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = 'login.html';
-        return;
-    }
+    if (!token) { window.location.href = 'login.html'; return; }
 
     try {
         const res = await fetch(`${API_URL}/api/users/follow`, {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ targetId: profileUserId })
         });
-
-        const result = await res.json();
-        if (res.ok) {
-            loadUserProfile(); // Verileri güncelle
-        } else {
-            alert(result.message);
-        }
-    } catch (err) {
-        console.error(err);
-    }
+        if (res.ok) { loadUserProfile(); } else { alert((await res.json()).message); }
+    } catch (err) { console.error(err); }
 }
 
 async function openConnectionsModal(type) {
@@ -192,13 +168,9 @@ async function openConnectionsModal(type) {
     }
 }
 
-// +++ MESAJLAŞMA FONKSİYONLARI +++
 function openMessageModal() {
     const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = 'login.html';
-        return;
-    }
+    if (!token) { window.location.href = 'login.html'; return; }
     new bootstrap.Modal(document.getElementById('messageModal')).show();
 }
 
@@ -212,10 +184,7 @@ async function sendMessage() {
     try {
         const res = await fetch(`${API_URL}/api/messages`, {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json', 
-                'Authorization': `Bearer ${token}` 
-            },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({
                 receiver_id: profileUserId, 
                 pet_id: 0, 
@@ -226,9 +195,7 @@ async function sendMessage() {
 
         if(res.ok) {
             alert("Mesajınız iletildi! 📨");
-            const modalEl = document.getElementById('messageModal');
-            const modal = bootstrap.Modal.getInstance(modalEl);
-            modal.hide();
+            bootstrap.Modal.getInstance(document.getElementById('messageModal')).hide();
             msgInput.value = '';
         } else {
             const err = await res.json();
@@ -240,7 +207,6 @@ async function sendMessage() {
     }
 }
 
-// +++ İLAN LİSTELEME FONKSİYONLARI +++
 function renderTabs(listings) {
     const adoptList = document.getElementById('adoptList');
     const breedList = document.getElementById('breedList');

@@ -362,6 +362,7 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // 1. BAŞKASININ PROFİLİNİ GÖR (GET)
+// 1. BAŞKASININ PROFİLİNİ GÖR (GET) - GÜNCELLENDİ
 app.get('/api/users/profile/:id', async (req, res) => {
     const targetUserId = parseInt(req.params.id);
     
@@ -378,8 +379,9 @@ app.get('/api/users/profile/:id', async (req, res) => {
     }
 
     try {
+        // GÜNCELLEME: is_verified ve job_title EKLENDİ
         const userRes = await pool.query(
-            `SELECT id, name, profileImageUrl, about_me, createdAt FROM users WHERE id = $1`, 
+            `SELECT id, name, profileImageUrl, about_me, createdAt, is_verified, job_title FROM users WHERE id = $1`, 
             [targetUserId]
         );
 
