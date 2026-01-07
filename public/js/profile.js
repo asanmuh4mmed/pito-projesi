@@ -1,11 +1,11 @@
-// --- js/profile.js (GÜNCEL - TOKEN KORUMALI + MAVİ TİK + MESLEK DAHİL) ---
+// --- js/profile.js (GÜNCEL - DONMA SORUNU GİDERİLDİ) ---
 
 const API_URL = 'https://pitopets.com'; 
 let currentDeleteId = null;
 let currentDeleteType = null; 
 let currentUser = null;
 
-// --- YENİ EKLENEN TOKEN ÇÖZÜCÜ ---
+// Token Çözücü
 function parseJwt(token) {
     try {
         return JSON.parse(atob(token.split('.')[1]));
@@ -13,7 +13,6 @@ function parseJwt(token) {
         return null;
     }
 }
-// ----------------------------------
 
 document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
@@ -24,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // 2. Token Bozuksa Temizle ve At (User objesine bağımlılığı kaldırdık)
+    // 2. Token Bozuksa Temizle ve At
     const payload = parseJwt(token);
     if (!payload) {
         localStorage.removeItem('token');
@@ -35,40 +34,50 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupEventListeners();
 
     try {
-        // 3. Backend'den Güncel Veriyi Çek
+        // 3. Kullanıcı Verisini Çek
         const userRes = await fetch(`${API_URL}/api/auth/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        // Eğer token süresi dolmuşsa (401/403) çıkış yaptır
+        // Token süresi dolmuşsa
         if (userRes.status === 401 || userRes.status === 403) {
             throw new Error("Oturum süresi doldu");
         }
 
-        if (!userRes.ok) throw new Error("Oturum hatası");
+        if (!userRes.ok) throw new Error("Veri alınamadı");
 
-        currentUser = await userRes.json();
+        // --- KRİTİK DÜZELTME BURADA ---
+        // Eğer sunucudan boş veri gelirse (User silinmişse vs.) hata fırlat
+        const userData = await userRes.json();
+        if (!userData || !userData.id) {
+            throw new Error("Kullanıcı bulunamadı");
+        }
+
+        currentUser = userData;
+        
+        // Veri sağlamsa arayüzü doldur
         updateProfileUI(currentUser);
 
-        // 2. İstatistikler
+        // Diğer verileri çek (Hata olsa bile devam etsin diye ayrı ayrı try-catch bloğuna alabilirsin ama şimdilik standart bırakıyorum)
         await fetchUserStats(token, currentUser);
-
-        // 3. İlanlar
         await fetchMyPets(token, currentUser);
         await fetchMyBreedingAds(token, currentUser); 
         await fetchMyCaretakers(token, currentUser);
         await fetchMyVets(token, currentUser);
-
-        // 4. BİLDİRİMLERİ KONTROL ET
         await checkNotifications(token);
 
     } catch (error) {
-        console.error("Yükleme Hatası:", error);
+        console.error("Profil Yükleme Hatası:", error);
         
-        // Sadece kritik oturum hatalarında çıkış yap
-        if (error.message === "Oturum süresi doldu") {
+        // Eğer kritik bir sorun varsa (Kullanıcı yoksa, token geçersizse) 
+        // sayfada "..." olarak bekletmek yerine direkt login'e at.
+        if (error.message === "Oturum süresi doldu" || error.message === "Kullanıcı bulunamadı") {
             localStorage.removeItem('token'); 
+            localStorage.removeItem('user');
             window.location.href = 'login.html';
+        } else {
+            // Başka bir hataysa (internet kesik vs.) kullanıcıya bildir
+            alert("Veriler yüklenirken bir hata oluştu: " + error.message);
         }
     }
 });
@@ -111,21 +120,15 @@ function setupEventListeners() {
     }
 }
 
-// --- GÜNCELLENEN updateProfileUI FONKSİYONU ---
+// --- updateProfileUI FONKSİYONU ---
 function updateProfileUI(user) {
-    // Dedektif Kodu (İstersen silebilirsin)
-    console.log("--------------------------------");
-    console.log("Profil Verisi Yüklendi:", user);
-    console.log("Meslek:", user.job_title); 
-    console.log("--------------------------------");
-
     const nameEl = document.getElementById('profileName');
     const emailEl = document.getElementById('profileEmail');
     const phoneEl = document.getElementById('profilePhone');
     const imgEl = document.getElementById('displayProfileImg');
     const jobEl = document.getElementById('profileJob');
 
-    // Mavi Tik SVG İkonu
+    // Mavi Tik SVG
     const verifiedIconSVG = `
     <svg class="verified-tick" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: #1da1f2; margin-left: 8px; vertical-align: middle;">
         <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.416-.166-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 2.049 1.43 3.81 3.35 4.327a4.56 4.56 0 00-.238 1.402c0 2.21 1.71 4 3.818 4 .47 0 .92-.084 1.336-.25.62 1.333 1.926 2.25 3.437 2.25s2.816-.917 3.437-2.25c.416.166.866.25 1.336.25 2.11 0 3.818-1.79 3.818-4 0-.495-.084-.965-.238-1.402 1.92-.517 3.35-2.278 3.35-4.327zM12 17.5l-4.5-4.5 1.414-1.414L12 14.672l7.086-7.086 1.414 1.414L12 17.5z"/>
@@ -133,18 +136,12 @@ function updateProfileUI(user) {
 
     if(nameEl) {
         nameEl.innerHTML = user.name || "İsimsiz";
-        
-        // Mavi Tik Kontrolü
         if (user.is_verified === true || user.is_verified === "true" || user.is_verified === 1) {
             nameEl.innerHTML += verifiedIconSVG;
         }
     }
 
-    // Meslek Bilgisini Yazdır
-    if (jobEl) {
-        jobEl.innerText = user.job_title || ""; 
-    }
-
+    if (jobEl) jobEl.innerText = user.job_title || ""; 
     if(emailEl) emailEl.innerText = user.email || "";
     if(phoneEl) phoneEl.innerText = user.phone || "";
 
@@ -159,9 +156,8 @@ function updateProfileUI(user) {
     }
 }
 
-// +++ BİLDİRİM FONKSİYONLARI +++
+// +++ BİLDİRİMLER +++
 let notificationsData = [];
-
 async function checkNotifications(token) {
     try {
         const res = await fetch(`${API_URL}/api/notifications`, {
@@ -169,16 +165,10 @@ async function checkNotifications(token) {
         });
         const data = await res.json();
         notificationsData = data;
-
         const hasUnread = data.some(n => !n.is_read);
         const badge = document.getElementById('notificationBadge');
-        
-        if (hasUnread && badge) {
-            badge.classList.remove('d-none');
-        } else if (badge) {
-            badge.classList.add('d-none');
-        }
-
+        if (hasUnread && badge) badge.classList.remove('d-none');
+        else if (badge) badge.classList.add('d-none');
     } catch (err) { console.error(err); }
 }
 
@@ -186,60 +176,43 @@ window.openNotificationsModal = async function() {
     const modalEl = document.getElementById('notificationsModal');
     const listEl = document.getElementById('notificationsList');
     const badge = document.getElementById('notificationBadge');
-
     new bootstrap.Modal(modalEl).show();
     if(badge) badge.classList.add('d-none');
-
     const token = localStorage.getItem('token');
     fetch(`${API_URL}/api/notifications/read`, { method: 'PUT', headers: { 'Authorization': `Bearer ${token}` }});
-
     listEl.innerHTML = '';
-
     if (notificationsData.length === 0) {
         listEl.innerHTML = '<div class="text-center p-3 text-muted small">Bildirim yok.</div>';
         return;
     }
-
     notificationsData.forEach(notif => {
-        const img = notif.sender_image 
-            ? (notif.sender_image.startsWith('http') ? notif.sender_image : `${API_URL}${notif.sender_image}`)
-            : 'https://via.placeholder.com/50';
-        
+        const img = notif.sender_image ? (notif.sender_image.startsWith('http') ? notif.sender_image : `${API_URL}${notif.sender_image}`) : 'https://via.placeholder.com/50';
         const bgColor = notif.is_read ? 'bg-white' : 'bg-light';
         const date = new Date(notif.created_at).toLocaleDateString('tr-TR', {day:'numeric', month:'short'});
-
         listEl.innerHTML += `
             <a href="user-profile.html?id=${notif.sender_id}" class="list-group-item list-group-item-action border-0 mb-1 rounded-3 ${bgColor} p-3">
                 <div class="d-flex align-items-center gap-3">
                     <img src="${img}" class="rounded-circle" width="40" height="40" style="object-fit:cover;">
                     <div class="flex-grow-1">
-                        <p class="mb-0 small text-dark">
-                            <span class="fw-bold">${notif.sender_name}</span> ${notif.message}
-                        </p>
+                        <p class="mb-0 small text-dark"><span class="fw-bold">${notif.sender_name}</span> ${notif.message}</p>
                         <small class="text-muted" style="font-size: 0.7rem;">${date}</small>
                     </div>
                     ${!notif.is_read ? '<span class="badge bg-danger rounded-circle p-1"> </span>' : ''}
                 </div>
-            </a>
-        `;
+            </a>`;
     });
 }
 
 async function fetchUserStats(token, user) {
     try {
-        const res = await fetch(`${API_URL}/api/users/profile/${user.id}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const res = await fetch(`${API_URL}/api/users/profile/${user.id}`, { headers: { 'Authorization': `Bearer ${token}` } });
         const data = await res.json();
-        
         const followerEl = document.getElementById('myFollowerCount');
         const followingEl = document.getElementById('myFollowingCount');
-
         if(followerEl && data.stats) {
             followerEl.querySelector('h5').innerText = data.stats.followers;
             followerEl.onclick = () => openConnectionsModal('followers');
         }
-
         if(followingEl && data.stats) {
             followingEl.querySelector('h5').innerText = data.stats.following;
             followingEl.onclick = () => openConnectionsModal('following');
@@ -250,34 +223,25 @@ async function fetchUserStats(token, user) {
 async function openConnectionsModal(type) {
     const titleEl = document.getElementById('connectionsTitle');
     const listEl = document.getElementById('connectionsList');
-    
     new bootstrap.Modal(document.getElementById('connectionsModal')).show();
-
     titleEl.innerText = type === 'followers' ? 'Takipçilerim' : 'Takip Ettiklerim';
     listEl.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-primary spinner-border-sm"></div></div>';
-
     try {
         const res = await fetch(`${API_URL}/api/users/connections/${currentUser.id}`);
         const data = await res.json();
         const userList = type === 'followers' ? data.followers : data.following;
-        
         listEl.innerHTML = ''; 
         if (userList.length === 0) {
             listEl.innerHTML = '<div class="text-center p-3 text-muted small">Listeniz boş.</div>';
             return;
         }
-
         userList.forEach(u => {
-            const userImg = u.profileimageurl 
-                ? (u.profileimageurl.startsWith('http') ? u.profileimageurl : `${API_URL}${u.profileimageurl}`)
-                : 'https://via.placeholder.com/50';
-
+            const userImg = u.profileimageurl ? (u.profileimageurl.startsWith('http') ? u.profileimageurl : `${API_URL}${u.profileimageurl}`) : 'https://via.placeholder.com/50';
             listEl.innerHTML += `
                 <a href="user-profile.html?id=${u.id}" class="list-group-item list-group-item-action d-flex align-items-center gap-3 border-0 rounded-3 mb-1 p-2">
                     <img src="${userImg}" class="rounded-circle object-fit-cover" width="40" height="40">
                     <span class="fw-bold text-dark small">${u.name}</span>
-                </a>
-            `;
+                </a>`;
         });
     } catch (err) { listEl.innerHTML = '<div class="text-danger p-2 small">Hata.</div>'; }
 }
@@ -364,7 +328,6 @@ async function fetchMyVets(token, user) {
 function createCardHTML(item, imgUrl, type, link, badge) {
     let title = item.name || item.clinicName || item.clinicname;
     let subtitle = item.species ? `${item.species} • ${item.age} Yaş` : (item.vetname || item.vetName || '');
-    
     return `
     <div class="col-md-6 col-lg-4">
         <div class="card h-100 shadow-sm border-0 position-relative overflow-hidden">
@@ -375,9 +338,7 @@ function createCardHTML(item, imgUrl, type, link, badge) {
                 <p class="text-muted small">${subtitle}</p>
                 <div class="d-flex justify-content-between mt-3 gap-2">
                     <a href="${link}?id=${item.id}" class="btn btn-sm btn-outline-primary rounded-pill px-3 flex-grow-1" style="border-color: #A64D32; color: #A64D32;">Gör</a>
-                    <button onclick="openDeleteModal(${item.id}, '${type}')" class="btn btn-sm btn-outline-danger rounded-pill px-3">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
+                    <button onclick="openDeleteModal(${item.id}, '${type}')" class="btn btn-sm btn-outline-danger rounded-pill px-3"><i class="fa-solid fa-trash"></i></button>
                 </div>
             </div>
         </div>
@@ -388,12 +349,8 @@ function openEditProfileModal() {
     if (!currentUser) return;
     document.getElementById('editName').value = currentUser.name || "";
     document.getElementById('editPhone').value = currentUser.phone || "";
-    
     const jobInput = document.getElementById('editJob');
-    if (jobInput) {
-        jobInput.value = currentUser.job_title || "";
-    }
-    
+    if (jobInput) jobInput.value = currentUser.job_title || "";
     new bootstrap.Modal(document.getElementById('editProfileModal')).show();
 }
 
@@ -418,15 +375,10 @@ async function handleProfileUpdate(e) {
     const formData = new FormData();
     formData.append('name', document.getElementById('editName').value);
     formData.append('phone', document.getElementById('editPhone').value);
-    
     const jobInput = document.getElementById('editJob');
-    if (jobInput) {
-        formData.append('job_title', jobInput.value);
-    }
-
+    if (jobInput) formData.append('job_title', jobInput.value);
     const file = document.getElementById('editImageFile').files[0];
     if (file) formData.append('newProfileImage', file);
-    
     const token = localStorage.getItem('token');
     const res = await fetch(`${API_URL}/api/auth/me`, { method: 'PUT', headers: { 'Authorization': `Bearer ${token}` }, body: formData });
     if(res.ok) { alert("Güncellendi!"); window.location.reload(); }
