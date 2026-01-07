@@ -82,8 +82,15 @@ function setupEventListeners() {
     }
 }
 
-// --- GÜNCELLENEN KISIM BURASI (MAVİ TİK EKLENDİ) ---
+// --- GÜNCELLENEN updateProfileUI FONKSİYONU ---
 function updateProfileUI(user) {
+    // 1. DEDEKTİF KODU: Konsola gelen veriyi basar (F12 -> Console sekmesinden bakabilirsin)
+    console.log("--------------------------------");
+    console.log("Profil Verisi Yüklendi:", user);
+    console.log("İsim:", user.name);
+    console.log("is_verified Değeri:", user.is_verified, "(Türü: " + typeof user.is_verified + ")");
+    console.log("--------------------------------");
+
     const nameEl = document.getElementById('profileName');
     const emailEl = document.getElementById('profileEmail');
     const phoneEl = document.getElementById('profilePhone');
@@ -96,11 +103,12 @@ function updateProfileUI(user) {
     </svg>`;
 
     if(nameEl) {
-        // innerText yerine innerHTML kullanıyoruz ki SVG çalışsın
         nameEl.innerHTML = user.name || "İsimsiz";
         
-        // Eğer kullanıcı veritabanında onaylıysa (is_verified: true) ikonu ekle
-        if (user.is_verified === true) {
+        // GÜNCELLEME: Kontrolü gevşettik. 
+        // Veritabanından bazen true (boolean), bazen "true" (string), bazen de 1 (number) gelebilir.
+        // Hepsini kabul etmesi için bu şekilde yazdım:
+        if (user.is_verified === true || user.is_verified === "true" || user.is_verified === 1) {
             nameEl.innerHTML += verifiedIconSVG;
         }
     }
