@@ -57,34 +57,31 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
         
-        /* Benim Mesajım */
         .bubble-me { 
             background-color: var(--bubble-me); 
             color: var(--text-me); 
             align-self: flex-end; 
-            border-bottom-right-radius: 4px; /* Köşe Efekti */
+            border-bottom-right-radius: 4px; 
         }
         
-        /* Karşı Tarafın Mesajı */
         .bubble-other { 
             background-color: var(--bubble-other); 
             color: var(--text-other); 
             align-self: flex-start; 
-            border-bottom-left-radius: 4px; /* Köşe Efekti */
+            border-bottom-left-radius: 4px; 
             border: 1px solid #eee;
         }
 
         #chatBody { 
             height: 480px; 
             overflow-y: auto; 
-            background-color: #f2f2f2; /* WhatsApp tarzı hafif gri arka plan */
+            background-color: #f2f2f2; 
             background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23dacdc8' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
             padding: 20px;
             display: flex;
             flex-direction: column;
         }
         
-        /* Modern Input Alanı */
         .chat-input-area {
             background-color: #ffffff;
             padding: 15px;
@@ -122,7 +119,6 @@
             transform: scale(1.05);
         }
 
-        /* Profil Resmi */
         .chat-profile-img {
             width: 42px; 
             height: 42px; 
@@ -132,7 +128,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        /* Kaydırma Çubuğu (Scrollbar) */
         #chatBody::-webkit-scrollbar { width: 6px; }
         #chatBody::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 10px; }
         #chatBody::-webkit-scrollbar-track { background-color: transparent; }
@@ -190,11 +185,11 @@
                 <div class="d-flex align-items-center" style="cursor: pointer;" onclick="goToProfile()">
                     <div class="position-relative me-3">
                         <img id="chatHeaderImg" src="https://via.placeholder.com/50" class="chat-profile-img">
-                        <span style="position:absolute; bottom:0; right:0; width:10px; height:10px; bg-success; border-radius:50%; border:2px solid white;"></span>
                     </div>
                     <div>
                         <h6 class="fw-bold mb-0 text-dark" id="chatPartnerName">...</h6>
                         <span class="badge bg-light text-secondary border fw-normal" id="chatSubjectName">...</span>
+                        <div style="font-size: 0.7rem; color: #999;">Profili Gör <i class="fa-solid fa-chevron-right fa-xs"></i></div>
                     </div>
                 </div>
                 <div class="d-flex align-items-center gap-2">
@@ -255,11 +250,16 @@
         });
     });
 
+    // --- PROFİLE GİTME FONKSİYONU (DÜZELTİLDİ) ---
     function goToProfile() {
         if(currentChatPartner) {
+            console.log("Profile gidiliyor, ID:", currentChatPartner);
             window.location.href = `user-profile.html?id=${currentChatPartner}`;
+        } else {
+            console.error("ID bulunamadı");
         }
     }
+    // ----------------------------------------------
 
     async function fetchMessages() {
         const container = document.getElementById('messagesList');
@@ -276,7 +276,6 @@
                 return;
             }
 
-            // Mesajları grupla (Son mesajı al)
             const threads = {};
             messages.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
@@ -295,15 +294,12 @@
 
             container.innerHTML = uniqueThreads.map(msg => {
                 let otherName = msg.sender_id === myId ? (msg.receiver_name || "Kullanıcı") : msg.sender_name;
-                // Eğer sender_image backend'den geliyorsa buraya ekle
-                let otherImage = 'https://via.placeholder.com/150?text=' + otherName.charAt(0).toUpperCase(); 
                 
                 const pId = msg.pet_id || 0;
                 const partnerId = msg.sender_id === myId ? msg.receiver_id : msg.sender_id;
                 const unreadClass = (msg.receiver_id === myId && msg.is_read === false) ? "unread" : "";
                 const petLabel = msg.pet_name || 'Genel Sohbet';
                 
-                // Tarih Formatlama (Invalid Date Düzeltmesi)
                 let dateStr = "";
                 try {
                     const d = new Date(msg.createdAt);
@@ -312,10 +308,12 @@
                     }
                 } catch(e){}
 
+                // DİKKAT: img tag'ine 'profile-img-id-${partnerId}' ID'si verdik. 
+                // Aşağıdaki lazyLoadProfileImages fonksiyonu burayı dolduracak.
                 return `
-                    <div class="card message-card shadow-sm p-3 mb-2 ${unreadClass}" onclick="openChat(${partnerId}, ${pId}, '${otherName.replace(/'/g, "\\'")}', '${otherImage}')">
+                    <div class="card message-card shadow-sm p-3 mb-2 ${unreadClass}" onclick="openChat(${partnerId}, ${pId}, '${otherName.replace(/'/g, "\\'")}')">
                         <div class="d-flex align-items-center">
-                            <img src="${otherImage}" class="rounded-circle me-3" width="50" height="50" style="object-fit:cover;">
+                            <img id="list-img-${partnerId}" src="https://via.placeholder.com/150?text=${otherName.charAt(0)}" class="rounded-circle me-3" width="50" height="50" style="object-fit:cover;">
                             <div class="flex-grow-1 overflow-hidden">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     <h6 class="fw-bold mb-0 text-truncate">${otherName}</h6>
@@ -333,32 +331,64 @@
                     </div>`;
             }).join('');
 
+            // Listeyi bastıktan sonra resimleri yükle
+            lazyLoadProfileImages(uniqueThreads);
+
         } catch (error) { 
             console.error(error);
             container.innerHTML = '<div class="text-center text-danger py-3">Bağlantı hatası!</div>';
         }
     }
 
-    async function openChat(otherId, petId, otherName, otherImage) {
-        currentChatPartner = otherId;
+    // --- YENİ: LİSTE RESİMLERİNİ SONRADAN YÜKLEME FONKSİYONU ---
+    // Bu fonksiyon backend eksikliğini kapatır.
+    async function lazyLoadProfileImages(threads) {
+        const token = localStorage.getItem('token');
+        // Benzersiz ID'leri bul (aynı kişiyle birden fazla sohbet varsa tek sefer sorgulayalım)
+        const userIds = [...new Set(threads.map(m => m.sender_id === myId ? m.receiver_id : m.sender_id))];
+
+        for (const userId of userIds) {
+            try {
+                // API'ye sor: Bu kişinin resmi var mı?
+                const res = await fetch(`${API_URL}/api/users/profile/${userId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+
+                if(data.user && data.user.profileimageurl) {
+                    const realImgUrl = data.user.profileimageurl.startsWith('http') 
+                        ? data.user.profileimageurl 
+                        : `${API_URL}${data.user.profileimageurl}`;
+                    
+                    // Listede bu ID'ye sahip tüm img etiketlerini güncelle
+                    const imgElements = document.querySelectorAll(`#list-img-${userId}`);
+                    imgElements.forEach(img => img.src = realImgUrl);
+                }
+            } catch(e) { /* Hata varsa placeholder kalır */ }
+        }
+    }
+    // -----------------------------------------------------------
+
+    async function openChat(partnerId, petId, otherName) {
+        // ID'yi sayıya çevirerek garantiye alıyoruz
+        currentChatPartner = parseInt(partnerId);
         currentPetId = petId;
         
         document.getElementById('chatPartnerName').innerText = otherName;
         document.getElementById('chatSubjectName').innerText = petId === 0 ? "Genel Sohbet" : `İlan #${petId}`;
         
-        // Hızlıca varsayılan resmi koy, sonra gerçeğini çek
-        document.getElementById('chatHeaderImg').src = otherImage;
-        fetchUserProfileImage(otherId); // Gerçek resmi arka planda çek
+        // Önce placeholder koy
+        document.getElementById('chatHeaderImg').src = `https://via.placeholder.com/150?text=${otherName.charAt(0)}`;
+        // Sonra gerçeğini çekip güncelle
+        fetchHeaderProfileImage(currentChatPartner);
 
         chatModalInstance.show();
         await loadChatHistory();
-        markAsRead(otherId, petId);
+        markAsRead(currentChatPartner, petId);
 
         clearInterval(chatRefreshInterval);
         chatRefreshInterval = setInterval(loadChatHistory, 3000);
     }
 
-    async function fetchUserProfileImage(userId) {
+    async function fetchHeaderProfileImage(userId) {
         try {
             const token = localStorage.getItem('token');
             const res = await fetch(`${API_URL}/api/users/profile/${userId}`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -386,11 +416,9 @@
             });
             const history = await response.json();
 
-            // Scroll durumu
             const isAtBottom = chatBody.scrollHeight - chatBody.scrollTop <= chatBody.clientHeight + 100;
 
             chatBody.innerHTML = history.map(m => {
-                // Saat Formatı (Invalid Date Düzeltmesi)
                 let timeStr = "";
                 try {
                     const d = new Date(m.createdAt);
@@ -424,7 +452,6 @@
         
         if (!msgText) return;
 
-        // Optimistik UI (Hemen ekrana bas)
         const chatBody = document.getElementById('chatBody');
         chatBody.innerHTML += `
             <div class="d-flex flex-column align-items-end">
@@ -449,8 +476,8 @@
             });
 
             if (response.ok) {
-                loadChatHistory(); // Gerçek veriyi çek ve güncelle
-                fetchMessages();   // Sol listeyi güncelle
+                loadChatHistory(); 
+                fetchMessages();   
             }
         } catch (e) { console.error(e); }
     }
@@ -462,7 +489,7 @@
                 method: 'PUT',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            fetchMessages(); // Listeyi güncelle (kırmızı nokta gitsin)
+            fetchMessages(); 
         } catch (e) {}
     }
 </script>
