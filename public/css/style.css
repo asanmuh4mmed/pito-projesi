@@ -1,7 +1,4 @@
-/* =========================================
-   PİTO - EARTH & COFFEE TEMA (KAHVE TONLARI)
-   FINAL SÜRÜM - İKONLAR EKLENDİ
-   ========================================= */
+
 
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Quicksand:wght@300;400;500;600;700&display=swap');
 
@@ -74,18 +71,17 @@ p, .text-muted, .lead, small {
 .nav-link:hover, .nav-link.active {
     color: var(--primary-clay) !important;
 }
-
 /* =========================================
-   HERO BÖLÜMÜ (ANA SAYFA)
+   HERO BÖLÜMÜ (ANA SAYFA) - GÜNCELLENDİ
    ========================================= */
 .hero {
     position: relative;
     width: 100%;
     height: 85vh; /* Tam ekran yüksekliği */
     
-    /* Kedi ve Köpek Yavrusu Görseli + Kahve Filtre */
+    /* GÜNCELLENDİ: Yeni Görsel + Kahve Filtre */
     background: linear-gradient(rgba(62, 39, 35, 0.4), rgba(62, 39, 35, 0.4)),
-                url('https://images.pexels.com/photos/46024/pexels-photo-46024.jpeg?auto=compress&cs=tinysrgb&w=1600');
+                url('https://static.wixstatic.com/media/cef2e1_e7a72ebf4ecb442bae90e7cea4a35f04~mv2.jpg/v1/fill/w_980,h_551,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/cef2e1_e7a72ebf4ecb442bae90e7cea4a35f04~mv2.jpg');
     
     background-size: cover;
     background-position: center;
@@ -113,7 +109,6 @@ p, .text-muted, .lead, small {
     font-weight: 600;
     margin-bottom: 3rem;
 }
-
 /* =========================================
    ANA SAYFA ÖZEL BUTONLARI
    ========================================= */
