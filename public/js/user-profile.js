@@ -1,19 +1,43 @@
 const API_URL = 'https://pitopets.com'; 
 let profileUserId = null;
-let profileData = null;
+let myCurrentId = null; // Token'dan gelen kendi ID'miz
+
+// Token'ı çözüp ID'yi alan yardımcı fonksiyon
+function parseJwt(token) {
+    try {
+        return JSON.parse(atob(token.split('.')[1]));
+    } catch (e) {
+        return null;
+    }
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const storedUser = JSON.parse(localStorage.getItem('user'));
+    const token = localStorage.getItem('token');
     
-    // ID belirleme mantığı
-    if (urlParams.get('id')) {
-        profileUserId = urlParams.get('id');
-    } else if (storedUser) {
-        profileUserId = storedUser.id;
-    } else {
-        window.location.href = 'login.html'; 
+    // 1. Token Kontrolü (Yoksa giriş ekranına at)
+    if (!token) {
+        window.location.href = 'login.html';
         return;
+    }
+
+    // 2. Token'dan Kendi ID'mizi Alalım
+    const payload = parseJwt(token);
+    if (payload && payload.id) {
+        myCurrentId = payload.id;
+    } else {
+        // Token bozuksa çıkış yap
+        localStorage.removeItem('token');
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // 3. Hangi Profili Göstereceğiz? (URL'den veya Token'dan)
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    if (urlParams.get('id')) {
+        profileUserId = urlParams.get('id'); // URL'deki ID
+    } else {
+        profileUserId = myCurrentId; // URL boşsa kendi profilim
     }
 
     await loadUserProfile();
@@ -28,7 +52,6 @@ async function loadUserProfile() {
         if (!res.ok) throw new Error("Profil yüklenemedi");
 
         const data = await res.json();
-        profileData = data; 
         
         renderProfile(data);
         renderTabs(data.listings);
@@ -43,8 +66,8 @@ function renderProfile(data) {
     const user = data.user;
     const stats = data.stats;
     
-    // HATA VEREN KISIM BURASIYDI (Artık düzeldi)
-    const isMe = isCurrentUser(user.id);
+    // Kendi profilimiz mi? (Token ID ile karşılaştırıyoruz)
+    const isMe = (String(myCurrentId) === String(user.id));
 
     // Temel Bilgiler
     document.getElementById('profileName').innerText = user.name;
@@ -76,7 +99,7 @@ function renderProfile(data) {
     // --- BUTON AYARLARI ---
     const btnContainer = document.getElementById('profileActionBtn');
     if (isMe) {
-        // Kendi profilimse Düzenle butonu
+        // Kendi profilimse Düzenle butonu (profile.html'e yönlendirir)
         btnContainer.innerHTML = `<a href="profile.html" class="btn btn-outline-secondary rounded-pill px-4">Profili Düzenle</a>`;
     } else {
         // Başkasıysa Takip + Mesaj butonlarını göster
@@ -84,7 +107,6 @@ function renderProfile(data) {
     }
 }
 
-// +++ BUTONLARI GÜNCELLEME (TAKİP + MESAJ) +++
 function updateFollowButton(isFollowing) {
     const btnContainer = document.getElementById('profileActionBtn');
     let followBtnHTML = '';
@@ -104,7 +126,7 @@ function updateFollowButton(isFollowing) {
 async function toggleFollow() {
     const token = localStorage.getItem('token');
     if (!token) {
-        alert("Takip etmek için giriş yapmalısınız.");
+        window.location.href = 'login.html';
         return;
     }
 
@@ -129,7 +151,6 @@ async function toggleFollow() {
     }
 }
 
-// --- POPUP (MODAL) İŞLEMLERİ ---
 async function openConnectionsModal(type) {
     const titleEl = document.getElementById('connectionsTitle');
     const listEl = document.getElementById('connectionsList');
@@ -175,7 +196,7 @@ async function openConnectionsModal(type) {
 function openMessageModal() {
     const token = localStorage.getItem('token');
     if (!token) {
-        alert("Mesaj göndermek için giriş yapmalısınız.");
+        window.location.href = 'login.html';
         return;
     }
     new bootstrap.Modal(document.getElementById('messageModal')).show();
@@ -259,10 +280,4 @@ function createCard(pet, type) {
             </div>
         </div>
     </div>`;
-}
-
-// --- EKSİK OLAN VE HATAYI ÇÖZEN FONKSİYON ---
-function isCurrentUser(id) {
-    const stored = JSON.parse(localStorage.getItem('user'));
-    return stored && String(stored.id) === String(id);
 }
