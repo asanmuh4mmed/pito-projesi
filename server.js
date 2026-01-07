@@ -355,18 +355,47 @@ app.get('/api/messages/thread/:otherId/:petId', authenticateToken, async (req, r
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.post('/api/messages', authenticateToken, async (req, res) => {
+// server.js - POST /api/messages (GÜNCELLENDİ: RESİM + MESAJ)
+app.post('/api/messages', authenticateToken, upload.single('messageImage'), async (req, res) => {
+    // FormData ile geldiği için veriler req.body içinde, dosya req.file içinde olur
     const receiver_id = req.body.receiver_id !== undefined ? req.body.receiver_id : req.body.receiverId;
     let pet_id = req.body.pet_id !== undefined ? req.body.pet_id : (req.body.petId || 0);
     const { message, post_type } = req.body;
 
-    if (!receiver_id || !message) return res.status(400).json({ message: "Eksik bilgi" });
+    // Hem mesaj hem resim yoksa hata ver (Biri varsa sorun yok)
+    if (!receiver_id || (!message && !req.file)) {
+        return res.status(400).json({ message: "Mesaj veya resim göndermelisiniz." });
+    }
 
     try {
-        const sql = `INSERT INTO messages (sender_id, receiver_id, pet_id, post_type, message, is_read) VALUES ($1, $2, $3, $4, $5, FALSE) RETURNING *`;
-        const result = await pool.query(sql, [req.user.id, receiver_id, pet_id, post_type || 'adoption', message]);
+        let imageUrl = null;
+        // Eğer resim varsa yükle
+        if (req.file) {
+            imageUrl = await uploadToSupabase(req.file);
+        }
+
+        // Veritabanına kaydet (imageUrl sütunu eklendi)
+        const sql = `
+            INSERT INTO messages (sender_id, receiver_id, pet_id, post_type, message, image_url, is_read) 
+            VALUES ($1, $2, $3, $4, $5, $6, FALSE) 
+            RETURNING *
+        `;
+        
+        const result = await pool.query(sql, [
+            req.user.id, 
+            receiver_id, 
+            pet_id, 
+            post_type || 'adoption', 
+            message || '', // Mesaj boşsa boş string olsun
+            imageUrl
+        ]);
+        
         res.status(201).json({ message: "Mesaj gönderildi", data: result.rows[0] });
-    } catch (err) { res.status(500).json({ message: "Hata: " + err.message }); }
+
+    } catch (err) { 
+        console.error("Mesaj Gönderme Hatası:", err);
+        res.status(500).json({ message: "Hata: " + err.message }); 
+    }
 });
 
 

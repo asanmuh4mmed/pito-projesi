@@ -7,6 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;500;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.4/dist/index.min.js"></script>
+
     <style>
         :root { 
             --primary-clay: #A64D32; 
@@ -45,7 +47,7 @@
             border-left: 4px solid var(--primary-clay);
         }
 
-        /* Sohbet Balonları (Modern) */
+        /* Sohbet Balonları */
         .chat-bubble { 
             max-width: 70%; 
             padding: 10px 16px; 
@@ -55,6 +57,7 @@
             position: relative;
             line-height: 1.5;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            word-wrap: break-word; /* Uzun kelimeleri böl */
         }
         
         .bubble-me { 
@@ -70,6 +73,14 @@
             align-self: flex-start; 
             border-bottom-left-radius: 4px; 
             border: 1px solid #eee;
+        }
+
+        /* Resim Önizleme Stili */
+        .chat-image {
+            max-width: 100%;
+            border-radius: 12px;
+            margin-bottom: 5px;
+            display: block;
         }
 
         #chatBody { 
@@ -131,6 +142,18 @@
         #chatBody::-webkit-scrollbar { width: 6px; }
         #chatBody::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 10px; }
         #chatBody::-webkit-scrollbar-track { background-color: transparent; }
+
+        /* Önizleme Alanı */
+        #imagePreviewContainer {
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            padding: 10px;
+        }
+        #imagePreview {
+            height: 80px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
     </style>
 </head>
 <body>
@@ -199,11 +222,31 @@
             </div>
 
             <div id="chatBody"></div>
+            
+            <div id="imagePreviewContainer" class="d-none">
+                <div class="position-relative d-inline-block">
+                    <img id="imagePreview" src="">
+                    <button onclick="clearImage()" class="btn btn-sm btn-danger position-absolute top-0 start-100 translate-middle rounded-circle" style="width: 20px; height: 20px; padding: 0; font-size: 10px; display:flex; align-items:center; justify-content:center;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
 
             <div class="chat-input-area">
                 <div class="d-flex gap-2 align-items-center">
-                    <button class="btn btn-light rounded-circle text-muted"><i class="fa-regular fa-face-smile"></i></button>
+                    
+                    <input type="file" id="messageFileInput" accept="image/*" class="d-none" onchange="previewMessageImage()">
+                    
+                    <button class="btn btn-light rounded-circle text-muted" onclick="document.getElementById('messageFileInput').click()" title="Resim Gönder">
+                        <i class="fa-solid fa-paperclip"></i>
+                    </button>
+                    
+                    <button class="btn btn-light rounded-circle text-muted" id="emojiBtn">
+                        <i class="fa-regular fa-face-smile"></i>
+                    </button>
+                    
                     <input type="text" id="replyInput" class="form-control modern-input" placeholder="Bir mesaj yazın..." autocomplete="off">
+                    
                     <button class="btn-send shadow-sm" id="sendBtn" onclick="sendReply()">
                         <i class="fa-solid fa-paper-plane"></i>
                     </button>
@@ -222,6 +265,49 @@
     let currentPetId = null;
     let chatModalInstance = null; 
     let chatRefreshInterval = null;
+    let selectedMessageFile = null; // Seçilen resim dosyası için
+
+    // --- EMOJI SEÇİCİ ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const picker = new EmojiButton({
+            position: 'top-start',
+            theme: 'light',
+            autoHide: false
+        });
+        const trigger = document.querySelector('#emojiBtn');
+        const input = document.querySelector('#replyInput');
+
+        if(trigger && input) {
+            picker.on('emoji', selection => {
+                input.value += selection.emoji;
+                input.focus();
+            });
+            trigger.addEventListener('click', () => picker.togglePicker(trigger));
+        }
+    });
+
+    // --- RESİM ÖNİZLEME VE TEMİZLEME ---
+    function previewMessageImage() {
+        const fileInput = document.getElementById('messageFileInput');
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        const previewImg = document.getElementById('imagePreview');
+
+        if (fileInput.files && fileInput.files[0]) {
+            selectedMessageFile = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                previewContainer.classList.remove('d-none');
+            }
+            reader.readAsDataURL(fileInput.files[0]);
+        }
+    }
+
+    function clearImage() {
+        document.getElementById('messageFileInput').value = "";
+        document.getElementById('imagePreviewContainer').classList.add('d-none');
+        selectedMessageFile = null;
+    }
 
     function parseJwt(token) { 
         try { return JSON.parse(atob(token.split('.')[1])); } catch (e) { return null; } 
@@ -243,6 +329,7 @@
 
         document.getElementById('chatModal').addEventListener('hidden.bs.modal', () => {
             clearInterval(chatRefreshInterval);
+            clearImage(); // Modal kapanınca resmi temizle
         });
 
         document.getElementById('replyInput').addEventListener('keypress', function (e) {
@@ -250,16 +337,11 @@
         });
     });
 
-    // --- PROFİLE GİTME FONKSİYONU (DÜZELTİLDİ) ---
     function goToProfile() {
         if(currentChatPartner) {
-            console.log("Profile gidiliyor, ID:", currentChatPartner);
             window.location.href = `user-profile.html?id=${currentChatPartner}`;
-        } else {
-            console.error("ID bulunamadı");
         }
     }
-    // ----------------------------------------------
 
     async function fetchMessages() {
         const container = document.getElementById('messagesList');
@@ -308,8 +390,10 @@
                     }
                 } catch(e){}
 
-                // DİKKAT: img tag'ine 'profile-img-id-${partnerId}' ID'si verdik. 
-                // Aşağıdaki lazyLoadProfileImages fonksiyonu burayı dolduracak.
+                // Mesaj önizlemesinde resim varsa "📷 Fotoğraf" yazsın
+                let displayMsg = msg.message;
+                if(!displayMsg && msg.image_url) displayMsg = "📷 Fotoğraf";
+
                 return `
                     <div class="card message-card shadow-sm p-3 mb-2 ${unreadClass}" onclick="openChat(${partnerId}, ${pId}, '${otherName.replace(/'/g, "\\'")}')">
                         <div class="d-flex align-items-center">
@@ -321,7 +405,7 @@
                                 </div>
                                 <div class="d-flex align-items-center justify-content-between">
                                     <p class="text-muted small mb-0 text-truncate" style="max-width: 180px;">
-                                        ${msg.sender_id === myId ? '<i class="fa-solid fa-check text-primary" style="font-size:0.7rem"></i> ' : ''} ${msg.message}
+                                        ${msg.sender_id === myId ? '<i class="fa-solid fa-check text-primary" style="font-size:0.7rem"></i> ' : ''} ${displayMsg}
                                     </p>
                                     ${msg.receiver_id === myId && msg.is_read === false ? '<span class="badge bg-danger rounded-circle p-1" style="width:8px; height:8px;"> </span>' : ''}
                                 </div>
@@ -331,7 +415,6 @@
                     </div>`;
             }).join('');
 
-            // Listeyi bastıktan sonra resimleri yükle
             lazyLoadProfileImages(uniqueThreads);
 
         } catch (error) { 
@@ -340,16 +423,12 @@
         }
     }
 
-    // --- YENİ: LİSTE RESİMLERİNİ SONRADAN YÜKLEME FONKSİYONU ---
-    // Bu fonksiyon backend eksikliğini kapatır.
     async function lazyLoadProfileImages(threads) {
         const token = localStorage.getItem('token');
-        // Benzersiz ID'leri bul (aynı kişiyle birden fazla sohbet varsa tek sefer sorgulayalım)
         const userIds = [...new Set(threads.map(m => m.sender_id === myId ? m.receiver_id : m.sender_id))];
 
         for (const userId of userIds) {
             try {
-                // API'ye sor: Bu kişinin resmi var mı?
                 const res = await fetch(`${API_URL}/api/users/profile/${userId}`, { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await res.json();
 
@@ -358,26 +437,20 @@
                         ? data.user.profileimageurl 
                         : `${API_URL}${data.user.profileimageurl}`;
                     
-                    // Listede bu ID'ye sahip tüm img etiketlerini güncelle
                     const imgElements = document.querySelectorAll(`#list-img-${userId}`);
                     imgElements.forEach(img => img.src = realImgUrl);
                 }
-            } catch(e) { /* Hata varsa placeholder kalır */ }
+            } catch(e) { }
         }
     }
-    // -----------------------------------------------------------
 
     async function openChat(partnerId, petId, otherName) {
-        // ID'yi sayıya çevirerek garantiye alıyoruz
         currentChatPartner = parseInt(partnerId);
         currentPetId = petId;
         
         document.getElementById('chatPartnerName').innerText = otherName;
         document.getElementById('chatSubjectName').innerText = petId === 0 ? "Genel Sohbet" : `İlan #${petId}`;
-        
-        // Önce placeholder koy
         document.getElementById('chatHeaderImg').src = `https://via.placeholder.com/150?text=${otherName.charAt(0)}`;
-        // Sonra gerçeğini çekip güncelle
         fetchHeaderProfileImage(currentChatPartner);
 
         chatModalInstance.show();
@@ -427,10 +500,18 @@
                     }
                 } catch(e){}
 
+                // Resim Gösterimi (Eğer varsa)
+                let imageHtml = "";
+                if (m.image_url) {
+                    const imgSrc = m.image_url.startsWith('http') ? m.image_url : `${API_URL}${m.image_url}`;
+                    imageHtml = `<img src="${imgSrc}" class="chat-image" onclick="window.open(this.src)">`;
+                }
+
                 return `
                 <div class="d-flex flex-column ${m.sender_id === myId ? 'align-items-end' : 'align-items-start'}">
                     <div class="chat-bubble ${m.sender_id === myId ? 'bubble-me' : 'bubble-other'}">
-                        ${m.message}
+                        ${imageHtml}
+                        ${m.message || ''}
                         <div class="text-end" style="font-size: 0.65rem; opacity: 0.7; margin-top: 4px; margin-bottom:-4px;">
                             ${timeStr} ${m.sender_id === myId ? '<i class="fa-solid fa-check ms-1"></i>' : ''}
                         </div>
@@ -445,37 +526,51 @@
         } catch (e) { console.error(e); }
     }
 
+    // --- MESAJ GÖNDERME FONKSİYONU (GÜNCELLENDİ) ---
     async function sendReply() {
         const input = document.getElementById('replyInput');
         const token = localStorage.getItem('token');
         const msgText = input.value.trim();
         
-        if (!msgText) return;
+        // Hem mesaj yok hem resim yoksa gönderme
+        if (!msgText && !selectedMessageFile) return;
 
+        // Geçici olarak ekrana ekle (UX için)
         const chatBody = document.getElementById('chatBody');
+        let tempImage = "";
+        if (selectedMessageFile) {
+            tempImage = `<div class="bg-light p-2 rounded mb-2"><i class="fa-solid fa-spinner fa-spin"></i> Resim gönderiliyor...</div>`;
+        }
+        
         chatBody.innerHTML += `
             <div class="d-flex flex-column align-items-end">
                 <div class="chat-bubble bubble-me" style="opacity:0.7">
+                    ${tempImage}
                     ${msgText}
                     <div class="text-end" style="font-size: 0.6rem; opacity: 0.7; margin-top: 4px;"><i class="fa-regular fa-clock"></i></div>
                 </div>
             </div>`;
-        
         chatBody.scrollTop = chatBody.scrollHeight;
         input.value = ''; 
+
+        // FormData Oluştur (Resim gönderimi için şart)
+        const formData = new FormData();
+        formData.append('receiver_id', currentChatPartner);
+        formData.append('pet_id', currentPetId);
+        formData.append('message', msgText);
+        if (selectedMessageFile) {
+            formData.append('messageImage', selectedMessageFile);
+        }
 
         try {
             const response = await fetch(`${API_URL}/api/messages`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({
-                    receiver_id: currentChatPartner,
-                    pet_id: currentPetId,
-                    message: msgText
-                })
+                headers: { 'Authorization': `Bearer ${token}` }, // Content-Type YAZMA!
+                body: formData
             });
 
             if (response.ok) {
+                clearImage(); // Resmi temizle
                 loadChatHistory(); 
                 fetchMessages();   
             }
