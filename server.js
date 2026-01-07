@@ -222,6 +222,7 @@ app.get('/api/breeding-pets', async (req, res) => {
     }
 });
 
+// server.js - GET /api/breeding-pets/:id (GÜNCELLENDİ)
 app.get('/api/breeding-pets/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -230,7 +231,8 @@ app.get('/api/breeding-pets/:id', async (req, res) => {
                 bp.*, 
                 u.name as ownerName, 
                 u.email as ownerEmail, 
-                u.profileImageUrl as ownerImage 
+                u.profileImageUrl as ownerImage,
+                u.is_verified as ownerVerified
             FROM breeding_pets bp 
             LEFT JOIN users u ON bp.user_id = u.id 
             WHERE bp.id = $1

@@ -1,4 +1,4 @@
-// --- js/breeding-detail.js (GÜNCELLENMİŞ VERSİYON) ---
+// --- js/breeding-detail.js (GÜNCELLENMİŞ VERSİYON - FOTO VE TİK EKLİ) ---
 
 const API_URL = 'https://pito-projesi.onrender.com';
 let currentPetOwnerId = null;
@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             headers: headers
         });
         
-        // Hata kontrolü
         const contentType = response.headers.get("content-type");
         if (!response.ok || (contentType && contentType.indexOf("application/json") === -1)) {
             throw new Error("İlan verisi alınamadı veya ilan henüz onaylanmamış.");
@@ -80,20 +79,47 @@ function renderPetDetail(pet, token) {
         const oName = pet.ownername || pet.ownerName || pet.users_name || "Kullanıcı";
         const oEmail = pet.owneremail || pet.ownerEmail || pet.users_email;
 
-        // +++ GÜNCELLEME: İSMİ LİNKE ÇEVİR (ZORLA STİL VERİLDİ) +++
-        const ownerNameEl = document.getElementById('ownerName');
-        if(ownerNameEl) {
-            // Rengi mavi, altı çizili ve tıklanabilir yapıyoruz
-            ownerNameEl.innerHTML = `
-                <a href="user-profile.html?id=${pet.user_id}" 
-                   style="color: #0d6efd !important; text-decoration: underline !important; cursor: pointer;">
-                    ${oName} <i class="fa-solid fa-arrow-up-right-from-square small ms-1 text-muted"></i>
-                </a>
+        // Profil Resmi Ayarlama
+        const oImageRaw = pet.ownerimage || pet.ownerImage;
+        let ownerImgUrl = 'https://via.placeholder.com/150?text=User';
+        if (oImageRaw) {
+            ownerImgUrl = oImageRaw.startsWith('http') ? oImageRaw : `${API_URL}${oImageRaw}`;
+        }
+
+        // Mavi Tik Kontrolü (Backend'den gelen ownerVerified verisi)
+        const isVerified = (pet.ownerverified === true || pet.ownerVerified === true || pet.ownerverified === "true");
+        const verifiedBadge = isVerified ? 
+            `<svg class="verified-tick" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: #1da1f2; margin-left: 4px; vertical-align: text-bottom;">
+                <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.416-.166-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 2.049 1.43 3.81 3.35 4.327a4.56 4.56 0 00-.238 1.402c0 2.21 1.71 4 3.818 4 .47 0 .92-.084 1.336-.25.62 1.333 1.926 2.25 3.437 2.25s2.816-.917 3.437-2.25c.416.166.866.25 1.336.25 2.11 0 3.818-1.79 3.818-4 0-.495-.084-.965-.238-1.402 1.92-.517 3.35-2.278 3.35-4.327zM12 17.5l-4.5-4.5 1.414-1.414L12 14.672l7.086-7.086 1.414 1.414L12 17.5z"/>
+            </svg>` : '';
+
+        // +++ GÜNCELLEME: İLAN SAHİBİ KARTI (RESİM + İSİM + TİK) +++
+        // Eğer ownerCardBody varsa, içeriğini tamamen değiştiriyoruz
+        if(ownerCardBody) {
+            ownerCardBody.innerHTML = `
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <img src="${ownerImgUrl}" class="rounded-circle shadow-sm border" style="width: 60px; height: 60px; object-fit: cover;">
+                    <div>
+                        <small class="text-muted fw-bold" style="font-size: 0.75rem; letter-spacing: 1px;">İLAN SAHİBİ</small>
+                        <h6 class="fw-bold mb-0 mt-1" style="color: #3E2723;">
+                            <a href="user-profile.html?id=${pet.user_id}" class="text-decoration-none text-dark hover-link">
+                                ${oName} ${verifiedBadge}
+                            </a>
+                        </h6>
+                        <small class="text-muted" id="displayEmail">
+                            <a href="mailto:${oEmail}" class="text-decoration-none text-muted">${oEmail}</a>
+                        </small>
+                    </div>
+                </div>
+                
+                <hr class="text-muted opacity-25">
+
+                <button onclick="openMessageModal()" class="btn w-100 py-2 rounded-pill fw-bold text-white shadow-sm hover-grow" style="background-color: #A64D32;">
+                    <i class="fa-regular fa-paper-plane me-2"></i>Mesaj Gönder
+                </button>
             `;
         }
         // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-        setLink('displayEmail', oEmail, 'mailto');
 
         if(messageBtn) messageBtn.style.display = 'block';
     } else {
@@ -115,20 +141,6 @@ function renderPetDetail(pet, token) {
 function setText(id, text) {
     const el = document.getElementById(id);
     if(el) el.innerText = text;
-}
-
-// Yardımcı Fonksiyon: Link oluştur (mailto:)
-function setLink(id, value, prefix) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    
-    if (value) {
-        el.innerText = value;
-        el.href = `${prefix}:${value}`;
-    } else {
-        el.innerText = "Belirtilmemiş";
-        el.removeAttribute('href');
-    }
 }
 
 function showError(msg) {

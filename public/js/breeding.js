@@ -199,8 +199,20 @@ function renderPets(pets) {
             imgUrl = resimVerisi.startsWith('http') ? resimVerisi : `${API_URL}${resimVerisi}`;
         }
         
-        const locationInfo = pet.location || "Konum Bilgisi Yok";
-
+// --- KONUM AYRIŞTIRMA (GÜNCELLENDİ) ---
+        let locationInfo = "Konum Bilgisi Yok";
+        
+        // 1. Önce veritabanındaki location sütununa bak
+        if (pet.location) {
+            locationInfo = pet.location;
+        } 
+        // 2. Yoksa description içindeki [Konum: İstanbul/Kadıköy] formatını ara
+        else if (pet.description && pet.description.includes('[Konum:')) {
+            const match = pet.description.match(/\[Konum:\s*(.*?)\]/);
+            if (match && match[1]) {
+                locationInfo = match[1];
+            }
+        }
         // --- İLAN SAHİBİ VE MAVİ TİK MANTIĞI ---
         const ownerName = pet.ownername || pet.ownerName || "İsimsiz Kullanıcı";
         
