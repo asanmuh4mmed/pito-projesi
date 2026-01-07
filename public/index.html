@@ -196,5 +196,33 @@
 <script src="js/index.js"></script>
 <script src="js/lang.js"></script>
 
+<div class="pito-chat-window" id="pitoChatWindow">
+    <iframe src="public/chatbot.html" class="pito-chat-frame" title="Pito Asistan"></iframe>
+</div>
+
+<div class="pito-chat-btn" onclick="toggleChat()">
+    <i class="fa-solid fa-robot" id="chatIcon"></i>
+</div>
+
+<script>
+    function toggleChat() {
+        const chatWindow = document.getElementById('pitoChatWindow');
+        const chatIcon = document.getElementById('chatIcon');
+        
+        chatWindow.classList.toggle('active');
+
+        if (chatWindow.classList.contains('active')) {
+            chatIcon.classList.remove('fa-robot');
+            chatIcon.classList.add('fa-xmark');
+            chatIcon.style.transform = 'rotate(90deg)';
+        } else {
+            chatIcon.classList.remove('fa-xmark');
+            chatIcon.classList.add('fa-robot');
+            chatIcon.style.transform = 'rotate(0deg)';
+        }
+    }
+</script>
+
+
 </body>
 </html>

@@ -963,3 +963,77 @@ footer a:hover {
     vertical-align: middle;
     fill: #1da1f2; /* Mavi onay rengi */
 }
+
+/* --- PITO CHATBOT WIDGET STİLLERİ --- */
+
+/* 1. Yuvarlak Buton */
+.pito-chat-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 65px;
+    height: 65px;
+    background: linear-gradient(135deg, #A64D32, #8c402a);
+    border-radius: 50%;
+    box-shadow: 0 8px 25px rgba(166, 77, 50, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10000;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 2px solid #fff;
+}
+
+.pito-chat-btn:hover {
+    transform: scale(1.1) rotate(-5deg);
+    box-shadow: 0 12px 30px rgba(166, 77, 50, 0.6);
+}
+
+.pito-chat-btn i {
+    color: white;
+    font-size: 28px;
+    transition: all 0.3s ease;
+}
+
+/* 2. Chat Penceresi */
+.pito-chat-window {
+    position: fixed;
+    bottom: 110px;
+    right: 30px;
+    width: 380px;
+    height: 600px;
+    max-height: 80vh;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    z-index: 9999;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.pito-chat-window.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.pito-chat-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* Mobil Uyumluluk */
+@media (max-width: 480px) {
+    .pito-chat-window {
+        width: 90%;
+        right: 5%;
+        bottom: 100px;
+        height: 70vh;
+    }
+}
