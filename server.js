@@ -122,9 +122,15 @@ app.post('/api/login', async (req, res) => {
 
 // --- KULLANICI ROTALARI ---
 app.get('/api/auth/me', authenticateToken, async (req, res) => {
-    try { const result = await pool.query("SELECT id, name, email, phone, profileImageUrl FROM users WHERE id = $1", [req.user.id]); res.json(result.rows[0]); } catch (err) { res.sendStatus(500); }
+    try { 
+        // DÜZELTME: Sorguya 'is_verified' eklendi!
+        const result = await pool.query("SELECT id, name, email, phone, profileImageUrl, is_verified FROM users WHERE id = $1", [req.user.id]); 
+        res.json(result.rows[0]); 
+    } catch (err) { 
+        console.error(err);
+        res.sendStatus(500); 
+    }
 });
-
 app.put('/api/auth/me', authenticateToken, upload.single('newProfileImage'), async (req, res) => {
     const { name, phone } = req.body;
     try {
