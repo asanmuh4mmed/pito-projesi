@@ -1,4 +1,4 @@
-// --- js/pets.js (FİLTRELİ VERSİYON) ---
+// --- js/pets.js (GÜNCELLENDİ: MAVİ TİK EKLENDİ) ---
 
 const API_URL = 'https://pito-projesi.onrender.com';
 
@@ -88,7 +88,7 @@ const cityData = {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const list = document.getElementById('petsContainer'); // DÜZELTİLDİ    
+    const list = document.getElementById('petsContainer'); 
     // --- ŞEHİR VE İLÇELERİ DOLDURMA ---
     const cityListElement = document.getElementById('cityOptions');
     const cityInputElement = document.getElementById('filterCity');
@@ -152,83 +152,91 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-   function renderPets(pets) {
-    // Eğer 'list' değişkeni yukarıda tanımlı değilse, burada tanımlayalım:
-    const list = document.getElementById('petsContainer') || document.getElementById('list'); 
-    
-    list.innerHTML = ''; 
+    function renderPets(pets) {
+        // Eğer 'list' değişkeni yukarıda tanımlı değilse, burada tanımlayalım:
+        const list = document.getElementById('petsContainer') || document.getElementById('list'); 
+        
+        list.innerHTML = ''; 
 
-    if (pets.length === 0) {
-        list.innerHTML = `<div class="col-12 text-center py-5 text-muted">Kriterlere uygun ilan bulunamadı.</div>`;
-        return;
-    }
-
-    pets.forEach(pet => {
-        // --- 1. Resim İşlemleri ---
-        const rawImg = pet.imageurl || pet.imageUrl;
-        let finalImage = 'https://via.placeholder.com/400x300?text=Resim+Yok';
-        if (rawImg) finalImage = rawImg.startsWith('http') ? rawImg : `${API_URL}${rawImg}`;
-
-        // --- 2. Durum Kontrolü ---
-        const status = pet.adoptionstatus || pet.adoptionStatus;
-        const isAdopted = status === 'Sahiplendirildi';
-
-        // --- 3. Konum Ayrıştırma (Senin Kodun) ---
-        let locationText = "Konum Yok";
-        // let displayStory = pet.story || ""; // Bu değişkeni kullanmıyorsan silebilirsin
-
-        if (pet.location) {
-            locationText = pet.location;
-        } 
-        else if (pet.story && pet.story.includes('[Konum:')) {
-            const match = pet.story.match(/\[Konum:\s*(.*?)\]/);
-            if (match && match[1]) {
-                locationText = match[1];
-            }
+        if (pets.length === 0) {
+            list.innerHTML = `<div class="col-12 text-center py-5 text-muted">Kriterlere uygun ilan bulunamadı.</div>`;
+            return;
         }
 
-        // --- 4. Sahip İsmi (YENİ EKLENEN KISIM) ---
-        const ownerName = pet.ownername || pet.ownerName || "İsimsiz Kullanıcı";
+        pets.forEach(pet => {
+            // --- 1. Resim İşlemleri ---
+            const rawImg = pet.imageurl || pet.imageUrl;
+            let finalImage = 'https://via.placeholder.com/400x300?text=Resim+Yok';
+            if (rawImg) finalImage = rawImg.startsWith('http') ? rawImg : `${API_URL}${rawImg}`;
 
-        // --- 5. Kart HTML ---
-        const card = `
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0 ${isAdopted ? 'opacity-75' : ''}">
-                
-                <div class="position-relative overflow-hidden rounded-top">
-                     ${isAdopted ? '<span class="position-absolute top-0 end-0 m-3 badge bg-secondary">Yuva Buldu</span>' : ''}
-                    <img src="${finalImage}" class="card-img-top" style="height: 250px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/400x300?text=Hata'">
-                </div>
-                
-                <div class="card-body p-4 text-center">
-                    <h5 class="card-title fw-bold mb-2">${pet.name}</h5>
-                    
-                    <div class="d-flex justify-content-center gap-2 mb-3">
-                        <span class="badge bg-light text-dark border">${pet.species || '?'}</span>
-                        <span class="badge bg-light text-dark border">${pet.gender || '-'}</span>
-                    </div>
+            // --- 2. Durum Kontrolü ---
+            const status = pet.adoptionstatus || pet.adoptionStatus;
+            const isAdopted = status === 'Sahiplendirildi';
 
-                    <div class="mb-2 small text-muted">
-                        <i class="fa-solid fa-location-dot text-danger me-1"></i> ${locationText}
+            // --- 3. Konum Ayrıştırma ---
+            let locationText = "Konum Yok";
+            if (pet.location) {
+                locationText = pet.location;
+            } 
+            else if (pet.story && pet.story.includes('[Konum:')) {
+                const match = pet.story.match(/\[Konum:\s*(.*?)\]/);
+                if (match && match[1]) {
+                    locationText = match[1];
+                }
+            }
+
+            // --- 4. Sahip İsmi ve Mavi Tik Kontrolü ---
+            const ownerName = pet.ownername || pet.ownerName || "İsimsiz Kullanıcı";
+            
+            // Backend'den gelen veriye göre mavi tik kontrolü
+            const isVerified = (pet.ownerVerified === true || pet.ownerVerified === 1 || pet.ownerVerified === "true");
+
+            // Mavi Tik İkonu (SVG)
+            const verifiedBadge = isVerified ? 
+                `<svg class="verified-tick" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: #1da1f2; margin-left: 3px; vertical-align: middle;">
+                    <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.416-.166-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 2.049 1.43 3.81 3.35 4.327a4.56 4.56 0 00-.238 1.402c0 2.21 1.71 4 3.818 4 .47 0 .92-.084 1.336-.25.62 1.333 1.926 2.25 3.437 2.25s2.816-.917 3.437-2.25c.416.166.866.25 1.336.25 2.11 0 3.818-1.79 3.818-4 0-.495-.084-.965-.238-1.402 1.92-.517 3.35-2.278 3.35-4.327zM12 17.5l-4.5-4.5 1.414-1.414L12 14.672l7.086-7.086 1.414 1.414L12 17.5z"/>
+                </svg>` 
+                : '';
+
+            // --- 5. Kart HTML ---
+            const card = `
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm border-0 ${isAdopted ? 'opacity-75' : ''}">
+                    
+                    <div class="position-relative overflow-hidden rounded-top">
+                          ${isAdopted ? '<span class="position-absolute top-0 end-0 m-3 badge bg-secondary">Yuva Buldu</span>' : ''}
+                        <img src="${finalImage}" class="card-img-top" style="height: 250px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/400x300?text=Hata'">
                     </div>
                     
-                    <div class="mb-4">
-                        <a href="user-profile.html?id=${pet.user_id}" class="text-decoration-none fw-bold text-dark hover-link small">
-                            <i class="fa-solid fa-user-circle text-muted me-1"></i> ${ownerName}
-                        </a>
+                    <div class="card-body p-4 text-center">
+                        <h5 class="card-title fw-bold mb-2">${pet.name}</h5>
+                        
+                        <div class="d-flex justify-content-center gap-2 mb-3">
+                            <span class="badge bg-light text-dark border">${pet.species || '?'}</span>
+                            <span class="badge bg-light text-dark border">${pet.gender || '-'}</span>
+                        </div>
+
+                        <div class="mb-2 small text-muted">
+                            <i class="fa-solid fa-location-dot text-danger me-1"></i> ${locationText}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <a href="user-profile.html?id=${pet.user_id}" class="text-decoration-none fw-bold text-dark hover-link small">
+                                <i class="fa-solid fa-user-circle text-muted me-1"></i> ${ownerName} ${verifiedBadge}
+                            </a>
+                        </div>
+                        
+                        ${isAdopted ? 
+                            `<button class="btn btn-secondary w-100 disabled">Sahiplendirildi</button>` : 
+                            `<a href="pet-detail.html?id=${pet.id}&type=adoption" class="btn btn-outline-primary w-100 rounded-pill">Detayları Gör</a>`
+                        }
                     </div>
-                    
-                    ${isAdopted ? 
-                        `<button class="btn btn-secondary w-100 disabled">Sahiplendirildi</button>` : 
-                        `<a href="pet-detail.html?id=${pet.id}&type=adoption" class="btn btn-outline-primary w-100 rounded-pill">Detayları Gör</a>`
-                    }
                 </div>
-            </div>
-        </div>`;
-        
-        list.innerHTML += card;
-    });
-}
+            </div>`;
+            
+            list.innerHTML += card;
+        });
+    }
 
     // --- FİLTRELEME MANTIĞI ---
     function applyFilters() {
@@ -245,15 +253,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const matchGender = (genderVal === 'all') || (pet.gender === genderVal);
 
             // Konum Arama (Story veya Location içinde)
-            // Hem story'ye hem location'a bakıyoruz, garanti olsun.
             const fullText = (pet.location || "" + pet.story || "").toLowerCase();
             
             let matchLocation = true;
             if (distVal) {
-                // İlçe seçilmişse, metin içinde ilçe adı geçiyor mu?
                 matchLocation = fullText.includes(distVal);
             } else if (cityVal) {
-                // Sadece şehir seçilmişse
                 matchLocation = fullText.includes(cityVal);
             }
 

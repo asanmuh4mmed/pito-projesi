@@ -165,10 +165,12 @@ app.put('/api/auth/me', authenticateToken, upload.single('newProfileImage'), asy
 });
 
 // --- GET ROTALARI ---
+// server.js - GET /api/pets (GÜNCELLENDİ: Mavi Tik Desteği)
 app.get('/api/pets', async (req, res) => {
     try { 
+        // GÜNCELLEME: u.is_verified eklendi
         const sql = `
-            SELECT p.*, u.name as ownerName, 'Sahiplendirme' as tur 
+            SELECT p.*, u.name as ownerName, u.is_verified as ownerVerified, 'Sahiplendirme' as tur 
             FROM pets p 
             LEFT JOIN users u ON p.user_id = u.id 
             ORDER BY p.id DESC
