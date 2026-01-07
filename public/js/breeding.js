@@ -1,8 +1,8 @@
-// --- js/breeding.js ---
+// --- js/breeding.js (GÜNCELLENDİ: MAVİ TİK EKLENDİ) ---
 
 const API_URL = 'https://pito-projesi.onrender.com';
 
-// 81 İL VE İLÇE VERİTABANI
+// 81 İL VE İLÇE VERİTABANI (DOKUNULMADI)
 const cityData = {
     "Adana": ["Aladağ", "Ceyhan", "Çukurova", "Feke", "İmamoğlu", "Karaisalı", "Karataş", "Kozan", "Pozantı", "Saimbeyli", "Sarıçam", "Seyhan", "Tufanbeyli", "Yumurtalık", "Yüreğir"],
     "Adıyaman": ["Besni", "Çelikhan", "Gerger", "Gölbaşı", "Kahta", "Merkez", "Samsat", "Sincik", "Tut"],
@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// NAVBAR GÜNCELLEME (AYNI KALDI)
+// NAVBAR GÜNCELLEME
 function updateNavbar() {
     const token = localStorage.getItem('token');
     const userStr = localStorage.getItem('user');
@@ -182,7 +182,7 @@ async function loadPets() {
     }
 }
 
-// LİSTELEME
+// LİSTELEME VE KART OLUŞTURMA (GÜNCELLENEN KISIM)
 function renderPets(pets) {
     const list = document.getElementById('breedingList');
     list.innerHTML = '';
@@ -199,11 +199,23 @@ function renderPets(pets) {
             imgUrl = resimVerisi.startsWith('http') ? resimVerisi : `${API_URL}${resimVerisi}`;
         }
         
-        // Konum Bilgisi Çekme (Description'dan veya Location'dan)
-        // Eğer location sütunu yoksa ve biz description'a eklediysek, oradan ayıklayabiliriz ama şimdilik sadece gösterelim.
-        // Eğer 'location' verisi geliyorsa onu gösterelim, yoksa 'Konum Belirtilmemiş'
         const locationInfo = pet.location || "Konum Bilgisi Yok";
 
+        // --- İLAN SAHİBİ VE MAVİ TİK MANTIĞI ---
+        const ownerName = pet.ownername || pet.ownerName || "İsimsiz Kullanıcı";
+        
+        // Backend'den gelen 'ownerVerified' bilgisini kontrol et
+        const verifiedData = pet.ownerVerified || pet.ownerverified;
+        const isVerified = (verifiedData === true || verifiedData === 1 || verifiedData === "true");
+
+        // Mavi Tik İkonu (SVG)
+        const verifiedBadge = isVerified ? 
+            `<svg class="verified-tick" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: #1da1f2; margin-left: 3px; vertical-align: middle;">
+                <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.416-.166-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 2.049 1.43 3.81 3.35 4.327a4.56 4.56 0 00-.238 1.402c0 2.21 1.71 4 3.818 4 .47 0 .92-.084 1.336-.25.62 1.333 1.926 2.25 3.437 2.25s2.816-.917 3.437-2.25c.416.166.866.25 1.336.25 2.11 0 3.818-1.79 3.818-4 0-.495-.084-.965-.238-1.402 1.92-.517 3.35-2.278 3.35-4.327zM12 17.5l-4.5-4.5 1.414-1.414L12 14.672l7.086-7.086 1.414 1.414L12 17.5z"/>
+            </svg>` 
+            : '';
+
+        // Kart HTML (İsim ve Tik eklendi)
         list.innerHTML += `
             <div class="col-md-6 col-lg-4">
                 <div class="card h-100 shadow-sm">
@@ -221,8 +233,14 @@ function renderPets(pets) {
                              <span class="badge bg-light text-dark border">${pet.gender}</span>
                         </div>
 
-                        <div class="mb-3 text-muted small">
+                        <div class="mb-2 text-muted small">
                              <i class="fa-solid fa-location-dot me-1"></i> ${locationInfo}
+                        </div>
+
+                        <div class="mb-3">
+                            <a href="user-profile.html?id=${pet.user_id}" class="text-decoration-none fw-bold text-dark small">
+                                <i class="fa-solid fa-user-circle text-muted"></i> ${ownerName} ${verifiedBadge}
+                            </a>
                         </div>
                         
                         <a href="breeding-detail.html?id=${pet.id}" class="btn btn-outline-danger w-100 rounded-pill fw-bold" style="border-color: #d63384; color: #d63384;">
@@ -234,7 +252,7 @@ function renderPets(pets) {
     });
 }
 
-// FİLTRELEME FONKSİYONU (GÜNCELLENDİ)
+// FİLTRELEME FONKSİYONU
 function applyFilters() {
     const filterSpecies = document.getElementById('filterSpecies');
     const filterCity = document.getElementById('filterCity');
@@ -245,11 +263,8 @@ function applyFilters() {
     const distVal = filterDistrict ? filterDistrict.value.toLowerCase() : '';
 
     const filtered = allBreedingPets.filter(p => {
-        // Tür Kontrolü
         const matchSpecies = (sVal === 'all' || p.species === sVal);
         
-        // Konum Kontrolü (Location sütunu veya Description içinde arama)
-        // Not: 'location' sütunu yoksa, 'description' içindeki "[Konum: İst/Kadıköy]" yazısını ararız.
         const locationText = (p.location || p.description || "").toLowerCase();
         
         let matchLocation = true;

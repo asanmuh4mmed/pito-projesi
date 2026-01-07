@@ -209,8 +209,16 @@ app.get('/api/pets/:id', async (req, res) => {
     }
 });
 
+// server.js - GET /api/breeding-pets (GÜNCELLENDİ)
 app.get('/api/breeding-pets', async (req, res) => {
-    try { const sql = `SELECT bp.*, u.name as ownerName, u.profileImageUrl as ownerImage FROM breeding_pets bp LEFT JOIN users u ON bp.user_id = u.id ORDER BY bp.id DESC`; const result = await pool.query(sql); res.json(result.rows); } catch (err) { res.status(500).json({ message: err.message }); }
+    try { 
+        // GÜNCELLEME: u.is_verified as ownerVerified eklendi
+        const sql = `SELECT bp.*, u.name as ownerName, u.is_verified as ownerVerified, u.profileImageUrl as ownerImage FROM breeding_pets bp LEFT JOIN users u ON bp.user_id = u.id ORDER BY bp.id DESC`; 
+        const result = await pool.query(sql); 
+        res.json(result.rows); 
+    } catch (err) { 
+        res.status(500).json({ message: err.message }); 
+    }
 });
 
 app.get('/api/breeding-pets/:id', async (req, res) => {
