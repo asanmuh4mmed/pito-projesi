@@ -960,13 +960,7 @@ footer a:hover {
 
 /* style.css dosyasının sonuna ekle */
 
-.verified-tick {
-    width: 16px; /* İkon boyutu */
-    height: 16px;
-    margin-left: 5px; /* İsim ile arasındaki boşluk */
-    vertical-align: text-bottom; /* İsimle aynı hizada durması için */
-    fill: #1da1f2; /* Resmi mavi onay rengi */
-}
+
 .verified-tick {
     width: 20px;
     height: 20px;
