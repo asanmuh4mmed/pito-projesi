@@ -8,6 +8,7 @@ const { createClient } = require('@supabase/supabase-js');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const path = require('path');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 require('dotenv').config();
 
 const app = express();
@@ -583,6 +584,46 @@ app.delete('/api/messages/thread/:otherId/:petId', authenticateToken, async (req
     } catch (err) {
         console.error("Silme hatası:", err);
         res.status(500).json({ message: "Sunucu hatası" });
+    }
+});
+
+// --- PITO BOT (YAPAY ZEKA) ROTASI ---
+app.post('/api/pito-bot', authenticateToken, async (req, res) => {
+    const { userMessage } = req.body;
+
+    if (!userMessage) return res.status(400).json({ message: "Mesaj boş olamaz." });
+
+    try {
+        // Gemini API'yi başlat
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        // Hızlı ve ücretsiz model
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        // Yapay Zekaya "Rol" Veriyoruz (Prompt Engineering)
+        const prompt = `
+            Senin adın "PITO Bot". Sen PITO (Evcil Hayvan Platformu) için çalışan, yardımsever, neşeli ve bilgili bir sanal veteriner asistanısın.
+            
+            GÖREVİN:
+            Kullanıcıların kedi, köpek, kuş, tavşan gibi evcil hayvanlarının sağlığı, beslenmesi, bakımı ve davranışları hakkındaki sorularını yanıtlamak.
+
+            KURALLAR:
+            1. Asla kesin tıbbi teşhis koyma (Örn: "Kedinin hastalığı şudur, hemen şu ilacı al" DEME). Bunun yerine "Bu belirtiler x, y olabilir, veterinerin görmesi iyi olur" gibi yönlendir.
+            2. Her zaman nazik, destekleyici ve bol emojili bir dil kullan. 🐾 🐱 🐶
+            3. Cevabının sonuna mutlaka şu uyarıyı ekle: "\n\n⚠️ *Not: Bu bir tavsiyedir. Kesin teşhis ve tedavi için lütfen sitemizdeki 'Veteriner Bul' sayfasından bir uzman hekime danışın.*"
+            4. Eğer kullanıcı hayvanlar dışında (siyaset, futbol vb.) bir şey sorarsa, nazikçe "Ben sadece sevimli dostlarımız hakkında konuşabilirim." de.
+
+            KULLANICI SORUSU: "${userMessage}"
+        `;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+
+        res.json({ reply: text });
+
+    } catch (err) {
+        console.error("Gemini Hatası:", err);
+        res.status(500).json({ message: "PITO Bot şu an biraz yorgun 😴 Lütfen daha sonra tekrar dene." });
     }
 });
 

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PITO Bot - Veteriner Asistanı</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Quicksand', sans-serif; background-color: #F9F6F0; height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; }
+        
+        .chat-container { 
+            width: 100%; max-width: 500px; height: 100vh; /* Mobilde tam ekran */
+            background: #fff; display: flex; flex-direction: column; overflow: hidden; position: relative;
+        }
+        @media (min-width: 576px) {
+            .chat-container { height: 85vh; border-radius: 25px; box-shadow: 0 15px 40px rgba(166, 77, 50, 0.15); }
+        }
+
+        .chat-header { 
+            background: #A64D32; color: white; padding: 15px 20px; 
+            display: flex; align-items: center; gap: 15px; 
+            border-bottom: 4px solid #8c402a;
+        }
+        
+        .bot-avatar { 
+            width: 50px; height: 50px; background: white; 
+            border-radius: 50%; padding: 5px; object-fit: contain; 
+            border: 2px solid #8c402a;
+        }
+
+        .chat-box { 
+            flex: 1; padding: 20px; overflow-y: auto; 
+            background: #fdfcf9; display: flex; flex-direction: column; gap: 15px; 
+            scroll-behavior: smooth;
+        }
+        
+        .message { 
+            max-width: 85%; padding: 12px 18px; border-radius: 18px; 
+            font-size: 0.95rem; line-height: 1.5; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .bot-msg { 
+            background: #fff; color: #333; align-self: flex-start; 
+            border-bottom-left-radius: 2px; border: 1px solid #eee; 
+        }
+        
+        .user-msg { 
+            background: #A64D32; color: white; align-self: flex-end; 
+            border-bottom-right-radius: 2px; 
+        }
+
+        .input-area { 
+            padding: 15px; background: white; border-top: 1px solid #eee; 
+            display: flex; gap: 10px; align-items: center; 
+        }
+        
+        .typing-indicator { 
+            font-size: 0.75rem; color: #999; margin-left: 20px; margin-bottom: 10px; 
+            display: none; font-style: italic; 
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">
+        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712009.png" class="bot-avatar">
+        <div>
+            <h5 class="mb-0 fw-bold">PITO Bot 🐾</h5>
+            <small style="opacity: 0.9;">7/24 Veteriner Asistanı</small>
+        </div>
+        <a href="index.html" class="btn btn-sm btn-outline-light ms-auto rounded-pill px-3"><i class="fa-solid fa-xmark"></i></a>
+    </div>
+
+    <div class="chat-box" id="chatBox">
+        <div class="message bot-msg">
+            Merhaba! Ben PITO Bot 🤖<br><br>
+            Sevimli dostunun sağlığı, bakımı veya beslenmesiyle ilgili aklına takılan her şeyi bana sorabilirsin. Sana nasıl yardımcı olayım?
+        </div>
+    </div>
+    
+    <div class="typing-indicator" id="typingIndicator">PITO Bot yazıyor... <i class="fa-solid fa-pen-nib fa-fade"></i></div>
+
+    <div class="input-area">
+        <input type="text" id="userInput" class="form-control rounded-pill border-0 bg-light py-3 px-4" placeholder="Örn: Köpeğim çok kaşınıyor..." style="box-shadow: none;">
+        <button onclick="sendMessage()" class="btn rounded-circle text-white shadow-sm" style="width: 50px; height: 50px; background: #A64D32;">
+            <i class="fa-solid fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script>
+    const API_URL = 'https://pito-projesi.onrender.com'; // Canlı sunucun
+
+    // Enter tuşuna basınca gönder
+    document.getElementById('userInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') sendMessage();
+    });
+
+    async function sendMessage() {
+        const input = document.getElementById('userInput');
+        const message = input.value.trim();
+        const chatBox = document.getElementById('chatBox');
+        const token = localStorage.getItem('token');
+
+        if (!message) return;
+        
+        // Giriş Kontrolü
+        if (!token) {
+            chatBox.innerHTML += `<div class="message bot-msg text-danger">⚠️ Bot ile konuşmak için önce giriş yapmalısınız. <a href='login.html'>Giriş Yap</a></div>`;
+            return;
+        }
+
+        // 1. Kullanıcı mesajını ekrana bas
+        chatBox.innerHTML += `<div class="message user-msg">${message}</div>`;
+        input.value = '';
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // 2. "Yazıyor..." göster
+        document.getElementById('typingIndicator').style.display = 'block';
+
+        try {
+            // 3. API'ye istek at
+            const res = await fetch(`${API_URL}/api/pito-bot`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ userMessage: message })
+            });
+
+            const data = await res.json();
+            
+            // 4. Bot cevabını ekrana bas
+            // Markdown formatını HTML'e çeviriyoruz
+            const cleanReply = typeof marked !== 'undefined' ? marked.parse(data.reply) : data.reply;
+            
+            chatBox.innerHTML += `<div class="message bot-msg">${cleanReply}</div>`;
+
+        } catch (error) {
+            console.error(error);
+            chatBox.innerHTML += `<div class="message bot-msg text-danger">Bir hata oluştu. Bağlantını kontrol et.</div>`;
+        } finally {
+            // 5. İşlem bitince "Yazıyor..." gizle
+            document.getElementById('typingIndicator').style.display = 'none';
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    }
+</script>
+
+</body>
+</html>
