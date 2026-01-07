@@ -181,7 +181,7 @@ app.get('/api/pets', async (req, res) => {
         res.status(500).json({ message: err.message }); 
     }
 });
-
+// server.js - GET /api/pets/:id (GÜNCELLENDİ)
 app.get('/api/pets/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -190,7 +190,8 @@ app.get('/api/pets/:id', async (req, res) => {
                 p.*, 
                 u.name as ownerName, 
                 u.email as ownerEmail, 
-                u.profileImageUrl as ownerImage 
+                u.profileImageUrl as ownerImage,
+                u.is_verified as ownerVerified
             FROM pets p 
             LEFT JOIN users u ON p.user_id = u.id 
             WHERE p.id = $1

@@ -1,4 +1,4 @@
-// --- js/pet-detail.js ---
+// --- js/pet-detail.js (GÜNCEL - FOTOĞRAF VE MAVİ TİK EKLENDİ) ---
 
 // Global Değişkenler
 let currentPetOwnerId = null;
@@ -26,7 +26,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Veriyi çek
         const response = await fetch(`${API_BASE_URL}/api/pets/${petId}`);
         
-        // Eğer ilan veritabanında yoksa (404 hatası)
         if (!response.ok) throw new Error("İlan bulunamadı");
 
         const pet = await response.json();
@@ -66,7 +65,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (statusBadge && status === 'Sahiplendirildi') {
             statusBadge.innerText = "Yuva Buldu 🏠";
             statusBadge.className = "badge bg-secondary px-4 py-2 shadow-sm";
-            // Sahiplendirildiyse mesaj butonunu gizle
             if(contactBtnArea) contactBtnArea.style.display = 'none';
         }
 
@@ -79,18 +77,41 @@ document.addEventListener('DOMContentLoaded', async () => {
             const oName = pet.ownername || pet.ownerName || "İsimsiz Kullanıcı";
             const oEmail = pet.owneremail || pet.ownerEmail || "E-posta gizli";
             
-            // >> İSMİ LİNKE ÇEVİRME KISMI <<
-            const ownerNameEl = document.getElementById('ownerName');
-            if(ownerNameEl) {
-                ownerNameEl.innerHTML = `
-                    <a href="user-profile.html?id=${pet.user_id}" class="text-decoration-none hover-link" style="color: #3E2723;">
-                        ${oName} <i class="fa-solid fa-arrow-up-right-from-square small ms-1 text-muted"></i>
-                    </a>
+            // Profil Resmi Ayarlama
+            const oImageRaw = pet.ownerimage || pet.ownerImage;
+            let ownerImgUrl = 'https://via.placeholder.com/150?text=User';
+            if (oImageRaw) {
+                ownerImgUrl = oImageRaw.startsWith('http') ? oImageRaw : `${API_BASE_URL}${oImageRaw}`;
+            }
+
+            // Mavi Tik Kontrolü (Backend'den gelen ownerVerified verisi)
+            const isVerified = (pet.ownerverified === true || pet.ownerVerified === true || pet.ownerverified === "true");
+            const verifiedBadge = isVerified ? 
+                `<svg class="verified-tick" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: #1da1f2; margin-left: 4px; vertical-align: text-bottom;">
+                    <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.416-.166-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 2.049 1.43 3.81 3.35 4.327a4.56 4.56 0 00-.238 1.402c0 2.21 1.71 4 3.818 4 .47 0 .92-.084 1.336-.25.62 1.333 1.926 2.25 3.437 2.25s2.816-.917 3.437-2.25c.416.166.866.25 1.336.25 2.11 0 3.818-1.79 3.818-4 0-.495-.084-.965-.238-1.402 1.92-.517 3.35-2.278 3.35-4.327zM12 17.5l-4.5-4.5 1.414-1.414L12 14.672l7.086-7.086 1.414 1.414L12 17.5z"/>
+                </svg>` : '';
+
+            // >> HTML GÜNCELLEMESİ (RESİM + İSİM + TİK) <<
+            const ownerContainer = document.querySelector('.owner-info-container') || document.getElementById('ownerName').parentNode; 
+            
+            // Eğer özel bir kapsayıcı yoksa manuel olarak içeriği basıyoruz
+            if (ownerBox) {
+                ownerBox.innerHTML = `
+                    <div class="d-flex align-items-center gap-3 p-3">
+                        <img src="${ownerImgUrl}" class="rounded-circle shadow-sm border" style="width: 60px; height: 60px; object-fit: cover;">
+                        <div>
+                            <small class="text-muted fw-bold" style="font-size: 0.75rem; letter-spacing: 1px;">İLAN SAHİBİ</small>
+                            <h6 class="fw-bold mb-0 mt-1" style="color: #3E2723;">
+                                <a href="user-profile.html?id=${pet.user_id}" class="text-decoration-none text-dark hover-link">
+                                    ${oName} ${verifiedBadge}
+                                </a>
+                            </h6>
+                            <small class="text-muted">${oEmail}</small>
+                        </div>
+                    </div>
                 `;
             }
 
-            setText('ownerEmail', oEmail);
-            
             // Mesaj butonu kontrolü
             if (status !== 'Sahiplendirildi' && contactBtnArea) {
                 contactBtnArea.style.display = 'block';
@@ -113,7 +134,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             if(contactBtnArea) contactBtnArea.style.display = 'none';
         }
 
-        // Yükleme ekranını kapat, içeriği göster
         if(loadingSpinner) loadingSpinner.classList.add('d-none');
         if(content) content.classList.remove('d-none');
 
@@ -123,7 +143,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// Yardımcı Fonksiyon: ID kontrolü yaparak text atama
 function setText(id, text) {
     const el = document.getElementById(id);
     if(el) el.innerText = text || '-';
@@ -136,7 +155,6 @@ function showError() {
     if(alertBox) alertBox.classList.remove('d-none');
 }
 
-// --- MESAJLAŞMA FONKSİYONLARI ---
 function openMessageModal() {
     const token = localStorage.getItem('token');
     if (!token) {
