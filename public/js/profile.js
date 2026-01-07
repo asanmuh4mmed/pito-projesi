@@ -1,14 +1,33 @@
-// --- js/profile.js (GÜNCEL - BİLDİRİM + MAVİ TİK + MESLEK DAHİL) ---
+// --- js/profile.js (GÜNCEL - TOKEN KORUMALI + MAVİ TİK + MESLEK DAHİL) ---
 
 const API_URL = 'https://pitopets.com'; 
 let currentDeleteId = null;
 let currentDeleteType = null; 
 let currentUser = null;
 
+// --- YENİ EKLENEN TOKEN ÇÖZÜCÜ ---
+function parseJwt(token) {
+    try {
+        return JSON.parse(atob(token.split('.')[1]));
+    } catch (e) {
+        return null;
+    }
+}
+// ----------------------------------
+
 document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
     
+    // 1. Token Yoksa Giriş Ekranına At
     if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // 2. Token Bozuksa Temizle ve At (User objesine bağımlılığı kaldırdık)
+    const payload = parseJwt(token);
+    if (!payload) {
+        localStorage.removeItem('token');
         window.location.href = 'login.html';
         return;
     }
@@ -16,10 +35,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupEventListeners();
 
     try {
-        // 1. Temel Bilgiler (Backend is_verified ve job_title göndermeli)
+        // 3. Backend'den Güncel Veriyi Çek
         const userRes = await fetch(`${API_URL}/api/auth/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
+
+        // Eğer token süresi dolmuşsa (401/403) çıkış yaptır
+        if (userRes.status === 401 || userRes.status === 403) {
+            throw new Error("Oturum süresi doldu");
+        }
+
         if (!userRes.ok) throw new Error("Oturum hatası");
 
         currentUser = await userRes.json();
@@ -39,8 +64,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     } catch (error) {
         console.error("Yükleme Hatası:", error);
-        localStorage.removeItem('token'); 
-        window.location.href = 'login.html';
+        
+        // Sadece kritik oturum hatalarında çıkış yap
+        if (error.message === "Oturum süresi doldu") {
+            localStorage.removeItem('token'); 
+            window.location.href = 'login.html';
+        }
     }
 });
 
@@ -82,22 +111,18 @@ function setupEventListeners() {
     }
 }
 
-// --- GÜNCELLENEN updateProfileUI FONKSİYONU (MAVİ TİK + MESLEK) ---
+// --- GÜNCELLENEN updateProfileUI FONKSİYONU ---
 function updateProfileUI(user) {
-    // Dedektif Kodu
+    // Dedektif Kodu (İstersen silebilirsin)
     console.log("--------------------------------");
-    console.log("Profil Verisi:", user);
-    console.log("İsim:", user.name);
-    console.log("Meslek:", user.job_title); // Konsoldan kontrol edebilirsin
-    console.log("Onay:", user.is_verified);
+    console.log("Profil Verisi Yüklendi:", user);
+    console.log("Meslek:", user.job_title); 
     console.log("--------------------------------");
 
     const nameEl = document.getElementById('profileName');
     const emailEl = document.getElementById('profileEmail');
     const phoneEl = document.getElementById('profilePhone');
     const imgEl = document.getElementById('displayProfileImg');
-    
-    // YENİ: Meslek Elementi
     const jobEl = document.getElementById('profileJob');
 
     // Mavi Tik SVG İkonu
@@ -109,13 +134,13 @@ function updateProfileUI(user) {
     if(nameEl) {
         nameEl.innerHTML = user.name || "İsimsiz";
         
-        // Mavi Tik Kontrolü (Gevşek Kontrol)
+        // Mavi Tik Kontrolü
         if (user.is_verified === true || user.is_verified === "true" || user.is_verified === 1) {
             nameEl.innerHTML += verifiedIconSVG;
         }
     }
 
-    // YENİ: Meslek Bilgisini Yazdır
+    // Meslek Bilgisini Yazdır
     if (jobEl) {
         jobEl.innerText = user.job_title || ""; 
     }
@@ -133,7 +158,6 @@ function updateProfileUI(user) {
         }
     }
 }
-// ----------------------------------------------------
 
 // +++ BİLDİRİM FONKSİYONLARI +++
 let notificationsData = [];
@@ -360,13 +384,11 @@ function createCardHTML(item, imgUrl, type, link, badge) {
     </div>`;
 }
 
-// --- MODAL AÇMA FONKSİYONU (GÜNCEL: Meslek İnputu) ---
 function openEditProfileModal() {
     if (!currentUser) return;
     document.getElementById('editName').value = currentUser.name || "";
     document.getElementById('editPhone').value = currentUser.phone || "";
     
-    // YENİ: Meslek inputunu doldur (Eğer input varsa)
     const jobInput = document.getElementById('editJob');
     if (jobInput) {
         jobInput.value = currentUser.job_title || "";
@@ -391,14 +413,12 @@ async function handleConfirmDelete() {
     } catch(e) { alert("Sunucu hatası."); }
 }
 
-// --- PROFİL GÜNCELLEME (GÜNCEL: Meslek Kaydetme) ---
 async function handleProfileUpdate(e) {
     e.preventDefault();
     const formData = new FormData();
     formData.append('name', document.getElementById('editName').value);
     formData.append('phone', document.getElementById('editPhone').value);
     
-    // YENİ: Meslek bilgisini al ve ekle (Eğer input varsa)
     const jobInput = document.getElementById('editJob');
     if (jobInput) {
         formData.append('job_title', jobInput.value);
