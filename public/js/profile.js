@@ -1,4 +1,4 @@
-// --- js/profile.js (GÜNCEL - BİLDİRİM + MAVİ TİK DAHİL) ---
+// --- js/profile.js (GÜNCEL - BİLDİRİM + MAVİ TİK + MESLEK DAHİL) ---
 
 const API_URL = 'https://pitopets.com'; 
 let currentDeleteId = null;
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupEventListeners();
 
     try {
-        // 1. Temel Bilgiler
+        // 1. Temel Bilgiler (Backend is_verified ve job_title göndermeli)
         const userRes = await fetch(`${API_URL}/api/auth/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -82,19 +82,23 @@ function setupEventListeners() {
     }
 }
 
-// --- GÜNCELLENEN updateProfileUI FONKSİYONU ---
+// --- GÜNCELLENEN updateProfileUI FONKSİYONU (MAVİ TİK + MESLEK) ---
 function updateProfileUI(user) {
-    // 1. DEDEKTİF KODU: Konsola gelen veriyi basar (F12 -> Console sekmesinden bakabilirsin)
+    // Dedektif Kodu
     console.log("--------------------------------");
-    console.log("Profil Verisi Yüklendi:", user);
+    console.log("Profil Verisi:", user);
     console.log("İsim:", user.name);
-    console.log("is_verified Değeri:", user.is_verified, "(Türü: " + typeof user.is_verified + ")");
+    console.log("Meslek:", user.job_title); // Konsoldan kontrol edebilirsin
+    console.log("Onay:", user.is_verified);
     console.log("--------------------------------");
 
     const nameEl = document.getElementById('profileName');
     const emailEl = document.getElementById('profileEmail');
     const phoneEl = document.getElementById('profilePhone');
     const imgEl = document.getElementById('displayProfileImg');
+    
+    // YENİ: Meslek Elementi
+    const jobEl = document.getElementById('profileJob');
 
     // Mavi Tik SVG İkonu
     const verifiedIconSVG = `
@@ -105,12 +109,15 @@ function updateProfileUI(user) {
     if(nameEl) {
         nameEl.innerHTML = user.name || "İsimsiz";
         
-        // GÜNCELLEME: Kontrolü gevşettik. 
-        // Veritabanından bazen true (boolean), bazen "true" (string), bazen de 1 (number) gelebilir.
-        // Hepsini kabul etmesi için bu şekilde yazdım:
+        // Mavi Tik Kontrolü (Gevşek Kontrol)
         if (user.is_verified === true || user.is_verified === "true" || user.is_verified === 1) {
             nameEl.innerHTML += verifiedIconSVG;
         }
+    }
+
+    // YENİ: Meslek Bilgisini Yazdır
+    if (jobEl) {
+        jobEl.innerText = user.job_title || ""; 
     }
 
     if(emailEl) emailEl.innerText = user.email || "";
@@ -353,16 +360,26 @@ function createCardHTML(item, imgUrl, type, link, badge) {
     </div>`;
 }
 
+// --- MODAL AÇMA FONKSİYONU (GÜNCEL: Meslek İnputu) ---
 function openEditProfileModal() {
     if (!currentUser) return;
     document.getElementById('editName').value = currentUser.name || "";
     document.getElementById('editPhone').value = currentUser.phone || "";
+    
+    // YENİ: Meslek inputunu doldur (Eğer input varsa)
+    const jobInput = document.getElementById('editJob');
+    if (jobInput) {
+        jobInput.value = currentUser.job_title || "";
+    }
+    
     new bootstrap.Modal(document.getElementById('editProfileModal')).show();
 }
+
 window.openDeleteModal = function(id, type) {
     currentDeleteId = id; currentDeleteType = type; 
     new bootstrap.Modal(document.getElementById('deleteModal')).show();
 }
+
 async function handleConfirmDelete() {
     if (!currentDeleteId) return;
     const token = localStorage.getItem('token');
@@ -373,11 +390,20 @@ async function handleConfirmDelete() {
         else alert("Hata.");
     } catch(e) { alert("Sunucu hatası."); }
 }
+
+// --- PROFİL GÜNCELLEME (GÜNCEL: Meslek Kaydetme) ---
 async function handleProfileUpdate(e) {
     e.preventDefault();
     const formData = new FormData();
     formData.append('name', document.getElementById('editName').value);
     formData.append('phone', document.getElementById('editPhone').value);
+    
+    // YENİ: Meslek bilgisini al ve ekle (Eğer input varsa)
+    const jobInput = document.getElementById('editJob');
+    if (jobInput) {
+        formData.append('job_title', jobInput.value);
+    }
+
     const file = document.getElementById('editImageFile').files[0];
     if (file) formData.append('newProfileImage', file);
     

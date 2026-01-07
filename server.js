@@ -121,14 +121,30 @@ app.post('/api/login', async (req, res) => {
 });
 
 // --- KULLANICI ROTALARI ---
-app.get('/api/auth/me', authenticateToken, async (req, res) => {
-    try { 
-        // DÜZELTME: Sorguya 'is_verified' eklendi!
-        const result = await pool.query("SELECT id, name, email, phone, profileImageUrl, is_verified FROM users WHERE id = $1", [req.user.id]); 
-        res.json(result.rows[0]); 
+// server.js - PUT /api/auth/me
+app.put('/api/auth/me', authenticateToken, upload.single('newProfileImage'), async (req, res) => {
+    // job_title'ı body'den alıyoruz
+    const { name, phone, job_title } = req.body; 
+    
+    try {
+        let imageUrl = await uploadToSupabase(req.file);
+        let sql, params;
+        
+        if (imageUrl) {
+            // Resim varsa hepsini güncelle (job_title dahil) -> Parametre sırasına dikkat ($3, $4...)
+            sql = `UPDATE users SET name = $1, phone = $2, job_title = $3, profileImageUrl = $4 WHERE id = $5 RETURNING *`;
+            params = [name, phone, job_title, imageUrl, req.user.id];
+        } else {
+            // Resim yoksa sadece metinleri güncelle
+            sql = `UPDATE users SET name = $1, phone = $2, job_title = $3 WHERE id = $4 RETURNING *`;
+            params = [name, phone, job_title, req.user.id];
+        }
+        
+        const result = await pool.query(sql, params);
+        res.json(result.rows[0]);
     } catch (err) { 
-        console.error(err);
-        res.sendStatus(500); 
+        console.error(err); 
+        res.status(500).json({ message: "Güncelleme hatası" }); 
     }
 });
 app.put('/api/auth/me', authenticateToken, upload.single('newProfileImage'), async (req, res) => {
