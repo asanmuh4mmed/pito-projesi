@@ -1057,3 +1057,115 @@ footer a:hover {
     object-fit: cover;
     display: block;
 }
+
+
+/* 1. Arka Planı Karart ve Bulanıklaştır (Glassmorphism) */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Siyahın %60'ı */
+    backdrop-filter: blur(8px); /* Arkadaki siteyi buzlu cam gibi yapar */
+    display: flex; /* Kutuyu ortalamak için */
+    justify-content: center; /* Yatay orta */
+    align-items: center; /* Dikey orta */
+    z-index: 9999; /* Her şeyin üstünde dursun */
+}
+
+/* 2. Ortadaki Beyaz Kutu */
+.popup-kart {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 40px 30px;
+    border-radius: 25px;
+    text-align: center;
+    position: relative;
+    width: 90%;
+    max-width: 400px; /* Çok geniş olmasın */
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    font-family: 'Segoe UI', sans-serif;
+    animation: yukaridanGelis 0.5s ease; /* Havalı giriş efekti */
+}
+
+/* Animasyon: Kutu yukarıdan süzülerek gelir */
+@keyframes yukaridanGelis {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Yazı Stilleri */
+.popup-kart h2 {
+    color: #5d4037; /* Pito Koyu Kahve */
+    margin: 15px 0 10px;
+    font-size: 24px;
+    line-height: 1.3;
+}
+
+.popup-kart p {
+    color: #8d6e63;
+    font-size: 14px;
+    margin-bottom: 25px;
+}
+
+.ikon-alani {
+    font-size: 40px;
+}
+
+/* 3. Butonlar */
+.store-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.store-btn {
+    display: flex;
+    align-items: center;
+    background-color: #3e2723; /* Çok koyu kahve */
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: default; /* Tıklanmaz çünkü yakında */
+    opacity: 0.8;
+}
+
+.store-btn .logo {
+    font-size: 16px;
+    margin-right: 5px;
+}
+
+.haber-ver-btn {
+    background-color: #a1887f; /* Açık Kahve (Pito Tarzı) */
+    color: white;
+    border: none;
+    padding: 12px 40px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.haber-ver-btn:hover {
+    background-color: #8d6e63;
+    transform: scale(1.05);
+}
+
+/* Kapatma Çarpısı */
+.kapat-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 24px;
+    color: #aaa;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.kapat-btn:hover {
+    color: #d32f2f; /* Üzerine gelince kırmızı olsun */
+}

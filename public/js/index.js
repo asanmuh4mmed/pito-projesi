@@ -237,3 +237,10 @@ async function checkGlobalUnreadMessages() {
         console.log("Bildirim kontrolü pas geçildi.");
     }
 }
+
+
+// Kutuyu gizleyen fonksiyon
+function popupKapat() {
+    const uyariKutusu = document.getElementById('mobil-uyari');
+    uyariKutusu.style.display = 'none';
+}
