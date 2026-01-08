@@ -129,22 +129,24 @@ function openContactModal(name, title, phone, imgUrl, userId, caretakerId) {
     // 1. Bilgileri Doldur
     document.getElementById('modalName').innerText = name;
     document.getElementById('modalTitle').innerText = title;
-    document.getElementById('modalImg').src = imgUrl;
     
-    const phoneLink = document.getElementById('modalPhoneLink');
-    if (phone && phone !== 'null') {
-        phoneLink.href = `tel:${phone}`;
-        phoneLink.classList.remove('disabled');
-    } else {
-        phoneLink.classList.add('disabled');
-    }
+    // Resim hatası önleyici (Boşsa varsayılan resim)
+    const safeImg = (imgUrl && imgUrl !== 'null' && imgUrl !== 'undefined') 
+        ? imgUrl 
+        : 'https://via.placeholder.com/150';
+    document.getElementById('modalImg').src = safeImg;
+
+    // --- TELEFON KODU BURADAN KALDIRILDI ---
 
     // 2. ID'leri Kaydet (Global Değişkenlere)
     currentCaretakerUserId = userId; // Mesaj için
     currentCaretakerId = caretakerId; // Yorum için
 
     // 3. Yorumları Temizle ve Yükle
-    document.getElementById('reviewsList').innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm"></div></div>';
+    const reviewsList = document.getElementById('reviewsList');
+    if (reviewsList) {
+        reviewsList.innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm"></div></div>';
+    }
     loadCaretakerReviews(caretakerId);
 
     // 4. Modalı Aç
