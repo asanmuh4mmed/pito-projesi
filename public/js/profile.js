@@ -384,34 +384,54 @@ async function handleProfileUpdate(e) {
     if(res.ok) { alert("Güncellendi!"); window.location.reload(); }
 }
 
+// Takipçi veya Takip Edilen listesini oluşturan fonksiyon
+function renderUserList(users) {
+    const listContainer = document.getElementById('connectionsList');
+    listContainer.innerHTML = ''; // Önce listeyi temizle
+
+    users.forEach(user => {
+        const item = document.createElement('div');
+        // Katmanlı ve modern görünüm için sınıflar
+        item.className = 'list-group-item d-flex align-items-center justify-content-between border-0 mb-2 rounded-4 shadow-sm bg-white p-2';
+        
+        item.innerHTML = `
+            <div class="d-flex align-items-center">
+                <img src="${user.profileImg || 'https://via.placeholder.com/45'}" class="rounded-circle me-3" width="45" height="45" style="object-fit: cover; border: 2px solid #F9F6F0;">
+                <div>
+                    <h6 class="mb-0 fw-bold" style="color: #3E2723; font-size: 0.9rem;">${user.name}</h6>
+                    <small class="text-muted" style="font-size: 0.75rem;">${user.job || ''}</small>
+                </div>
+            </div>
+            
+            <button class="btn btn-sm btn-outline-danger rounded-pill px-3 sil-btn" 
+                    onclick="handleConnectionRemove(this, '${user.id}')">
+                Sil
+            </button>
+        `;
+        listContainer.appendChild(item);
+    });
+}
+
 /**
- * Kullanıcıyı Takipçi veya Takip Edilen listesinden çıkarır
- * @param {HTMLElement} btn - Tıklanan buton
- * @param {string} userId - Çıkarılacak kullanıcının ID'si
+ * Kullanıcıyı listeden çıkaran fonksiyon
  */
-function removeConnection(btn, userId) {
-    if (confirm("Bu kullanıcıyı listenizden çıkarmak istediğinize emin misiniz?")) {
-        // 1. Görsel Efekt (Sola kaydırıp yok etme)
+function handleConnectionRemove(btn, userId) {
+    if (confirm("Bu kişiyi listenizden çıkarmak istediğinize emin misiniz?")) {
         const row = btn.closest('.list-group-item');
-        row.style.transition = "all 0.3s ease";
-        row.style.transform = "translateX(-20px)";
+        
+        // Mobil hissiyatı veren animasyon
+        row.style.transition = "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)";
+        row.style.transform = "scale(0.95) translateX(30px)"; // İçine göçer ve sağa kayar
         row.style.opacity = "0";
 
         setTimeout(() => {
             row.remove();
             
-            // 2. Sunucuya İstek Atma (Backend hazır olduğunda burayı açabilirsin)
-            /*
-            fetch(`/api/connections/remove/${userId}`, { method: 'POST' })
-                .then(response => response.json())
-                .then(data => console.log("Başarıyla silindi"));
-            */
-            
-            // 3. Liste boşaldıysa "Kayıt yok" yazısı göster
+            // Eğer liste tamamen biterse uyarı ver
             const list = document.getElementById('connectionsList');
             if (list.children.length === 0) {
-                list.innerHTML = '<p class="text-center text-muted p-3">Liste boş.</p>';
+                list.innerHTML = '<div class="text-center p-4 text-muted">Henüz kayıt yok.</div>';
             }
-        }, 300);
+        }, 400);
     }
 }
