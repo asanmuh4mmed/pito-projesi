@@ -468,8 +468,24 @@
             const uniqueThreads = Object.values(threads);
             document.getElementById('totalMsg').innerText = uniqueThreads.length;
 
+            // --- messages.html içindeki SCRIPT kısmında ---
+// fetchMessages fonksiyonunun container.innerHTML atamasını güncelle
+
             container.innerHTML = uniqueThreads.map(msg => {
                 let otherName = msg.sender_id === myId ? (msg.receiver_name || "Kullanıcı") : msg.sender_name;
+                
+                // YENİ KOD: Mavi Tik Kontrolü
+                // Eğer karşımdaki kişi (mesajı gönderen veya alan) onaylıysa tik göster
+                let isVerified = false;
+                if (msg.sender_id === myId) {
+                    isVerified = msg.receiver_verified; // Ben gönderdiysem, alıcı onaylı mı?
+                } else {
+                    isVerified = msg.sender_verified; // O gönderdiyse, gönderen onaylı mı?
+                }
+                
+                // Mavi Tik HTML'i (Eğer onaylıysa göster, değilse boş string)
+                const verifiedBadge = isVerified ? '<i class="fa-solid fa-circle-check text-primary ms-1" style="font-size: 0.8rem;" title="Onaylı Hesap"></i>' : '';
+
                 const pId = msg.pet_id || 0;
                 const partnerId = msg.sender_id === myId ? msg.receiver_id : msg.sender_id;
                 const unreadClass = (msg.receiver_id === myId && msg.is_read === false) ? "unread" : "";
@@ -484,7 +500,6 @@
                 let displayMsg = msg.message;
                 if(!displayMsg && msg.image_url) displayMsg = "📷 Fotoğraf";
 
-                // --- KART + SİLME BUTONU ---
                 return `
                     <div class="card message-card shadow-sm p-3 mb-2 ${unreadClass}" onclick="openChat(${partnerId}, ${pId}, '${otherName.replace(/'/g, "\\'")}')">
                         
@@ -496,7 +511,8 @@
                             <img id="list-img-${partnerId}" src="https://via.placeholder.com/150?text=${otherName.charAt(0)}" class="rounded-circle me-3" width="50" height="50" style="object-fit:cover;">
                             <div class="flex-grow-1 overflow-hidden">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <h6 class="fw-bold mb-0 text-truncate" style="max-width: 70%;">${otherName}</h6>
+                                    <h6 class="fw-bold mb-0 text-truncate" style="max-width: 70%;">
+                                        ${otherName} ${verifiedBadge}  </h6>
                                     <small class="text-muted" style="font-size:0.7rem;">${dateStr}</small>
                                 </div>
                                 <div class="d-flex align-items-center justify-content-between">

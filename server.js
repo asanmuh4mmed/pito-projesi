@@ -306,9 +306,15 @@ app.delete('/api/caretakers/:id', authenticateToken, (req, res) => deleteItem('c
 app.delete('/api/vets/:id', authenticateToken, (req, res) => deleteItem('vets', req.params.id, req.user.id, res));
 
 // --- MESAJLAŞMA ROTALARI ---
+// --- server.js ---
+// Bu kısmı bul ve aşağıdakiyle DEĞİŞTİR
+
 app.get('/api/my-messages', authenticateToken, async (req, res) => {
     try {
-        const sql = `SELECT m.*, s.name as sender_name, r.name as receiver_name, 
+        // GÜNCELLEME: s.is_verified ve r.is_verified alanlarını seçtik
+        const sql = `SELECT m.*, 
+            s.name as sender_name, s.is_verified as sender_verified, 
+            r.name as receiver_name, r.is_verified as receiver_verified, 
             COALESCE(p.name, bp.name, 'Genel Sohbet') as pet_name, m.post_type, m.is_read
             FROM messages m
             LEFT JOIN users s ON m.sender_id = s.id
@@ -317,6 +323,7 @@ app.get('/api/my-messages', authenticateToken, async (req, res) => {
             LEFT JOIN breeding_pets bp ON m.pet_id = bp.id
             WHERE m.receiver_id = $1 OR m.sender_id = $2
             ORDER BY m.createdAt DESC`;        
+        
         const result = await pool.query(sql, [req.user.id, req.user.id]);
         res.json(result.rows);
     } catch (err) { res.status(500).json({ error: err.message }); }
