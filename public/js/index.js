@@ -119,7 +119,7 @@ function renderPets(pets, container, type) {
             <div class="card h-100 border-0 shadow-sm overflow-hidden card-hover-effect">
                 <div class="position-relative img-wrapper">
                     ${badge}
-                    <img src="${imgUrl}" alt="${pet.name}">
+                    <img src="${imgUrl}" class="card-img-top" alt="${pet.name}">
                 </div>
 
                 <div class="card-body text-center">
