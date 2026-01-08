@@ -602,6 +602,55 @@ app.post('/chat', async (req, res) => {
     }
 });
 
+// --- BAKICI YORUMLARI API (YENİ) ---
+
+// 1. Bakıcıya ait yorumları getir
+app.get('/api/caretaker-reviews/:caretakerId', async (req, res) => {
+    const { caretakerId } = req.params;
+    try {
+        const sql = `
+            SELECT cr.*, u.name as user_name, u.profileImageUrl as user_image
+            FROM caretaker_reviews cr
+            JOIN users u ON cr.user_id = u.id
+            WHERE cr.caretaker_id = $1
+            ORDER BY cr.created_at DESC`;
+        const result = await pool.query(sql, [caretakerId]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Yorumlar alınamadı" });
+    }
+});
+
+// 2. Bakıcıya yorum yap
+app.post('/api/caretaker-reviews', authenticateToken, async (req, res) => {
+    const { caretaker_id, rating, comment } = req.body;
+    const user_id = req.user.id;
+
+    if (!caretaker_id || !rating || !comment) {
+        return res.status(400).json({ message: "Eksik bilgi." });
+    }
+
+    try {
+        // Kullanıcı kendine yorum yapamasın
+        const checkOwner = await pool.query("SELECT user_id FROM caretakers WHERE id = $1", [caretaker_id]);
+        if (checkOwner.rows.length > 0 && checkOwner.rows[0].user_id === user_id) {
+            return res.status(400).json({ message: "Kendinize yorum yapamazsınız." });
+        }
+
+        const sql = `
+            INSERT INTO caretaker_reviews (caretaker_id, user_id, rating, comment)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *`;
+        await pool.query(sql, [caretaker_id, user_id, rating, comment]);
+        
+        res.status(201).json({ message: "Yorumunuz kaydedildi!" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Yorum kaydedilemedi." });
+    }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Sunucu Render üzerinde aktif. Port: ${PORT}`);
 });
