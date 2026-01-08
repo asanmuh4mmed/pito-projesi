@@ -1337,35 +1337,3 @@ footer a:hover {
     display: inline-block !important;
     opacity: 1 !important;
 }
-
-/* BİZE ULAŞIN ÖZEL STİLLERİ */
-.contact-section {
-    background-color: #F9F6F0; /* Sitenin genel krem tonu */
-}
-
-.contact-form {
-    border: 1px solid rgba(166, 77, 50, 0.05);
-    transition: transform 0.3s ease;
-}
-
-.contact-form:hover {
-    transform: translateY(-5px);
-}
-
-.contact-form .form-control {
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
-}
-
-.contact-form .form-control:focus {
-    background-color: #ffffff !important;
-    box-shadow: 0 0 0 4px rgba(166, 77, 50, 0.1) !important;
-    border-color: #A64D32 !important;
-}
-
-/* Gönder Butonu Mobil Uyumu */
-@media (min-width: 768px) {
-    .contact-form .btn-clay {
-        min-width: 250px;
-    }
-}
