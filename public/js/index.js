@@ -117,10 +117,11 @@ function renderPets(pets, container, type) {
         container.innerHTML += `
         <div class="col-md-4">
             <div class="card h-100 border-0 shadow-sm overflow-hidden card-hover-effect">
-                <div class="position-relative">
+                <div class="position-relative img-wrapper">
                     ${badge}
-                    <img src="${imgUrl}" class="card-img-top" style="height: 250px; object-fit: cover;">
+                    <img src="${imgUrl}" alt="${pet.name}">
                 </div>
+
                 <div class="card-body text-center">
                     <h5 class="fw-bold text-dark-brown">${pet.name}</h5>
                     <p class="text-muted small mb-2">${pet.species} • ${pet.age} Yaş</p>
