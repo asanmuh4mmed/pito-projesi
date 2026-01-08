@@ -194,23 +194,59 @@ async function handleFollowAction() {
 /**
  * Takipçiyi Çıkarma Mantığı
  */
-function handleRemoveFollower() {
-    if (confirm("Bu kişinin sizi takip etmesini engellemek istiyor musunuz?")) {
-        const btn = document.getElementById('removeFollowerBtn');
-        
-        // Animasyonla yok et
-        btn.style.transition = "all 0.3s ease";
-        btn.style.transform = "scale(0) rotate(180deg)";
-        btn.style.opacity = "0";
+// --- js/user-profile.js GÜNCELLEMESİ ---
 
-        setTimeout(() => {
-            btn.remove(); // DOM'dan sil
-            alert("Kişi takipçi listenizden çıkarıldı.");
-            // Burada API isteği yapılabilir: /api/users/remove-follower
-        }, 300);
+async function handleRemoveFollower() {
+    // 1. Kullanıcıdan onay al
+    if (!confirm("Bu kişinin sizi takip etmesini engellemek istiyor musunuz?")) {
+        return; // Vazgeçerse işlem yapma
+    }
+
+    const btn = document.getElementById('removeFollowerBtn');
+    
+    // Butonu geçici olarak pasif yap (Arka arkaya tıklanmasın)
+    btn.disabled = true;
+    btn.style.opacity = "0.5";
+
+    try {
+        const token = localStorage.getItem('token');
+        
+        // 2. Server'a "Bu kişiyi sil" emrini gönder
+        // profileUserId değişkeni, o an sayfasında olduğun kişinin (seni takip edenin) ID'sidir.
+        const res = await fetch(`${API_URL}/api/users/remove-follower`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({ targetId: profileUserId }) 
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            // 3. Başarılıysa görsel animasyonu yap ve sil
+            btn.style.transition = "all 0.3s ease";
+            btn.style.transform = "scale(0)";
+            
+            setTimeout(() => {
+                btn.remove(); // Butonu ekrandan sil
+                alert("Kişi başarıyla takipçilerinizden çıkarıldı. 🐾");
+            }, 300);
+        } else {
+            // Hata varsa butonu eski haline getir
+            alert("Hata: " + (data.message || "İşlem başarısız."));
+            btn.disabled = false;
+            btn.style.opacity = "1";
+        }
+
+    } catch (err) {
+        console.error(err);
+        alert("Sunucu bağlantı hatası.");
+        btn.disabled = false;
+        btn.style.opacity = "1";
     }
 }
-
 // API Çağrısı (Mevcut toggleFollow fonksiyonunun sadeleşmiş hali)
 async function toggleFollowAPI() {
     const token = localStorage.getItem('token');

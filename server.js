@@ -524,6 +524,39 @@ app.get('/api/users/connections/:id', async (req, res) => {
     }
 });
 
+// --- server.js İçine Eklenecek (PostgreSQL Versiyonu) ---
+
+app.post('/api/users/remove-follower', authenticateToken, async (req, res) => {
+    try {
+        const myId = req.user.id;           // Senin ID'n (Takip edilen kişi sensin)
+        const targetId = req.body.targetId; // Seni takip eden ve silmek istediğin kişinin ID'si
+
+        if (!targetId) {
+            return res.status(400).json({ message: "Hedef kullanıcı ID'si eksik." });
+        }
+
+        // PostgreSQL Sorgusu:
+        // follower_id = $1 (Seni takip eden kişi - Silinecek olan)
+        // followed_id = $2 (Sen - Takip edilen)
+        const text = 'DELETE FROM follows WHERE follower_id = $1 AND followed_id = $2';
+        const values = [targetId, myId];
+
+        // pool.query, PostgreSQL kütüphanesinin standart kullanım şeklidir
+        const result = await pool.query(text, values);
+
+        // Eğer hiçbir satır silinmediyse (zaten takip etmiyorsa)
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: "Bu kullanıcı zaten sizi takip etmiyor." });
+        }
+
+        res.status(200).json({ message: "Kişi takipçilerinizden çıkarıldı." });
+
+    } catch (err) {
+        console.error("Takipçi çıkarma hatası (Postgres):", err);
+        res.status(500).json({ message: "Sunucu hatası oluştu." });
+    }
+});
+
 // --- BİLDİRİM ROTALARI (YENİ) ---
 app.get('/api/notifications', authenticateToken, async (req, res) => {
     try {
