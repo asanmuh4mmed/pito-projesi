@@ -39,7 +39,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
         submitBtn.disabled = true;
         submitBtn.innerText = "İşleniyor...";
 
-        const response = await fetch('https://pito-projesi.onrender.com/api/register', {
+        const response = await fetch('https://pitopets.com/api/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, email, phone, password }) // confirmPassword gönderilmez

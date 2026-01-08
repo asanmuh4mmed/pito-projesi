@@ -1,6 +1,6 @@
 // --- js/index.js (GÜNCELLENMİŞ TAM SÜRÜM) ---
 
-const API_URL = 'https://pito-projesi.onrender.com';
+const API_URL = 'https://pitopets.com';
 
 document.addEventListener('DOMContentLoaded', () => {
     updateNavbar();          // Navbarı güncelle

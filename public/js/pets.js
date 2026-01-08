@@ -1,6 +1,6 @@
 // --- js/pets.js (GÜNCEL - HARF DUYARLILIĞI DÜZELTİLDİ) ---
 
-const API_URL = 'https://pito-projesi.onrender.com';
+const API_URL = 'https://pitopets.com';
 
 // 81 İL VE İLÇE VERİTABANI
 const cityData = {

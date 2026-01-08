@@ -1,6 +1,6 @@
 // --- js/caretakers.js (YENİLENMİŞ VERSİYON) ---
 
-const API_URL = 'https://pito-projesi.onrender.com';
+const API_URL = 'https://pitopets.com';
 let currentCaretakerUserId = null; // Mesaj göndermek için (Receiver ID)
 let currentCaretakerId = null;     // Yorum yapmak için (Caretaker Table ID)
 

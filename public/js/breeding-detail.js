@@ -1,6 +1,6 @@
 // --- js/breeding-detail.js (GÜNCELLENMİŞ VERSİYON - FOTO VE TİK EKLİ) ---
 
-const API_URL = 'https://pito-projesi.onrender.com';
+const API_URL = 'https://pitopets.com';
 let currentPetOwnerId = null;
 let currentPetId = null;
 

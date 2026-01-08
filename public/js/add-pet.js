@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.disabled = true;
             btn.innerHTML = 'Yayınlanıyor...';
 
-            const res = await fetch('https://pito-projesi.onrender.com/api/pets', {
+            const res = await fetch('https://pitopets.com', {
                 method: 'POST',
                 headers: { 
                     'Authorization': `Bearer ${token}` 

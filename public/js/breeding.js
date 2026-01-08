@@ -1,6 +1,6 @@
 // --- js/breeding.js (GÜNCELLENDİ: MAVİ TİK EKLENDİ) ---
 
-const API_URL = 'https://pito-projesi.onrender.com';
+const API_URL = 'https://pitopets.com';
 
 // 81 İL VE İLÇE VERİTABANI (DOKUNULMADI)
 const cityData = {

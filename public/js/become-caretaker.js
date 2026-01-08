@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.disabled = true;
             btn.innerText = "Gönderiliyor...";
 
-            const response = await fetch('https://pito-projesi.onrender.com/api/caretakers', {
+            const response = await fetch('https://pitopets.com', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
