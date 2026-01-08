@@ -1296,3 +1296,44 @@ footer a:hover {
 .transition-btn:active {
     transform: scale(0.95) !important; /* Tıklayınca küçülme efekti */
 }
+
+
+/* =========================================
+   VETERİNER BUTON DÜZENLEMESİ (KALICI YAZI)
+   ========================================= */
+
+/* 1. Ara Butonunu Her Zaman Görünür Yap */
+.vet-card .contact-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    opacity: 1 !important;
+    visibility: visible !important;
+    padding: 10px 15px !important;
+    min-height: 42px; /* Buton yüksekliğini standartlaştırır */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* 2. Buton İçindeki İkon ve Yazı Hizalaması */
+.vet-card .contact-btn i {
+    font-size: 0.9rem;
+    margin-right: 6px; /* İkon ile "Ara" yazısı arasına boşluk */
+}
+
+/* 3. Mobil Hissiyatı: Tıklama Efekti */
+.vet-card .contact-btn:active {
+    transform: scale(0.95) !important; /* Tıklayınca hafifçe içeri çöker */
+}
+
+/* 4. Hover Durumu (Yazı Zaten Orada, Sadece Parlaklık Değişir) */
+.vet-card .contact-btn:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 4px 12px rgba(166, 77, 50, 0.25);
+}
+
+/* 5. Eğer kartın genelinde metni gizleyen bir kural varsa onu devre dışı bırakır */
+.vet-card .contact-btn span, 
+.vet-card .contact-btn::after {
+    display: inline-block !important;
+    opacity: 1 !important;
+}
