@@ -152,11 +152,15 @@ p, .text-muted, .lead, small {
     box-shadow: var(--shadow-hover);
 }
 
-.card-img-top {
-    height: 240px;
+/* === ANA SAYFA KART RESİMLERİ (TEK VE NET KURAL) === */
+
+#adoptionContainer .card img,
+#breedingContainer .card img {
+    width: 100%;
+    height: 260px;
     object-fit: cover;
-    transition: transform 0.5s ease;
-    filter: sepia(10%);
+    object-position: center top;
+    display: block;
 }
 
 .card:hover .card-img-top {
