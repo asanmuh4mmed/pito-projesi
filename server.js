@@ -12,17 +12,15 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 require('dotenv').config();
 
 const app = express();
+const PORT = process.env.PORT || 10000;
+const SECRET_KEY = 'pito_gizli_anahtar';
+
 // --- GEMINI AYARLARI ---
-const genAI = new GoogleGenerativeAI("BURAYA_API_KEYINI_YAZ");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "BURAYA_API_KEYINI_YAZ");
 const model = genAI.getGenerativeModel({ 
     model: "gemini-pro",
     systemInstruction: "Sen PITO (Pitopets) asistanısın. Hayvan sahiplendirme, eş bulma ve veterinerlik konularında yardım edersin."
 });
-// -----------------------
-// Dosyanın EN ALT KISMI
-const PORT = process.env.PORT || 10000;
-
-const SECRET_KEY = 'pito_gizli_anahtar';
 
 // --- MAİL GÖNDERME AYARLARI ---
 const transporter = nodemailer.createTransport({
@@ -72,6 +70,9 @@ async function uploadToSupabase(file) {
 const createTables = async () => {
     try {
         console.log("✅ Veritabanı bağlantısı kontrol ediliyor...");
+        // Test sorgusu
+        await pool.query('SELECT NOW()');
+        console.log("✅ Veritabanı bağlantısı başarılı.");
     } catch (err) { console.error("Başlatma hatası:", err); }
 };
 createTables();
@@ -119,6 +120,7 @@ app.post('/api/login', async (req, res) => {
 
         if (!user) return res.status(401).json({ message: "Hatalı e-posta veya şifre!" });
 
+        // isVerified kontrolü (veritabanında bazen küçük bazen büyük harf olabilir, ikisini de kontrol et)
         if (user.isverified === 0 || user.isVerified === 0) {
             return res.status(403).json({ message: "Lütfen önce hesabınızı doğrulayın." });
         }
@@ -130,10 +132,9 @@ app.post('/api/login', async (req, res) => {
 
 // --- KULLANICI ROTALARI ---
 
-// 1. KENDİ BİLGİLERİMİ GETİR (EKSİK OLAN KISIM BUYDU)
+// 1. KENDİ BİLGİLERİMİ GETİR
 app.get('/api/auth/me', authenticateToken, async (req, res) => {
     try { 
-        // job_title ve is_verified eklendi
         const result = await pool.query(
             "SELECT id, name, email, phone, profileImageUrl, is_verified, job_title FROM users WHERE id = $1", 
             [req.user.id]
@@ -147,7 +148,6 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
 
 // 2. PROFİLİMİ GÜNCELLE
 app.put('/api/auth/me', authenticateToken, upload.single('newProfileImage'), async (req, res) => {
-    // job_title'ı body'den alıyoruz
     const { name, phone, job_title } = req.body; 
     
     try {
@@ -155,11 +155,9 @@ app.put('/api/auth/me', authenticateToken, upload.single('newProfileImage'), asy
         let sql, params;
         
         if (imageUrl) {
-            // Resim varsa hepsini güncelle (job_title dahil)
             sql = `UPDATE users SET name = $1, phone = $2, job_title = $3, profileImageUrl = $4 WHERE id = $5 RETURNING *`;
             params = [name, phone, job_title, imageUrl, req.user.id];
         } else {
-            // Resim yoksa sadece metinleri güncelle
             sql = `UPDATE users SET name = $1, phone = $2, job_title = $3 WHERE id = $4 RETURNING *`;
             params = [name, phone, job_title, req.user.id];
         }
@@ -173,10 +171,8 @@ app.put('/api/auth/me', authenticateToken, upload.single('newProfileImage'), asy
 });
 
 // --- GET ROTALARI ---
-// server.js - GET /api/pets (GÜNCELLENDİ: Mavi Tik Desteği)
 app.get('/api/pets', async (req, res) => {
     try { 
-        // GÜNCELLEME: u.is_verified eklendi
         const sql = `SELECT p.*, u.name as ownerName, u.is_verified as ownerVerified, 'Sahiplendirme' as tur 
             FROM pets p 
             LEFT JOIN users u ON p.user_id = u.id 
@@ -187,16 +183,11 @@ app.get('/api/pets', async (req, res) => {
         res.status(500).json({ message: err.message }); 
     }
 });
-// server.js - GET /api/pets/:id (GÜNCELLENDİ)
+
 app.get('/api/pets/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const sql = `SELECT 
-                p.*, 
-                u.name as ownerName, 
-                u.email as ownerEmail, 
-                u.profileImageUrl as ownerImage,
-                u.is_verified as ownerVerified
+        const sql = `SELECT p.*, u.name as ownerName, u.email as ownerEmail, u.profileImageUrl as ownerImage, u.is_verified as ownerVerified
             FROM pets p 
             LEFT JOIN users u ON p.user_id = u.id 
             WHERE p.id = $1`;
@@ -206,7 +197,6 @@ app.get('/api/pets/:id', async (req, res) => {
         if (result.rows.length === 0) {
             return res.status(404).json({ message: "İlan bulunamadı" });
         }
-
         res.json(result.rows[0]);
     } catch (err) {
         console.error("Detay hatası:", err);
@@ -214,10 +204,8 @@ app.get('/api/pets/:id', async (req, res) => {
     }
 });
 
-// server.js - GET /api/breeding-pets (GÜNCELLENDİ)
 app.get('/api/breeding-pets', async (req, res) => {
     try { 
-        // GÜNCELLEME: u.is_verified as ownerVerified eklendi
         const sql = `SELECT bp.*, u.name as ownerName, u.is_verified as ownerVerified, u.profileImageUrl as ownerImage FROM breeding_pets bp LEFT JOIN users u ON bp.user_id = u.id ORDER BY bp.id DESC`; 
         const result = await pool.query(sql); 
         res.json(result.rows); 
@@ -226,16 +214,10 @@ app.get('/api/breeding-pets', async (req, res) => {
     }
 });
 
-// server.js - GET /api/breeding-pets/:id (GÜNCELLENDİ)
 app.get('/api/breeding-pets/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const sql = `SELECT 
-                bp.*, 
-                u.name as ownerName, 
-                u.email as ownerEmail, 
-                u.profileImageUrl as ownerImage,
-                u.is_verified as ownerVerified
+        const sql = `SELECT bp.*, u.name as ownerName, u.email as ownerEmail, u.profileImageUrl as ownerImage, u.is_verified as ownerVerified
             FROM breeding_pets bp 
             LEFT JOIN users u ON bp.user_id = u.id 
             WHERE bp.id = $1`;
@@ -245,7 +227,6 @@ app.get('/api/breeding-pets/:id', async (req, res) => {
         if (result.rows.length === 0) {
             return res.status(404).json({ message: "Eş ilanı bulunamadı" });
         }
-
         res.json(result.rows[0]);
     } catch (err) {
         console.error("Breeding detay hatası:", err);
@@ -260,7 +241,7 @@ app.get('/api/vets', async (req, res) => {
     try { const sql = `SELECT v.*, u.name as ownerName, u.profileImageUrl as ownerImage FROM vets v LEFT JOIN users u ON v.user_id = u.id ORDER BY v.createdAt DESC`; const result = await pool.query(sql); res.json(result.rows); } catch (err) { res.status(500).json({ message: "Hata" }); }
 });
 
-// --- POST ROTALARI ---
+// --- POST ROTALARI (İLAN EKLEME) ---
 app.post('/api/pets', authenticateToken, upload.single('petImage'), async (req, res) => {
     const { name, species, age, gender, story } = req.body;
     try { const imageUrl = await uploadToSupabase(req.file); await pool.query(`INSERT INTO pets (user_id, name, species, age, gender, story, imageUrl) VALUES ($1, $2, $3, $4, $5, $6, $7)`, [req.user.id, name, species, age, gender, story, imageUrl]); res.status(201).json({ message: "İlan eklendi!" }); } catch (err) { res.status(500).json({ message: err.message }); }
@@ -351,26 +332,21 @@ app.get('/api/messages/thread/:otherId/:petId', authenticateToken, async (req, r
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// server.js - POST /api/messages (GÜNCELLENDİ: RESİM + MESAJ)
 app.post('/api/messages', authenticateToken, upload.single('messageImage'), async (req, res) => {
-    // FormData ile geldiği için veriler req.body içinde, dosya req.file içinde olur
     const receiver_id = req.body.receiver_id !== undefined ? req.body.receiver_id : req.body.receiverId;
     let pet_id = req.body.pet_id !== undefined ? req.body.pet_id : (req.body.petId || 0);
     const { message, post_type } = req.body;
 
-    // Hem mesaj hem resim yoksa hata ver (Biri varsa sorun yok)
     if (!receiver_id || (!message && !req.file)) {
         return res.status(400).json({ message: "Mesaj veya resim göndermelisiniz." });
     }
 
     try {
         let imageUrl = null;
-        // Eğer resim varsa yükle
         if (req.file) {
             imageUrl = await uploadToSupabase(req.file);
         }
 
-        // Veritabanına kaydet (imageUrl sütunu eklendi)
         const sql = `INSERT INTO messages (sender_id, receiver_id, pet_id, post_type, message, image_url, is_read) 
             VALUES ($1, $2, $3, $4, $5, $6, FALSE) 
             RETURNING *`;        
@@ -379,7 +355,7 @@ app.post('/api/messages', authenticateToken, upload.single('messageImage'), asyn
             receiver_id, 
             pet_id, 
             post_type || 'adoption', 
-            message || '', // Mesaj boşsa boş string olsun
+            message || '', 
             imageUrl
         ]);
         
@@ -391,17 +367,10 @@ app.post('/api/messages', authenticateToken, upload.single('messageImage'), asyn
     }
 });
 
-
-// +++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// +++ KULLANICI PROFİLİ VE TAKİP SİSTEMİ ROTALARI +++
-// +++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-// 1. BAŞKASININ PROFİLİNİ GÖR (GET)
-// 1. BAŞKASININ PROFİLİNİ GÖR (GET) - GÜNCELLENDİ
+// --- BAŞKASININ PROFİLİNİ GÖR (GET) ---
 app.get('/api/users/profile/:id', async (req, res) => {
     const targetUserId = parseInt(req.params.id);
     
-    // İstek atan kişi giriş yapmış mı kontrol edelim
     const authHeader = req.headers['authorization'];
     let currentUserId = null;
     
@@ -410,11 +379,10 @@ app.get('/api/users/profile/:id', async (req, res) => {
         try {
             const decoded = jwt.verify(token, SECRET_KEY);
             currentUserId = decoded.id;
-        } catch (e) { /* Token geçersizse null kalsın */ }
+        } catch (e) { }
     }
 
     try {
-        // GÜNCELLEME: is_verified ve job_title EKLENDİ
         const userRes = await pool.query(
             `SELECT id, name, profileImageUrl, about_me, createdAt, is_verified, job_title FROM users WHERE id = $1`, 
             [targetUserId]
@@ -454,7 +422,7 @@ app.get('/api/users/profile/:id', async (req, res) => {
     }
 });
 
-// 2. TAKİP ET / TAKİBİ BIRAK (TOGGLE) (GÜNCELLENDİ - BİLDİRİMLİ)
+// --- TAKİP ET / TAKİBİ BIRAK (TOGGLE) ---
 app.post('/api/users/follow', authenticateToken, async (req, res) => {
     const { targetId } = req.body;
     const myId = req.user.id;
@@ -483,7 +451,7 @@ app.post('/api/users/follow', authenticateToken, async (req, res) => {
                 [myId, targetId]
             );
 
-            // +++ BİLDİRİM EKLEME +++
+            // BİLDİRİM EKLEME
             await pool.query(
                 `INSERT INTO notifications (user_id, sender_id, type, message) VALUES ($1, $2, 'follow', 'seni takip etmeye başladı.')`,
                 [targetId, myId]
@@ -497,15 +465,49 @@ app.post('/api/users/follow', authenticateToken, async (req, res) => {
     }
 });
 
+// --- TAKİPÇİYİ ÇIKARMA ROTASI (DÜZELTİLDİ: TEK SEFER VE POSTGRESQL UYUMLU) ---
+app.post('/api/users/remove-follower', authenticateToken, async (req, res) => {
+    try {
+        const myId = req.user.id;           // Senin ID'n
+        const targetId = req.body.targetId; // Seni takip eden kişinin ID'si
+
+        if (!targetId) {
+            return res.status(400).json({ message: "Hedef kullanıcı ID'si eksik." });
+        }
+
+        // PostgreSQL Sorgusu ($1, $2 syntax)
+        const text = 'DELETE FROM follows WHERE follower_id = $1 AND followed_id = $2';
+        
+        // DİKKAT: Veritabanındaki sütun adlarına göre burayı güncelledim.
+        // Genelde tablo yapısı: follower_id (takip eden), following_id (takip edilen) olur.
+        // Eğer senin tablon farklıysa (örn: followed_id) ona göre ayarlarız.
+        // Standart PITO yapısında 'following_id' kullanılıyor.
+        
+        const deleteQuery = 'DELETE FROM follows WHERE follower_id = $1 AND following_id = $2';
+        const values = [targetId, myId];
+
+        const result = await pool.query(deleteQuery, values);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: "Bu kullanıcı zaten sizi takip etmiyor." });
+        }
+
+        res.status(200).json({ message: "Kişi takipçilerinizden çıkarıldı." });
+
+    } catch (err) {
+        console.error("Takipçi çıkarma hatası (Postgres):", err);
+        res.status(500).json({ message: "Sunucu hatası oluştu." });
+    }
+});
+
 app.get('/api/users/connections/:id', async (req, res) => {
     const userId = parseInt(req.params.id);
     try {
-        // 1. Beni Takip Edenler (Followers)
         const followersSql = `SELECT u.id, u.name, u.profileImageUrl 
             FROM follows f 
             JOIN users u ON f.follower_id = u.id 
             WHERE f.following_id = $1`;        
-        // 2. Benim Takip Ettiklerim (Following)
+        
         const followingSql = `SELECT u.id, u.name, u.profileImageUrl 
             FROM follows f 
             JOIN users u ON f.following_id = u.id 
@@ -524,40 +526,7 @@ app.get('/api/users/connections/:id', async (req, res) => {
     }
 });
 
-// --- server.js İçine Eklenecek (PostgreSQL Versiyonu) ---
-
-app.post('/api/users/remove-follower', authenticateToken, async (req, res) => {
-    try {
-        const myId = req.user.id;           // Senin ID'n (Takip edilen kişi sensin)
-        const targetId = req.body.targetId; // Seni takip eden ve silmek istediğin kişinin ID'si
-
-        if (!targetId) {
-            return res.status(400).json({ message: "Hedef kullanıcı ID'si eksik." });
-        }
-
-        // PostgreSQL Sorgusu:
-        // follower_id = $1 (Seni takip eden kişi - Silinecek olan)
-        // followed_id = $2 (Sen - Takip edilen)
-        const text = 'DELETE FROM follows WHERE follower_id = $1 AND followed_id = $2';
-        const values = [targetId, myId];
-
-        // pool.query, PostgreSQL kütüphanesinin standart kullanım şeklidir
-        const result = await pool.query(text, values);
-
-        // Eğer hiçbir satır silinmediyse (zaten takip etmiyorsa)
-        if (result.rowCount === 0) {
-            return res.status(404).json({ message: "Bu kullanıcı zaten sizi takip etmiyor." });
-        }
-
-        res.status(200).json({ message: "Kişi takipçilerinizden çıkarıldı." });
-
-    } catch (err) {
-        console.error("Takipçi çıkarma hatası (Postgres):", err);
-        res.status(500).json({ message: "Sunucu hatası oluştu." });
-    }
-});
-
-// --- BİLDİRİM ROTALARI (YENİ) ---
+// --- BİLDİRİM ROTALARI ---
 app.get('/api/notifications', authenticateToken, async (req, res) => {
     try {
         const sql = `SELECT n.*, u.name as sender_name, u.profileImageUrl as sender_image
@@ -582,14 +551,12 @@ app.put('/api/notifications/read', authenticateToken, async (req, res) => {
     }
 });
 
-// server.js - DELETE /api/messages/thread/:otherId/:petId
 app.delete('/api/messages/thread/:otherId/:petId', authenticateToken, async (req, res) => {
     const otherId = parseInt(req.params.otherId);
     const petId = parseInt(req.params.petId);
     const myId = req.user.id;
 
     try {
-        // İki kişi arasındaki (belirli bir ilan için olan) tüm mesajları sil
         const sql = `DELETE FROM messages 
             WHERE (
                 (sender_id = $1 AND receiver_id = $2) OR 
@@ -603,45 +570,25 @@ app.delete('/api/messages/thread/:otherId/:petId', authenticateToken, async (req
     }
 });
 
-// --- PITO BOT (YAPAY ZEKA) ROTASI ---
+// --- PITO BOT (YAPAY ZEKA) ---
 app.post('/api/pito-bot', authenticateToken, async (req, res) => {
     const { userMessage } = req.body;
-
     if (!userMessage) return res.status(400).json({ message: "Mesaj boş olamaz." });
 
     try {
-        // Gemini API'yi başlat
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        // Hızlı ve ücretsiz model
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-        // Yapay Zekaya "Rol" Veriyoruz (Prompt Engineering)
-        const prompt = `Senin adın "PITO Bot". Sen PITO (Evcil Hayvan Platformu) için çalışan, yardımsever, neşeli ve bilgili bir sanal veteriner asistanısın.
-            
-            GÖREVİN:
-            Kullanıcıların kedi, köpek, kuş, tavşan gibi evcil hayvanlarının sağlığı, beslenmesi, bakımı ve davranışları hakkındaki sorularını yanıtlamak.
-
-            KURALLAR:
-            1. Asla kesin tıbbi teşhis koyma (Örn: "Kedinin hastalığı şudur, hemen şu ilacı al" DEME). Bunun yerine "Bu belirtiler x, y olabilir, veterinerin görmesi iyi olur" gibi yönlendir.
-            2. Her zaman nazik, destekleyici ve bol emojili bir dil kullan. 🐾 🐱 🐶
-            3. Cevabının sonuna mutlaka şu uyarıyı ekle: "\n\n⚠️ *Not: Bu bir tavsiyedir. Kesin teşhis ve tedavi için lütfen sitemizdeki 'Veteriner Bul' sayfasından bir uzman hekime danışın.*"
-            4. Eğer kullanıcı hayvanlar dışında (siyaset, futbol vb.) bir şey sorarsa, nazikçe "Ben sadece sevimli dostlarımız hakkında konuşabilirim." de.
-
-            KULLANICI SORUSU: "${userMessage}"`;
+        const prompt = `Senin adın "PITO Bot". Sen PITO (Evcil Hayvan Platformu) asistanısın. GÖREVİN: Kullanıcıların evcil hayvanlarla ilgili sorularını yanıtlamak. KURALLAR: Asla kesin tıbbi teşhis koyma. Nazik ve emojili dil kullan. KULLANICI SORUSU: "${userMessage}"`;
         
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const text = response.text();
-
         res.json({ reply: text });
-
     } catch (err) {
         console.error("Gemini Hatası:", err);
-        res.status(500).json({ message: "PITO Bot şu an biraz yorgun 😴 Lütfen daha sonra tekrar dene." });
+        res.status(500).json({ message: "PITO Bot şu an meşgul." });
     }
 });
 
-// --- CHATBOT ROTASI ---
 app.post('/chat', async (req, res) => {
     try {
         const userMessage = req.body.message;
@@ -654,7 +601,6 @@ app.post('/chat', async (req, res) => {
         res.status(500).json({ error: "Yapay zeka yanıt veremedi." });
     }
 });
-// ----------------------
 
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Sunucu Render üzerinde aktif. Port: ${PORT}`);
