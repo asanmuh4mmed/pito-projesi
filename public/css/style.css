@@ -1256,3 +1256,17 @@ footer a:hover {
 .contact-btn:active {
     transform: scale(0.95) !important; /* Tıklama hissiyatı */
 }
+
+.action-btn {
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    font-weight: 600;
+    font-size: 0.8rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Tıklama Anı: İçine Göçme */
+.action-btn:active {
+    transform: scale(0.92);
+    background-color: #dc3545;
+    color: white;
+}

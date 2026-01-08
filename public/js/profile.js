@@ -383,3 +383,35 @@ async function handleProfileUpdate(e) {
     const res = await fetch(`${API_URL}/api/auth/me`, { method: 'PUT', headers: { 'Authorization': `Bearer ${token}` }, body: formData });
     if(res.ok) { alert("Güncellendi!"); window.location.reload(); }
 }
+
+/**
+ * Kullanıcıyı Takipçi veya Takip Edilen listesinden çıkarır
+ * @param {HTMLElement} btn - Tıklanan buton
+ * @param {string} userId - Çıkarılacak kullanıcının ID'si
+ */
+function removeConnection(btn, userId) {
+    if (confirm("Bu kullanıcıyı listenizden çıkarmak istediğinize emin misiniz?")) {
+        // 1. Görsel Efekt (Sola kaydırıp yok etme)
+        const row = btn.closest('.list-group-item');
+        row.style.transition = "all 0.3s ease";
+        row.style.transform = "translateX(-20px)";
+        row.style.opacity = "0";
+
+        setTimeout(() => {
+            row.remove();
+            
+            // 2. Sunucuya İstek Atma (Backend hazır olduğunda burayı açabilirsin)
+            /*
+            fetch(`/api/connections/remove/${userId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => console.log("Başarıyla silindi"));
+            */
+            
+            // 3. Liste boşaldıysa "Kayıt yok" yazısı göster
+            const list = document.getElementById('connectionsList');
+            if (list.children.length === 0) {
+                list.innerHTML = '<p class="text-center text-muted p-3">Liste boş.</p>';
+            }
+        }, 300);
+    }
+}
