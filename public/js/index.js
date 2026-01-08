@@ -271,3 +271,50 @@ function popupKapat() {
         popup.classList.remove('active');
     }
 }
+
+// İletişim formu gönderim işlemi
+document.getElementById('contactForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const name = document.getElementById('contactName').value;
+    const email = document.getElementById('contactEmail').value;
+    const message = document.getElementById('contactMessage').value;
+    const submitBtn = this.querySelector('button[type="submit"]');
+
+    // Butonu yükleniyor moduna al
+    const originalBtnText = submitBtn.innerText;
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Gönderiliyor...";
+
+    try {
+        const response = await fetch('https://pito-projesi.onrender.com/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, message })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            Swal.fire({
+                title: 'Başarılı!',
+                text: 'Mesajınız petspito@gmail.com adresine iletildi.',
+                icon: 'success',
+                confirmButtonColor: '#A64D32'
+            });
+            this.reset(); // Formu temizle
+        } else {
+            throw new Error(data.message);
+        }
+    } catch (error) {
+        Swal.fire({
+            title: 'Hata!',
+            text: 'Mesaj gönderilemedi: ' + error.message,
+            icon: 'error',
+            confirmButtonColor: '#d33'
+        });
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = originalBtnText;
+    }
+});

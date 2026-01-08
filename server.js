@@ -258,6 +258,40 @@ app.post('/api/vets', authenticateToken, upload.single('vetImage'), async (req, 
     const { clinicName, vetName, city, phone, address } = req.body;
     try { const imageUrl = await uploadToSupabase(req.file); await pool.query(`INSERT INTO vets (user_id, clinicName, vetName, city, phone, address, imageUrl) VALUES ($1, $2, $3, $4, $5, $6, $7)`, [req.user.id, clinicName, vetName, city, phone, address, imageUrl]); res.status(201).json({ message: "Klinik başarıyla eklendi!" }); } catch (err) { res.status(500).json({ message: "Veritabanı hatası" }); }
 });
+// --- server.js ---
+
+// Mevcut kodlarının arasına bu yeni rotayı ekle
+app.post('/api/contact', async (req, res) => {
+    const { name, email, message } = req.body;
+
+    if (!name || !email || !message) {
+        return res.status(400).json({ message: "Lütfen tüm alanları doldurun." });
+    }
+
+    // Gönderilecek mail içeriği
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: 'petspito@gmail.com', // Alıcı adresi
+        subject: `PİTO - Yeni İletişim Formu Mesajı (${name})`,
+        html: `
+            <h3>Yeni İletişim Mesajı</h3>
+            <p><b>Gönderen:</b> ${name}</p>
+            <p><b>E-posta:</b> ${email}</p>
+            <p><b>Mesaj:</b></p>
+            <p>${message}</p>
+            <hr>
+            <p>Bu mesaj PİTO web sitesi iletişim formu aracılığıyla gönderilmiştir.</p>
+        `
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        res.status(200).json({ message: "Mesajınız başarıyla gönderildi!" });
+    } catch (error) {
+        console.error("Mail gönderme hatası:", error);
+        res.status(500).json({ message: "Mesaj gönderilirken bir hata oluştu." });
+    }
+});
 
 // --- YORUMLAR ---
 app.get('/api/reviews/:vetId', async (req, res) => {
@@ -307,7 +341,6 @@ app.delete('/api/vets/:id', authenticateToken, (req, res) => deleteItem('vets', 
 
 // --- MESAJLAŞMA ROTALARI ---
 // --- server.js ---
-// Bu kısmı bul ve aşağıdakiyle DEĞİŞTİR
 
 app.get('/api/my-messages', authenticateToken, async (req, res) => {
     try {
