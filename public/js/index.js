@@ -241,13 +241,33 @@ async function checkGlobalUnreadMessages() {
 
 // Sayfa tamamen yüklendiğinde çalışır
 window.addEventListener('load', function() {
-    // Biraz gecikmeli açılsın ki kullanıcı siteyi bir görsün (isteğe bağlı)
-    setTimeout(function() {
-        document.getElementById('pito-popup-container').classList.add('active');
-    }, 500); // Yarım saniye sonra açılır
+    
+    // 1. KONTROL: Kullanıcı bu oturumda popup'ı gördü mü?
+    // sessionStorage: Tarayıcı sekmesi açık kaldığı sürece hatırlar.
+    const popupZatenGosterildi = sessionStorage.getItem('pitoPopupSession');
+
+    // Eğer bu oturumda henüz gösterilmediyse:
+    if (!popupZatenGosterildi) {
+        
+        // 2. GECİKME: Kullanıcı girdikten tam 1 saniye sonra çalışsın
+        setTimeout(function() {
+            const popup = document.getElementById('pito-popup-container');
+            
+            if (popup) {
+                // Popup'ı aç
+                popup.classList.add('active');
+                
+                // 3. HAFIZAYA YAZ: "Bu sekmede artık gösterme!"
+                sessionStorage.setItem('pitoPopupSession', 'true');
+            }
+        }, 1000); // 1000 milisaniye = 1 saniye
+    }
 });
 
-// Kapatma fonksiyonu
+// Kapatma Fonksiyonu (X butonuna basınca)
 function popupKapat() {
-    document.getElementById('pito-popup-container').classList.remove('active');
+    const popup = document.getElementById('pito-popup-container');
+    if (popup) {
+        popup.classList.remove('active');
+    }
 }
