@@ -109,14 +109,12 @@ function renderVets(vets) {
                             <i class="fa-regular fa-comments me-1"></i> Yorumlar
                         </button>
 
-                        // js/vets.js içinde renderVets fonksiyonundaki ilgili kısmı şununla DEĞİŞTİR:
-
-                        <button class="btn w-50 rounded-pill py-2 small fw-bold text-white contact-btn d-flex align-items-center justify-content-center" 
+                        <button class="btn w-50 rounded-pill py-2 small fw-bold text-white contact-btn" 
                                 style="background-color: #A64D32;"
                                 data-phone="${vPhone}"
                                 data-clinic="${cName}"
                                 data-vet="${vName}">
-                            <i class="fa-solid fa-phone me-2"></i> Ara
+                            <i class="fa-solid fa-phone me-1"></i> Ara
                         </button>
                     </div>
                 </div>

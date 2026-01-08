@@ -495,3 +495,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+document.getElementById('contactForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Form verilerini al
+    const name = document.getElementById('contactName').value;
+    
+    // Şimdilik sadece görsel geri bildirim verelim
+    Swal.fire({
+        title: 'Mesajın Alındı! 📩',
+        text: `Teşekkürler ${name}, ekibimiz en kısa sürede seninle iletişime geçecek.`,
+        icon: 'success',
+        confirmButtonColor: '#A64D32',
+        background: '#F9F6F0'
+    });
+    
+    // Formu temizle
+    this.reset();
+});
