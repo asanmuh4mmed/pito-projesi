@@ -435,3 +435,36 @@ function handleConnectionRemove(btn, userId) {
         }, 400);
     }
 }
+
+function handleFollowAction() {
+    const btn = document.getElementById('followActionBtn');
+    const countEl = document.querySelector('#myFollowerCount h5');
+    let currentCount = parseInt(countEl.innerText);
+
+    // Modern "İçine Göçme" Efekti (Haptic Feel)
+    btn.style.transform = "scale(0.95)";
+    setTimeout(() => btn.style.transform = "scale(1)", 100);
+
+    if (btn.innerText === "Takip Et") {
+        // Takip Etme İşlemi
+        btn.innerText = "Takip Ediliyor";
+        btn.classList.replace('btn-clay', 'btn-secondary');
+        countEl.innerText = currentCount + 1;
+    } else {
+        // Takipten Çıkma Onayı
+        if (confirm("Takipten çıkmak istediğine emin misin?")) {
+            btn.innerText = "Takip Et";
+            btn.classList.replace('btn-secondary', 'btn-clay');
+            countEl.innerText = currentCount - 1;
+        }
+    }
+}
+
+function handleRemoveFollower() {
+    if (confirm("Bu kişinin sizi takip etmesini engellemek istiyor musunuz?")) {
+        const btn = document.getElementById('removeFollowerBtn');
+        btn.style.opacity = "0.5";
+        btn.disabled = true;
+        alert("Takipçi listenizden çıkarıldı. 🐾");
+    }
+}
