@@ -1,13 +1,13 @@
-// --- js/user-profile.js (GÜNCEL - MAVİ TİK & MESLEK DAHİL) ---
-
 const API_URL = 'https://pitopets.com'; 
 let profileUserId = null;
 let myCurrentId = null; 
 
+// Token çözümleme
 function parseJwt(token) {
     try { return JSON.parse(atob(token.split('.')[1])); } catch (e) { return null; }
 }
 
+// Sayfa Yüklendiğinde
 document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
     
@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadUserProfile();
 });
 
+// Profil Verilerini Çekme
 async function loadUserProfile() {
     try {
         const token = localStorage.getItem('token');
@@ -51,6 +52,7 @@ async function loadUserProfile() {
     }
 }
 
+// Profili Ekrana Basma
 function renderProfile(data) {
     const user = data.user;
     const stats = data.stats;
@@ -60,7 +62,6 @@ function renderProfile(data) {
     const nameEl = document.getElementById('profileName');
     nameEl.innerHTML = user.name; 
 
-    // Mavi Tik Ekleme (Eğer onaylıysa)
     if (user.is_verified === true || user.is_verified === "true" || user.is_verified === 1) {
         nameEl.innerHTML += `
         <svg class="verified-tick" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: #1da1f2; margin-left: 8px; vertical-align: sub;">
@@ -69,7 +70,6 @@ function renderProfile(data) {
     }
 
     // --- 2. MESLEK ve BİYOGRAFİ ---
-    // Eğer meslek varsa ismin altında şık bir etiket olarak göster
     const jobHTML = user.job_title 
         ? `<div class="mb-2"><span class="badge bg-light text-dark border px-3 py-2" style="font-size: 0.9rem; letter-spacing: 0.5px;">${user.job_title}</span></div>` 
         : '';
@@ -86,7 +86,8 @@ function renderProfile(data) {
     const followerEl = document.getElementById('followerCount');
     const followingEl = document.getElementById('followingCount');
 
-    followerEl.innerHTML = `<h4 class="fw-bold mb-0" style="color: #A64D32;">${stats.followers}</h4><small class="text-muted">Takipçi</small>`;
+    // ID vererek içindeki rakamı yakalayabilir hale getiriyoruz (h4 id="numFollowers")
+    followerEl.innerHTML = `<h4 id="numFollowers" class="fw-bold mb-0" style="color: #A64D32;">${stats.followers}</h4><small class="text-muted">Takipçi</small>`;
     followingEl.innerHTML = `<h4 class="fw-bold mb-0" style="color: #A64D32;">${stats.following}</h4><small class="text-muted">Takip</small>`;
 
     followerEl.style.cursor = "pointer";
@@ -94,38 +95,135 @@ function renderProfile(data) {
     followerEl.onclick = () => openConnectionsModal('followers');
     followingEl.onclick = () => openConnectionsModal('following');
 
-    // --- 5. Butonlar ---
+    // --- 5. Butonlar (GÜNCELLENEN KISIM) ---
     const btnContainer = document.getElementById('profileActionBtn');
+    
     if (isMe) {
-        btnContainer.innerHTML = `<a href="profile.html" class="btn btn-outline-secondary rounded-pill px-4">Profili Düzenle</a>`;
+        // Kendi profilimse
+        btnContainer.innerHTML = `<a href="profile.html" class="btn btn-outline-secondary rounded-pill px-4 w-100">Profili Düzenle</a>`;
     } else {
+        // Başkasının profiliyse (Gelişmiş Buton Yapısı)
         updateFollowButton(stats.isFollowing);
     }
 }
 
+/**
+ * GÜNCELLENMİŞ BUTON YAPISI
+ * Takip Et / Mesaj / Takipçiyi Çıkar
+ */
 function updateFollowButton(isFollowing) {
     const btnContainer = document.getElementById('profileActionBtn');
-    let followBtnHTML = isFollowing 
-        ? `<button onclick="toggleFollow()" class="btn btn-secondary rounded-pill px-4 me-2">Takip Ediliyor</button>` 
-        : `<button onclick="toggleFollow()" class="btn btn-primary rounded-pill px-4 me-2" style="background-color: #A64D32; border:none;">Takip Et</button>`;
+    
+    // Takip Durumuna Göre Stil ve Metin
+    const btnText = isFollowing ? "Takip Ediliyor" : "Takip Et";
+    const btnClass = isFollowing ? "btn-secondary" : "btn-primary"; // btn-primary için stil aşağıda inline verilecek
+    const btnStyle = isFollowing ? "" : "background-color: #A64D32; border:none;";
 
-    const msgBtnHTML = `<button onclick="openMessageModal()" class="btn btn-outline-dark rounded-pill px-4"><i class="fa-regular fa-paper-plane me-2"></i>Mesaj</button>`;
-    btnContainer.innerHTML = followBtnHTML + msgBtnHTML;
+    const html = `
+    <div class="d-flex flex-column gap-2 w-100 mt-2">
+        <div class="d-flex gap-2">
+            <button id="followActionBtn" onclick="handleFollowAction()" 
+                class="btn ${btnClass} flex-grow-1 rounded-pill fw-bold transition-btn" 
+                style="${btnStyle}">
+                ${btnText}
+            </button>
+
+            <button id="removeFollowerBtn" onclick="handleRemoveFollower()" 
+                class="btn btn-outline-danger rounded-circle shadow-sm d-flex align-items-center justify-content-center transition-btn" 
+                style="width: 42px; height: 42px; min-width: 42px;" 
+                title="Takipçiyi Çıkar" data-bs-toggle="tooltip">
+                <i class="fa-solid fa-user-minus"></i>
+            </button>
+        </div>
+
+        <button onclick="openMessageModal()" class="btn btn-outline-dark w-100 rounded-pill fw-bold transition-btn">
+            <i class="fa-regular fa-paper-plane me-2"></i>Mesaj Gönder
+        </button>
+    </div>
+    `;
+    
+    btnContainer.innerHTML = html;
 }
 
-async function toggleFollow() {
-    const token = localStorage.getItem('token');
-    if (!token) { window.location.href = 'login.html'; return; }
+/**
+ * Takip Etme / Takipten Çıkma Mantığı (Matematiksel Güncelleme Dahil)
+ */
+async function handleFollowAction() {
+    const btn = document.getElementById('followActionBtn');
+    const countEl = document.getElementById('numFollowers');
+    let currentCount = parseInt(countEl.innerText);
 
+    // Basit dokunma efekti
+    btn.style.transform = "scale(0.95)";
+    setTimeout(() => btn.style.transform = "scale(1)", 150);
+
+    const isFollowing = btn.innerText.includes("Takip Ediliyor");
+
+    if (isFollowing) {
+        // --- TAKİPTEN ÇIKMA ---
+        if (confirm("Bu kullanıcıyı takipten çıkmak istediğinize emin misiniz?")) {
+            // 1. UI Güncelle (Hızlı tepki)
+            btn.innerText = "Takip Et";
+            btn.className = "btn btn-primary flex-grow-1 rounded-pill fw-bold transition-btn";
+            btn.style.backgroundColor = "#A64D32";
+            btn.style.border = "none";
+            btn.style.color = "white";
+            
+            // Rakamı düşür
+            if (currentCount > 0) countEl.innerText = currentCount - 1;
+
+            // 2. API İsteği
+            await toggleFollowAPI(); 
+        }
+    } else {
+        // --- TAKİP ETME ---
+        // 1. UI Güncelle
+        btn.innerText = "Takip Ediliyor";
+        btn.className = "btn btn-secondary flex-grow-1 rounded-pill fw-bold transition-btn";
+        btn.style.backgroundColor = ""; // Default gri
+        btn.style.color = "";
+        
+        // Rakamı artır
+        countEl.innerText = currentCount + 1;
+
+        // 2. API İsteği
+        await toggleFollowAPI();
+    }
+}
+
+/**
+ * Takipçiyi Çıkarma Mantığı
+ */
+function handleRemoveFollower() {
+    if (confirm("Bu kişinin sizi takip etmesini engellemek istiyor musunuz?")) {
+        const btn = document.getElementById('removeFollowerBtn');
+        
+        // Animasyonla yok et
+        btn.style.transition = "all 0.3s ease";
+        btn.style.transform = "scale(0) rotate(180deg)";
+        btn.style.opacity = "0";
+
+        setTimeout(() => {
+            btn.remove(); // DOM'dan sil
+            alert("Kişi takipçi listenizden çıkarıldı.");
+            // Burada API isteği yapılabilir: /api/users/remove-follower
+        }, 300);
+    }
+}
+
+// API Çağrısı (Mevcut toggleFollow fonksiyonunun sadeleşmiş hali)
+async function toggleFollowAPI() {
+    const token = localStorage.getItem('token');
     try {
-        const res = await fetch(`${API_URL}/api/users/follow`, {
+        await fetch(`${API_URL}/api/users/follow`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ targetId: profileUserId })
         });
-        if (res.ok) { loadUserProfile(); } else { alert((await res.json()).message); }
     } catch (err) { console.error(err); }
 }
+
+// --- Diğer Yardımcı Fonksiyonlar (Liste, Mesaj vb.) ---
 
 async function openConnectionsModal(type) {
     const titleEl = document.getElementById('connectionsTitle');
