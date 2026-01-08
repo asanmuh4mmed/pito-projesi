@@ -190,19 +190,25 @@
   </div>
 </footer>
 
-
-<div id="mobil-uyari" class="overlay">
-    <div class="popup-kutu">
-        <span class="kapat-btn" onclick="popupKapat()">&#10005;</span>
+<div id="pito-popup-container" class="popup-overlay">
+    <div class="popup-content">
+        <button class="close-popup-btn" onclick="popupKapat()" aria-label="Kapat">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
         
-        <h2>MOBİL UYGULAMA<br>ÇOK YAKINDA</h2>
+        <div class="popup-icon">📱</div>
         
-        <div class="market-ikonlari">
-            <button class="store-btn"> App Store</button>
-            <button class="store-btn">▶ Google Play</button>
+        <h2>PİTO Mobil Çok Yakında!</h2>
+        <p>Patili dostun için en iyi deneyim cebine geliyor. Hazır olduğunda ilk sen indir.</p>
+        
+        <div class="store-badges">
+            <a href="#" class="store-link apple">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="App Store'dan İndir">
+            </a>
+            <a href="#" class="store-link google">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play'den Al">
+            </a>
         </div>
-
-        <button class="haber-ver-btn">HABER VER</button>
     </div>
 </div>
 

@@ -239,8 +239,15 @@ async function checkGlobalUnreadMessages() {
 }
 
 
-// Kutuyu gizleyen fonksiyon
+// Sayfa tamamen yüklendiğinde çalışır
+window.addEventListener('load', function() {
+    // Biraz gecikmeli açılsın ki kullanıcı siteyi bir görsün (isteğe bağlı)
+    setTimeout(function() {
+        document.getElementById('pito-popup-container').classList.add('active');
+    }, 500); // Yarım saniye sonra açılır
+});
+
+// Kapatma fonksiyonu
 function popupKapat() {
-    const uyariKutusu = document.getElementById('mobil-uyari');
-    uyariKutusu.style.display = 'none';
+    document.getElementById('pito-popup-container').classList.remove('active');
 }
