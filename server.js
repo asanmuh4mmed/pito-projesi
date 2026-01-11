@@ -103,8 +103,7 @@ app.post('/api/register', upload.single('profileImage'), async (req, res) => {
         
         // DİKKAT: is_verified = 0 (false) olarak ekliyoruz. verificationToken sütununa kodu yazıyoruz.
         await pool.query(
-            `INSERT INTO users (name, email, phone, password, profileImageUrl, is_verified, verificationToken) VALUES ($1, $2, $3, $4, $5, 0, $6)`,
-            [name, email, phone, password, profileImageUrl, verificationCode]
+`INSERT INTO users (name, email, phone, password, profileImageUrl, is_verified, verificationToken) VALUES ($1, $2, $3, $4, $5, false, $6)`,            [name, email, phone, password, profileImageUrl, verificationCode]
         );
 
         // Mail Gönderme İşlemi
@@ -153,8 +152,7 @@ app.post('/api/verify-otp', async (req, res) => {
 
         // Kodu doğruysa hesabı onayla (is_verified = 1 yap) ve kodu temizle
         await pool.query(
-            `UPDATE users SET is_verified = 1, verificationToken = NULL WHERE email = $1`,
-            [email]
+`UPDATE users SET is_verified = true, verificationToken = NULL WHERE email = $1`,            [email]
         );
 
         res.status(200).json({ message: "Hesabınız doğrulandı! Giriş yapabilirsiniz." });
@@ -175,8 +173,7 @@ app.post('/api/login', async (req, res) => {
         if (!user) return res.status(401).json({ message: "Hatalı e-posta veya şifre!" });
 
         // isVerified kontrolü (veritabanında bazen küçük bazen büyük harf olabilir, ikisini de kontrol et)
-        if (user.isverified === 0 || user.isVerified === 0) {
-            return res.status(403).json({ message: "Lütfen önce hesabınızı doğrulayın." });
+if (user.isverified === false || user.isVerified === false) {            return res.status(403).json({ message: "Lütfen önce hesabınızı doğrulayın." });
         }
 
         const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: '24h' });
