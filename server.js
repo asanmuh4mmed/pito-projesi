@@ -22,18 +22,12 @@ const model = genAI.getGenerativeModel({
     systemInstruction: "Sen PITO (Pitopets) asistanısın. Hayvan sahiplendirme, eş bulma ve veterinerlik konularında yardım edersin."
 });
 
-// --- MAİL GÖNDERME AYARLARI (RENDER İÇİN GÜÇLENDİRİLMİŞ AYAR) ---
+// --- MAİL GÖNDERME AYARLARI (SERVİS MODU) ---
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587, // 465 yerine kesinlikle 587 (TLS) olmalı
-  secure: false, // 587 portu için bu false olmalı
+  service: 'gmail', // Host ve Port yerine bunu kullanıyoruz
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
-  },
-  tls: {
-    ciphers: 'SSLv3', // Bazı ağ sorunlarını çözer
-    rejectUnauthorized: false // Sertifika hatalarını yoksayar (Render için kritik)
   }
 });
 
@@ -94,23 +88,24 @@ const authenticateToken = (req, res, next) => {
 
 // ================= ROTALAR =================
 
-// 1. KAYIT OL
-// --- 1. KAYIT OL (GÜNCELLENDİ: ARTIK E-POSTA DOĞRULAMA KODU GÖNDERİYOR) ---
+// --- 1. KAYIT OL (GÜNCELLENMİŞ VERSİYON) ---
 app.post('/api/register', upload.single('profileImage'), async (req, res) => {
     const { name, email, phone, password } = req.body;
     
-    // 100000 ile 999999 arasında rastgele 6 haneli sayı üret
+    // 6 haneli doğrulama kodu üret
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
     try {
+        // 1. Önce Resmi Yükle
         const profileImageUrl = await uploadToSupabase(req.file);
         
-        // DİKKAT: is_verified = 0 (false) olarak ekliyoruz. verificationToken sütununa kodu yazıyoruz.
+        // 2. Kullanıcıyı Veritabanına Kaydet (Henüz doğrulanmamış: is_verified = false)
         await pool.query(
-`INSERT INTO users (name, email, phone, password, profileImageUrl, is_verified, verificationToken) VALUES ($1, $2, $3, $4, $5, false, $6)`,            [name, email, phone, password, profileImageUrl, verificationCode]
+            `INSERT INTO users (name, email, phone, password, profileImageUrl, is_verified, verificationToken) VALUES ($1, $2, $3, $4, $5, false, $6)`,
+            [name, email, phone, password, profileImageUrl, verificationCode]
         );
 
-        // Mail Gönderme İşlemi
+        // 3. Mail Seçeneklerini Hazırla
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: email,
@@ -126,16 +121,32 @@ app.post('/api/register', upload.single('profileImage'), async (req, res) => {
                 </div>
             `
         };
-        await transporter.sendMail(mailOptions);
 
-        res.status(201).json({ message: "Doğrulama kodu e-postanıza gönderildi.", requireVerification: true, email: email });
+        // 4. Maili Göndermeyi Dene
+        console.log("📨 Mail gönderiliyor...");
+        await transporter.sendMail(mailOptions);
+        console.log("✅ Mail başarıyla gönderildi.");
+
+        // Başarılı Dönüş
+        res.status(201).json({ 
+            message: "Doğrulama kodu e-postanıza gönderildi.", 
+            requireVerification: true, 
+            email: email 
+        });
 
     } catch (err) {
+        // HATA YÖNETİMİ
+        
+        // Eğer hata "E-posta zaten kayıtlı" hatasıysa (Postgres Code: 23505)
         if (err.code === '23505') {
             return res.status(400).json({ message: "Bu e-posta zaten kayıtlı." });
         }
-        console.error("Kayıt hatası:", err);
-        res.status(500).json({ error: "Sunucu hatası oluştu." });
+
+        // Diğer tüm hataları konsola yaz
+        console.error("❌ KAYIT HATASI:", err);
+
+        // Kullanıcıya genel hata dön
+        res.status(500).json({ error: "Sunucu hatası oluştu. Lütfen tekrar deneyin." });
     }
 });
 
