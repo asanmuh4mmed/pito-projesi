@@ -137,15 +137,15 @@ app.post('/api/register', upload.single('profileImage'), async (req, res) => {
     }
 });
 
-// --- 2. DOĞRULAMA ROTASI (BUNU EKLEMEN LAZIM) ---
+// --- 2. DOĞRULAMA ROTASI (DÜZELTİLMİŞ) ---
 app.post('/api/verify-otp', async (req, res) => {
     const { email, code } = req.body;
 
     try {
         // 1. Kullanıcıyı ve Kodu Bul
-        // Kodun eşleştiğini ve emailin doğru olduğunu kontrol ediyoruz
+        // DÜZELTME: "verificationToken" tırnakları kaldırıldı.
         const result = await pool.query(
-            `SELECT * FROM users WHERE email = $1 AND "verificationToken" = $2`, 
+            `SELECT * FROM users WHERE email = $1 AND verificationToken = $2`, 
             [email, code]
         );
 
@@ -153,9 +153,10 @@ app.post('/api/verify-otp', async (req, res) => {
             return res.status(400).json({ message: "Hatalı kod veya geçersiz e-posta!" });
         }
 
-        // 2. Hesabı Onayla (is_verified = true) ve Kodu Sil
+        // 2. Hesabı Onayla ve Kodu Sil
+        // DÜZELTME: Burada da tırnaklar kaldırıldı.
         await pool.query(
-            `UPDATE users SET is_verified = true, "verificationToken" = NULL WHERE email = $1`,
+            `UPDATE users SET is_verified = true, verificationToken = NULL WHERE email = $1`,
             [email]
         );
 
@@ -166,7 +167,6 @@ app.post('/api/verify-otp', async (req, res) => {
         res.status(500).json({ message: "Sunucu hatası." });
     }
 });
-
 // 2. GİRİŞ YAP
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
