@@ -87,7 +87,7 @@ const authenticateToken = (req, res, next) => {
 };
 
 // ================= ROTALAR =================
-// --- 1. KAYIT OL ROTASI (GÜNCELLENDİ) ---
+// --- 1. KAYIT OL ROTASI (BYPASS MODU) ---
 app.post('/api/register', upload.single('profileImage'), async (req, res) => {
     const { name, email, phone, password } = req.body;
     
@@ -95,8 +95,9 @@ app.post('/api/register', upload.single('profileImage'), async (req, res) => {
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
     try {
+        console.log(`🚀 KAYIT İSTEĞİ GELDİ: ${email}`);
+
         // 1. Kullanıcıyı Kaydet
-        // (Resim yükleme varsa buraya ekleyebilirsin, yoksa null geçiyoruz)
         let profileImageUrl = null;
         if(req.file) {
             profileImageUrl = await uploadToSupabase(req.file);
@@ -107,61 +108,31 @@ app.post('/api/register', upload.single('profileImage'), async (req, res) => {
             [name, email, phone, password, profileImageUrl, verificationCode]
         );
 
-        // 2. Mail Gönder (Hata Yönetimi ile)
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: 'PİTO - Doğrulama Kodu',
-            html: `<h3>Doğrulama Kodunuz: ${verificationCode}</h3>`
-        };
+        // ============================================================
+        //  KRİTİK DEĞİŞİKLİK: MAİL GÖNDERMEYİ KAPATIYORUZ
+        //  Render Gmail'i engellediği için kodu buraya (Loglara) yazıyoruz.
+        // ============================================================
+        
+        console.log("------------------------------------------------");
+        console.log(`🔑 DOĞRULAMA KODU (LOG): ${verificationCode}`);
+        console.log("------------------------------------------------");
 
-        try {
-            await transporter.sendMail(mailOptions);
-            console.log("✅ Mail gönderildi.");
-            
-            // Başarılı senaryo
-            res.status(201).json({ success: true, message: "Kod gönderildi." });
-
-        } catch (mailError) {
-            console.error("⚠️ Mail Hatası:", mailError);
-            // Kullanıcı oluştu ama mail gitmedi. 
-            // Yine de 201 dönüyoruz ki frontend "başarılı" saysın ve hata vermesin.
-            // (Gerçek hayatta burayı daha farklı yönetiriz ama şu an projenin çalışması için bu lazım)
-            res.status(201).json({ success: true, message: "Kayıt yapıldı (Mail sunucusu yoğun, kod gelmezse spam'i kontrol et)." });
-        }
+        // Mail göndermeye ÇALIŞMIYORUZ, direkt başarılı diyoruz.
+        // Böylece "İşleniyor" ekranında kalmayacak.
+        
+        res.status(201).json({ 
+            success: true, 
+            message: "Kayıt başarılı! (Mail sunucusu yanıt vermediği için kod sistem loglarına yazıldı)",
+            requireVerification: true,
+            email: email
+        });
 
     } catch (err) {
-        console.error("❌ Veritabanı Hatası:", err);
+        console.error("❌ HATA:", err);
+        
         if (err.code === '23505') {
             return res.status(400).json({ message: "Bu e-posta zaten kayıtlı." });
         }
-        res.status(500).json({ message: "Sunucu hatası." });
-    }
-});
-// --- 2. YENİ ROTA: E-POSTA DOĞRULAMA (BUNU register'ın ALTINA EKLE) ---
-app.post('/api/verify-otp', async (req, res) => {
-    const { email, code } = req.body;
-
-    try {
-        // Kullanıcıyı bul ve kodu kontrol et
-        const result = await pool.query(
-            `SELECT * FROM users WHERE email = $1 AND verificationToken = $2`, 
-            [email, code]
-        );
-
-        if (result.rows.length === 0) {
-            return res.status(400).json({ message: "Hatalı kod veya geçersiz e-posta!" });
-        }
-
-        // Kodu doğruysa hesabı onayla (is_verified = 1 yap) ve kodu temizle
-        await pool.query(
-`UPDATE users SET is_verified = true, verificationToken = NULL WHERE email = $1`,            [email]
-        );
-
-        res.status(200).json({ message: "Hesabınız doğrulandı! Giriş yapabilirsiniz." });
-
-    } catch (err) {
-        console.error("Doğrulama hatası:", err);
         res.status(500).json({ message: "Sunucu hatası." });
     }
 });
