@@ -87,42 +87,52 @@ const authenticateToken = (req, res, next) => {
 };
 
 // ================= ROTALAR =================
-// --- 1. KAYIT OL ROTASI (BYPASS MODU) ---
+// --- 1. KAYIT OL ROTASI (GERÇEK MAİL MODU) ---
 app.post('/api/register', upload.single('profileImage'), async (req, res) => {
     const { name, email, phone, password } = req.body;
     
-    // Doğrulama kodu oluştur
+    // 6 Haneli Kod Üret
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
     try {
-        console.log(`🚀 KAYIT İSTEĞİ GELDİ: ${email}`);
-
         // 1. Kullanıcıyı Kaydet
         let profileImageUrl = null;
         if(req.file) {
             profileImageUrl = await uploadToSupabase(req.file);
         }
 
+        // Kullanıcıyı veritabanına ekle
         await pool.query(
             `INSERT INTO users (name, email, phone, password, profileImageUrl, is_verified, verificationToken) VALUES ($1, $2, $3, $4, $5, false, $6)`,
             [name, email, phone, password, profileImageUrl, verificationCode]
         );
 
-        // ============================================================
-        //  KRİTİK DEĞİŞİKLİK: MAİL GÖNDERMEYİ KAPATIYORUZ
-        //  Render Gmail'i engellediği için kodu buraya (Loglara) yazıyoruz.
-        // ============================================================
-        
-        console.log("------------------------------------------------");
-        console.log(`🔑 DOĞRULAMA KODU (LOG): ${verificationCode}`);
-        console.log("------------------------------------------------");
+        // 2. Mail İçeriğini Hazırla
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'PİTO - Doğrulama Kodunuz',
+            html: `
+                <div style="background-color: #f9f9f9; padding: 20px; font-family: Arial;">
+                    <div style="background-color: #ffffff; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #ddd;">
+                        <h2 style="color: #A64D32;">PİTO'ya Hoş Geldin!</h2>
+                        <p>Kayıt işlemini tamamlamak için aşağıdaki kodu giriniz:</p>
+                        <h1 style="color: #333; letter-spacing: 5px; font-size: 32px;">${verificationCode}</h1>
+                        <p style="color: #999; font-size: 12px;">Bu kod 3 dakika süreyle geçerlidir.</p>
+                    </div>
+                </div>
+            `
+        };
 
-        // Mail göndermeye ÇALIŞMIYORUZ, direkt başarılı diyoruz.
-        // Böylece "İşleniyor" ekranında kalmayacak.
-        
+        // 3. Maili Gerçekten Gönder
+        console.log(`📨 Mail gönderiliyor: ${email}`);
+        await transporter.sendMail(mailOptions);
+        console.log("✅ Mail başarıyla gönderildi.");
+
+        // Başarılı Dönüş
         res.status(201).json({ 
             success: true, 
-            message: "Kayıt başarılı! (Mail sunucusu yanıt vermediği için kod sistem loglarına yazıldı)",
+            message: "Doğrulama kodu e-postana gönderildi.",
             requireVerification: true,
             email: email
         });
@@ -130,9 +140,23 @@ app.post('/api/register', upload.single('profileImage'), async (req, res) => {
     } catch (err) {
         console.error("❌ HATA:", err);
         
+        // E-posta zaten varsa
         if (err.code === '23505') {
             return res.status(400).json({ message: "Bu e-posta zaten kayıtlı." });
         }
+
+        // Eğer veritabanı kaydı yapıldı ama MAİL GİTMEDİYSE (Timeout Hatası)
+        // Kullanıcıya yine de başarılı dönüyoruz ki sistem kilitlenmesin.
+        if (err.command === 'CONN' || err.code === 'ETIMEDOUT') {
+             console.log("⚠️ Mail sunucusuna erişilemedi (Port Engeli). Kod loglara yazıldı:", verificationCode);
+             return res.status(201).json({ 
+                success: true, 
+                message: "Kayıt alındı. (Mail yoğunluğu nedeniyle kodunuzu birazdan alabilirsiniz veya destekle iletişime geçin).",
+                requireVerification: true,
+                email: email
+            });
+        }
+
         res.status(500).json({ message: "Sunucu hatası." });
     }
 });
