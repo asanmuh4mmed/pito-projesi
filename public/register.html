@@ -10,134 +10,78 @@
     <link rel="stylesheet" href="css/style.css">
     
     <style>
-        /* Modern Mobil Hissiyatı Veren CSS */
         body { background-color: #F9F6F0; }
-        .register-card {
-            border: none;
-            border-radius: 20px;
-            background: #ffffff;
-            width: 100%;
-            max-width: 400px;
-            transition: transform 0.3s ease;
-        }
-        .form-control:focus {
-            border-color: #A64D32;
-            box-shadow: 0 0 0 0.25rem rgba(166, 77, 50, 0.15);
-        }
-        .btn-mobile {
-            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-        .btn-mobile:active { transform: scale(0.95); }
+        .register-card { border: none; border-radius: 20px; background: #ffffff; width: 100%; max-width: 400px; }
+        .form-control:focus { border-color: #A64D32; box-shadow: 0 0 0 0.25rem rgba(166, 77, 50, 0.15); }
         .text-clay { color: #A64D32 !important; }
         .btn-clay { background-color: #A64D32; color: white; border: none; }
         .btn-clay:hover { background-color: #8D4028; color: white; }
-        
-        /* OTP Input Stili */
-        #otp-code {
-            letter-spacing: 12px;
-            font-weight: bold;
-            font-size: 1.5rem;
-            text-align: center;
-        }
+        #otp-code { letter-spacing: 12px; font-weight: bold; font-size: 1.5rem; text-align: center; }
     </style>
 </head>
 <body class="d-flex align-items-center justify-content-center vh-100 position-relative p-3">
 
-    <div class="position-absolute top-0 end-0 m-3 m-md-4">
-        <a href="index.html" class="btn btn-sm btn-light rounded-circle shadow-sm p-2" style="width: 40px; height: 40px;">
-            <i class="fa-solid fa-xmark fa-lg mt-1"></i>
-        </a>
-    </div>
-
     <div class="card register-card shadow-lg p-4 p-md-5">
         <div class="text-center mb-4">
-            <h2 class="fw-bold text-clay" style="font-family: 'Playfair Display', serif;">PİTO</h2>
-            <p class="text-muted small" data-lang="register_subtitle">Dostlarımıza yuva olmak için katılın.</p>
+            <h2 class="fw-bold text-clay">PİTO</h2>
+            <p class="text-muted small">Dostlarımıza yuva olmak için katılın.</p>
         </div>
         
         <div id="register-section">
             <form id="registerForm" autocomplete="off">
                 <div class="form-floating mb-3">
                     <input type="text" id="name" class="form-control rounded-4" placeholder="Ad Soyad" required>
-                    <label for="name" class="text-muted"><i class="fa-solid fa-user me-2"></i>Ad Soyad</label>
+                    <label for="name">Ad Soyad</label>
                 </div>
-
                 <div class="form-floating mb-3">
-                    <input type="email" id="email" class="form-control rounded-4" placeholder="name@example.com" required>
-                    <label for="email" class="text-muted"><i class="fa-solid fa-envelope me-2"></i>E-posta</label>
+                    <input type="email" id="email" class="form-control rounded-4" placeholder="Email" required>
+                    <label for="email">E-posta</label>
                 </div>
-
                 <div class="form-floating mb-3">
-                    <input type="tel" id="phone" class="form-control rounded-4" placeholder="05XX" required>
-                    <label for="phone" class="text-muted"><i class="fa-solid fa-phone me-2"></i>Telefon</label>
+                    <input type="tel" id="phone" class="form-control rounded-4" placeholder="Tel" required>
+                    <label for="phone">Telefon</label>
                 </div>
-
-                <div class="form-floating mb-3 position-relative">
+                <div class="form-floating mb-3">
                     <input type="password" id="password" class="form-control rounded-4" placeholder="Şifre" required>
-                    <label for="password" class="text-muted"><i class="fa-solid fa-lock me-2"></i>Şifre</label>
-                    <i class="fa-solid fa-eye position-absolute top-50 end-0 translate-middle-y me-3 text-muted" 
-                       style="cursor: pointer;" onclick="togglePassword('password', this)"></i>
+                    <label for="password">Şifre</label>
                 </div>
-
-                <div class="form-floating mb-4 position-relative">
+                <div class="form-floating mb-4">
                     <input type="password" id="confirmPassword" class="form-control rounded-4" placeholder="Şifre Tekrar" required>
-                    <label for="confirmPassword" class="text-muted"><i class="fa-solid fa-lock me-2"></i>Şifre Tekrar</label>
-                     <i class="fa-solid fa-eye position-absolute top-50 end-0 translate-middle-y me-3 text-muted" 
-                     style="cursor: pointer;" onclick="togglePassword('confirmPassword', this)"></i>
+                    <label for="confirmPassword">Şifre Tekrar</label>
                 </div>
 
-                <button type="submit" id="submitBtn" class="btn btn-clay btn-mobile w-100 py-3 rounded-pill shadow-sm fs-6" data-lang="btn_register">
+                <button type="submit" id="submitBtn" class="btn btn-clay w-100 py-3 rounded-pill shadow-sm fs-6">
                     Kayıt Ol
                 </button>
             </form>
-            
             <div class="text-center mt-4">
                 <small class="text-muted">Hesabın var mı? <a href="login.html" class="text-clay fw-bold text-decoration-none">Giriş Yap</a></small>
             </div>
         </div>
 
-        <div id="verify-section" style="display: none; text-align: center;" class="animate__animated animate__fadeIn">
+        <div id="verify-section" style="display: none; text-align: center;">
             <div class="mb-3">
                 <i class="fa-solid fa-envelope-circle-check text-clay fa-3x mb-3"></i>
                 <h4 class="fw-bold">E-postanı Kontrol Et</h4>
-                <p class="text-muted small">E-posta adresine gönderdiğimiz 6 haneli doğrulama kodunu giriniz.</p>
+                <p class="text-muted small">Gönderdiğimiz 6 haneli kodu giriniz.</p>
             </div>
-
             <div class="form-floating mb-4">
                 <input type="text" id="otp-code" class="form-control rounded-4" placeholder="Kod" maxlength="6">
                 <label for="otp-code" class="text-center w-100">Doğrulama Kodu</label>
             </div>
-
-            <button id="verifyBtn" class="btn btn-clay btn-mobile w-100 py-3 rounded-pill shadow-sm fs-6">
+            <button id="verifyBtn" class="btn btn-clay w-100 py-3 rounded-pill shadow-sm fs-6">
                 Onayla ve Giriş Yap
             </button>
         </div>
-
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="js/lang.js"></script>
 
     <script>
-        // Şifre Göster/Gizle
-        function togglePassword(inputId, icon) {
-            const input = document.getElementById(inputId);
-            if (input.type === "password") {
-                input.type = "text";
-                icon.classList.remove("fa-eye");
-                icon.classList.add("fa-eye-slash");
-            } else {
-                input.type = "password";
-                icon.classList.remove("fa-eye-slash");
-                icon.classList.add("fa-eye");
-            }
-        }
+        let userEmailCache = ""; 
 
-        // --- ENTEGRE KAYIT VE DOĞRULAMA SİSTEMİ ---
-        let userEmailCache = ""; // E-postayı hafızada tutmak için
-
+        // 1. KAYIT OLMA İŞLEMİ
         document.getElementById('registerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -148,18 +92,17 @@
             const confirmPassword = document.getElementById('confirmPassword').value;
             const submitBtn = document.getElementById('submitBtn');
 
-            // Şifre kontrolü
             if (password !== confirmPassword) {
                 Swal.fire({ icon: 'error', title: 'Hata', text: 'Şifreler eşleşmiyor!' });
                 return;
             }
 
-            // Butonu kilitle
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> İşleniyor...';
+            submitBtn.innerHTML = 'İşleniyor...';
             submitBtn.disabled = true;
 
             try {
-                const response = await fetch('https://pito-projesi.onrender.com/api/register', { // Render URL'ini buraya tam yazmak daha güvenli olabilir, yoksa /api/register kalsın
+                // Backend'e istek atıyoruz (Relatif URL kullandık, Render'da otomatik çalışır)
+                const response = await fetch('/api/register', { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, phone, password })
@@ -168,44 +111,41 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    // BAŞARILI: Formu gizle, doğrulama ekranını aç
-                    userEmailCache = email; // Maili kaydet
+                    userEmailCache = email; 
+                    
+                    // Formu gizle, doğrulama kutusunu aç
+                    document.getElementById('register-section').style.display = 'none';
+                    document.getElementById('verify-section').style.display = 'block';
                     
                     Swal.fire({
                         icon: 'success',
-                        title: 'Kod Gönderildi!',
-                        text: 'Lütfen e-posta adresinize gelen kodu giriniz.',
+                        title: 'Kod Gönderildi',
+                        text: 'Lütfen e-postanızı kontrol edin.',
                         timer: 2000,
                         showConfirmButton: false
                     });
-
-                    document.getElementById('register-section').style.display = 'none';
-                    document.getElementById('verify-section').style.display = 'block';
                 } else {
-                    // HATA
-                    Swal.fire({ icon: 'error', title: 'Hata', text: result.message || 'Kayıt başarısız.' });
-                    submitBtn.innerHTML = 'Kayıt Ol';
-                    submitBtn.disabled = false;
+                    throw new Error(result.message || 'Kayıt başarısız');
                 }
             } catch (error) {
                 console.error(error);
-                Swal.fire({ icon: 'error', title: 'Sunucu Hatası', text: 'Sunucuya bağlanılamadı.' });
+                Swal.fire({ icon: 'error', title: 'Hata', text: error.message });
                 submitBtn.innerHTML = 'Kayıt Ol';
                 submitBtn.disabled = false;
             }
         });
 
-        // DOĞRULAMA BUTONU İŞLEMİ
+        // 2. KOD DOĞRULAMA İŞLEMİ
         document.getElementById('verifyBtn').addEventListener('click', async function() {
             const code = document.getElementById('otp-code').value;
             const verifyBtn = document.getElementById('verifyBtn');
 
             if (!code || code.length < 6) {
-                Swal.fire({ icon: 'warning', title: 'Dikkat', text: 'Lütfen 6 haneli kodu eksiksiz girin.' });
+                Swal.fire({ icon: 'warning', title: 'Dikkat', text: 'Kodu eksiksiz girin.' });
                 return;
             }
 
-            verifyBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Kontrol Ediliyor...';
+            verifyBtn.innerHTML = 'Kontrol Ediliyor...';
             verifyBtn.disabled = true;
 
             try {
@@ -221,19 +161,16 @@
                     Swal.fire({
                         icon: 'success',
                         title: 'Başarılı!',
-                        text: 'Hesabınız doğrulandı. Giriş yapabilirsiniz.',
-                        confirmButtonText: 'Giriş Yap',
+                        text: 'Giriş yapabilirsiniz.',
                         confirmButtonColor: '#A64D32'
                     }).then(() => {
                         window.location.href = 'login.html';
                     });
                 } else {
-                    Swal.fire({ icon: 'error', title: 'Hata', text: result.message || 'Kod hatalı.' });
-                    verifyBtn.innerHTML = 'Onayla ve Giriş Yap';
-                    verifyBtn.disabled = false;
+                    throw new Error(result.message || 'Kod hatalı');
                 }
             } catch (error) {
-                Swal.fire({ icon: 'error', title: 'Hata', text: 'Bir hata oluştu.' });
+                Swal.fire({ icon: 'error', title: 'Hata', text: error.message });
                 verifyBtn.innerHTML = 'Onayla ve Giriş Yap';
                 verifyBtn.disabled = false;
             }
