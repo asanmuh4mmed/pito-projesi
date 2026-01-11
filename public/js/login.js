@@ -1,6 +1,6 @@
-// --- js/login.js ---
-
 document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- 1. GİRİŞ YAPMA İŞLEMİ (MEVCUT KODLARIN) ---
     const loginForm = document.getElementById('loginForm');
 
     if (loginForm) {
@@ -11,7 +11,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = document.getElementById('password').value;
 
             try {
-const res = await fetch('https://pitopets.com/api/login', {                    method: 'POST',
+                // API URL'ini senin sistemine göre yazdım
+                const res = await fetch('https://pitopets.com/api/login', { 
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
@@ -23,32 +25,30 @@ const res = await fetch('https://pitopets.com/api/login', {                    m
                         localStorage.setItem('token', data.token);
                         localStorage.setItem('user', JSON.stringify(data.user));
                         
-                        // --- GÜNCELLENEN KISIM (BAŞARILI GİRİŞ) ---
+                        // BAŞARILI GİRİŞ
                         Swal.fire({
                             title: 'Hoş Geldiniz! 🐾',
                             text: 'Giriş başarılı, ana sayfaya yönlendiriliyorsunuz...',
                             icon: 'success',
-                            timer: 2000, // 2 saniye sonra otomatik kapanır
+                            timer: 2000, 
                             showConfirmButton: false,
-                            background: '#F9F6F0', // Projenin krem rengi
-                            color: '#3E2723'      // Projenin koyu kahve rengi
+                            confirmButtonColor: '#A64D32'
                         }).then(() => {
                             window.location.href = 'index.html';
                         });
-                        // ------------------------------------------
 
                     } else {
-                        // Token Hatası
+                        // Token Gelmediyse
                         Swal.fire({
                             icon: 'error',
-                            title: 'Bir Sorun Oluştu',
+                            title: 'Hata',
                             text: 'Sunucu kimlik bilgisi göndermedi!',
-                            confirmButtonColor: '#A64D32' // Kiremit rengi buton
+                            confirmButtonColor: '#A64D32'
                         });
                     }
                     
                 } else {
-                    // Şifre veya Email Yanlış Hatası
+                    // Şifre veya Email Yanlış
                     Swal.fire({
                         icon: 'warning',
                         title: 'Giriş Başarısız',
@@ -60,12 +60,43 @@ const res = await fetch('https://pitopets.com/api/login', {                    m
 
             } catch (err) {
                 console.error("Login Hatası:", err);
-                // Sunucu Bağlantı Hatası
                 Swal.fire({
                     icon: 'error',
-                    title: 'Sunucuya Ulaşılamadı',
-                    text: 'Lütfen internet bağlantınızı kontrol edin veya daha sonra tekrar deneyin.',
-                    confirmButtonColor: '#3E2723'
+                    title: 'Sunucu Hatası',
+                    text: 'Lütfen internet bağlantınızı kontrol edin.',
+                    confirmButtonColor: '#A64D32'
+                });
+            }
+        });
+    }
+
+    // --- 2. ŞİFREMİ UNUTTUM İŞLEMİ (YENİ) ---
+    const resetBtn = document.getElementById('sendResetLinkBtn');
+    
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            const resetEmail = document.getElementById('resetEmail').value;
+            
+            // Modal penceresini bul ve kapat
+            const modalEl = document.getElementById('forgotPasswordModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            
+            if (resetEmail) {
+                modalInstance.hide(); // Pencereyi kapat
+                
+                // Şimdilik sadece görsel uyarı veriyoruz (Backend hazır olunca buraya fetch eklenir)
+                Swal.fire({
+                    title: 'Talep Alındı',
+                    text: `${resetEmail} adresine sıfırlama bağlantısı gönderildi varsayılıyor.`,
+                    icon: 'success',
+                    confirmButtonColor: '#A64D32'
+                });
+            } else {
+                Swal.fire({
+                    title: 'Eksik Bilgi',
+                    text: 'Lütfen e-posta adresinizi yazın.',
+                    icon: 'warning',
+                    confirmButtonColor: '#A64D32'
                 });
             }
         });

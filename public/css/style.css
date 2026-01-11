@@ -828,23 +828,95 @@ footer a:hover {
     border-color: #D7CCC8 !important;
     transform: translateX(5px);
 }
+/* =========================================
+   1. GENEL AYARLAR VE RENKLER (PİTO)
+   ========================================= */
+:root {
+    --pito-main: #A64D32;  /* Pito Ana Rengi (Kiremit) */
+    --pito-hover: #8c3b24; /* Hover (Üzerine gelince) Rengi */
+    --pito-bg: #FDF8F5;    /* Açık Krem Arkaplan */
+    --text-dark: #333;
+}
+
+/* Sayfa Arkaplanı */
+body.bg-light {
+    background-color: var(--pito-bg) !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 
 /* =========================================
-   GİZLİ İÇERİK (LOGIN KONTROLÜ)
+   2. NAVBAR VE BUTONLAR
    ========================================= */
 
+/* Navbar Özelleştirme */
+.navbar-custom {
+    background-color: var(--pito-main) !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* PİTO Özel Buton Stili */
+.btn-pito {
+    background-color: var(--pito-main);
+    color: white;
+    border: 1px solid var(--pito-main);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-pito:hover {
+    background-color: var(--pito-hover);
+    border-color: var(--pito-hover);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Link Renkleri */
+.title-pito {
+    color: var(--pito-main);
+    font-weight: bold;
+}
+
+.link-pito, .forgot-link {
+    color: var(--pito-main);
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.link-pito:hover, .forgot-link:hover {
+    color: var(--pito-hover);
+    text-decoration: underline;
+}
+
+/* Form Elemanları */
+.form-control:focus {
+    border-color: var(--pito-main);
+    box-shadow: 0 0 0 0.25rem rgba(166, 77, 50, 0.25);
+}
+
+.card {
+    border: none;
+    background-color: white;
+}
+
+/* =========================================
+   3. GİZLİ İÇERİK (LOGIN KONTROLÜ)
+   ========================================= */
+
+/* Kapsayıcı: İçindeki her şeyi sınırlar */
 .login-blur-container {
     position: relative;
     overflow: hidden;
 }
 
+/* Bulanıklaşacak İçerik */
 .blur-content {
     filter: blur(4px);
     opacity: 0.6;
     pointer-events: none; /* Tıklamayı engeller */
-    user-select: none;    /* Seçmeyi engeller */
+    user-select: none;    /* Kopyalamayı engeller */
 }
 
+/* Üstte Çıkan Uyarı Kutusu */
 .login-overlay-message {
     position: absolute;
     top: 50%;
@@ -852,31 +924,37 @@ footer a:hover {
     transform: translate(-50%, -50%);
     z-index: 10;
     text-align: center;
-    background: rgba(255, 255, 255, 0.9);
-    padding: 20px;
+    background: rgba(255, 255, 255, 0.95); /* Biraz daha opak yaptım okunsun diye */
+    padding: 30px;
     border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     width: 80%;
-    border: 1px solid #A64D32;
+    max-width: 400px; /* Çok geniş ekranlarda dev gibi olmasın */
+    border: 2px solid var(--pito-main); /* Senin renginle uyumlu çerçeve */
 }
 
-/* --- MOBİL İÇİN ARKA PLAN DÜZELTMESİ --- */
+.login-overlay-message h4 {
+    color: var(--pito-main);
+    margin-bottom: 15px;
+}
+
+/* =========================================
+   4. MOBİL UYUMLULUK VE DÜZELTMELER
+   ========================================= */
+
 @media (max-width: 768px) {
-    /* Buradaki .hero-wrap yerine kendi class ismini yaz */
+    /* Hero ve Kapak Resimleri İçin Düzeltme */
     .hero-wrap, .ftco-cover {
-        background-position: center center !important; /* Resmi tam ortalar */
-        background-attachment: scroll !important; /* Mobilde kayma sorununu çözer */
-        background-size: cover !important; /* Ekranı kaplamaya devam eder */
-        height: 100vh !important; /* Yüksekliği ekran boyutu kadar yapar */
+        background-position: center center !important; 
+        background-attachment: scroll !important; /* Mobilde 'fixed' sorun yaratır, 'scroll' iyidir */
+        background-size: cover !important; 
+        height: 100vh !important; /* Tam ekran yüksekliği */
     }
     
-    /* Eğer resim çok kalitesiz görünürse veya çok kırpılırsa
-       mobilde farklı bir resim kullanmak için şunu ekleyebilirsin: */
-    /*
-    .hero-wrap {
-        background-image: url('../images/mobil-arkaplan.jpg') !important;
+    /* Login Kartı Mobilde Kenarlardan Taşmasın */
+    .card {
+        margin: 0 10px; 
     }
-    */
 }
 
 /* =========================================
