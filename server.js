@@ -22,14 +22,17 @@ const model = genAI.getGenerativeModel({
     systemInstruction: "Sen PITO (Pitopets) asistanısın. Hayvan sahiplendirme, eş bulma ve veterinerlik konularında yardım edersin."
 });
 
-// --- MAİL GÖNDERME AYARLARI ---
+// --- MAİL GÖNDERME AYARLARI (GÜNCELLENDİ: PORT 587) ---
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
+  port: 587,             // 465 yerine 587 kullanıyoruz
+  secure: false,         // 587 için false olmalı (STARTTLS)
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
+  },
+  tls: {
+      rejectUnauthorized: false // Sertifika hatalarını önler
   }
 });
 
