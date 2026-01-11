@@ -22,12 +22,17 @@ const model = genAI.getGenerativeModel({
     systemInstruction: "Sen PITO (Pitopets) asistanısın. Hayvan sahiplendirme, eş bulma ve veterinerlik konularında yardım edersin."
 });
 
-// --- MAİL GÖNDERME AYARLARI (SERVİS MODU) ---
+// --- MAİL AYARLARI (BREVO - PORT 2525) ---
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // Host ve Port yerine bunu kullanıyoruz
+  host: "smtp-relay.brevo.com",
+  port: 2525, // 587 Engellendiği için 2525 kullanıyoruz
+  secure: false,
   auth: {
-    user: process.env.EMAIL_USER,
+    user: process.env.EMAIL_USER, 
     pass: process.env.EMAIL_PASS
+  },
+  tls: {
+    rejectUnauthorized: false // Sertifika hatalarını yok sayar
   }
 });
 
@@ -87,7 +92,7 @@ const authenticateToken = (req, res, next) => {
 };
 
 // ================= ROTALAR =================
-// --- 1. KAYIT OL ROTASI (GERÇEK MAİL MODU) ---
+// --- 1. KAYIT OL ROTASI (GÜNCELLENMİŞ HALİ) ---
 app.post('/api/register', upload.single('profileImage'), async (req, res) => {
     const { name, email, phone, password } = req.body;
     
@@ -95,6 +100,8 @@ app.post('/api/register', upload.single('profileImage'), async (req, res) => {
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
     try {
+        console.log(`🚀 Kayıt isteği: ${email}`);
+
         // 1. Kullanıcıyı Kaydet
         let profileImageUrl = null;
         if(req.file) {
@@ -107,9 +114,11 @@ app.post('/api/register', upload.single('profileImage'), async (req, res) => {
             [name, email, phone, password, profileImageUrl, verificationCode]
         );
 
-        // 2. Mail İçeriğini Hazırla
+        // 2. Mail İçeriğini Hazırla (GÜNCELLENDİ)
         const mailOptions = {
-            from: process.env.EMAIL_USER,
+            // BURAYI DEĞİŞTİRDİK: process.env yerine direkt adresi yazdık
+            from: 'PİTO <petspito@gmail.com>', 
+            
             to: email,
             subject: 'PİTO - Doğrulama Kodunuz',
             html: `
@@ -124,39 +133,35 @@ app.post('/api/register', upload.single('profileImage'), async (req, res) => {
             `
         };
 
-        // 3. Maili Gerçekten Gönder
-        console.log(`📨 Mail gönderiliyor: ${email}`);
-        await transporter.sendMail(mailOptions);
-        console.log("✅ Mail başarıyla gönderildi.");
-
-        // Başarılı Dönüş
-        res.status(201).json({ 
-            success: true, 
-            message: "Doğrulama kodu e-postana gönderildi.",
-            requireVerification: true,
-            email: email
-        });
-
-    } catch (err) {
-        console.error("❌ HATA:", err);
-        
-        // E-posta zaten varsa
-        if (err.code === '23505') {
-            return res.status(400).json({ message: "Bu e-posta zaten kayıtlı." });
-        }
-
-        // Eğer veritabanı kaydı yapıldı ama MAİL GİTMEDİYSE (Timeout Hatası)
-        // Kullanıcıya yine de başarılı dönüyoruz ki sistem kilitlenmesin.
-        if (err.command === 'CONN' || err.code === 'ETIMEDOUT') {
-             console.log("⚠️ Mail sunucusuna erişilemedi (Port Engeli). Kod loglara yazıldı:", verificationCode);
-             return res.status(201).json({ 
+        // 3. Maili Gönder (Hata korumalı)
+        try {
+            await transporter.sendMail(mailOptions);
+            console.log("✅ Mail başarıyla gönderildi.");
+            
+            res.status(201).json({ 
                 success: true, 
-                message: "Kayıt alındı. (Mail yoğunluğu nedeniyle kodunuzu birazdan alabilirsiniz veya destekle iletişime geçin).",
+                message: "Doğrulama kodu e-postana gönderildi.",
+                requireVerification: true,
+                email: email
+            });
+        } catch (mailError) {
+            console.error("⚠️ Mail Hatası:", mailError);
+            // Mail gitmese bile kayıt başarılı sayalım (Kodu loglara yazıyoruz)
+            console.log("🔑 KOD (Yedek):", verificationCode);
+            
+            res.status(201).json({ 
+                success: true, 
+                message: "Kayıt alındı. (Mail yoğunluğu olabilir, kod gelmezse tekrar deneyin).",
                 requireVerification: true,
                 email: email
             });
         }
 
+    } catch (err) {
+        console.error("❌ HATA:", err);
+        if (err.code === '23505') {
+            return res.status(400).json({ message: "Bu e-posta zaten kayıtlı." });
+        }
         res.status(500).json({ message: "Sunucu hatası." });
     }
 });
@@ -347,21 +352,23 @@ app.post('/api/contact', async (req, res) => {
         return res.status(400).json({ message: "Lütfen tüm alanları doldurun." });
     }
 
-    // Gönderilecek mail içeriği
-    const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: 'petspito@gmail.com', // Alıcı adresi
-        subject: `PİTO - Yeni İletişim Formu Mesajı (${name})`,
-        html: `
-            <h3>Yeni İletişim Mesajı</h3>
-            <p><b>Gönderen:</b> ${name}</p>
-            <p><b>E-posta:</b> ${email}</p>
-            <p><b>Mesaj:</b></p>
-            <p>${message}</p>
-            <hr>
-            <p>Bu mesaj PİTO web sitesi iletişim formu aracılığıyla gönderilmiştir.</p>
-        `
-    };
+   // Gönderilecek mail içeriği (GÜNCELLENMİŞ HALİ)
+const mailOptions = {
+    // BURASI DEĞİŞTİ: Gönderen olarak PİTO ismini ve gmail adresini yazdık
+    from: 'PİTO <petspito@gmail.com>', 
+    
+    to: 'petspito@gmail.com', // Alıcı adresi (Mesajlar yine sana gelecek)
+    subject: `PİTO - Yeni İletişim Formu Mesajı (${name})`,
+    html: `
+        <h3>Yeni İletişim Mesajı</h3>
+        <p><b>Gönderen:</b> ${name}</p>
+        <p><b>E-posta:</b> ${email}</p>
+        <p><b>Mesaj:</b></p>
+        <p>${message}</p>
+        <hr>
+        <p>Bu mesaj PİTO web sitesi iletişim formu aracılığıyla gönderilmiştir.</p>
+    `
+};
 
     try {
         await transporter.sendMail(mailOptions);
