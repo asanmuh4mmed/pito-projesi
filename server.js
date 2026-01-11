@@ -91,23 +91,77 @@ const authenticateToken = (req, res, next) => {
 // ================= ROTALAR =================
 
 // 1. KAYIT OL
+// --- 1. KAYIT OL (GÜNCELLENDİ: ARTIK E-POSTA DOĞRULAMA KODU GÖNDERİYOR) ---
 app.post('/api/register', upload.single('profileImage'), async (req, res) => {
     const { name, email, phone, password } = req.body;
-    const verificationToken = crypto.randomBytes(32).toString('hex');
+    
+    // 100000 ile 999999 arasında rastgele 6 haneli sayı üret
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
     try {
         const profileImageUrl = await uploadToSupabase(req.file);
+        
+        // DİKKAT: is_verified = 0 (false) olarak ekliyoruz. verificationToken sütununa kodu yazıyoruz.
         await pool.query(
-            `INSERT INTO users (name, email, phone, password, profileImageUrl, isVerified, verificationToken) VALUES ($1, $2, $3, $4, $5, 1, $6)`,
-            [name, email, phone, password, profileImageUrl, verificationToken]
+            `INSERT INTO users (name, email, phone, password, profileImageUrl, is_verified, verificationToken) VALUES ($1, $2, $3, $4, $5, 0, $6)`,
+            [name, email, phone, password, profileImageUrl, verificationCode]
         );
-        res.status(201).json({ message: "Kayıt başarılı! Giriş yapabilirsiniz." });
+
+        // Mail Gönderme İşlemi
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'PİTO - Doğrulama Kodunuz',
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4;">
+                    <div style="background-color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h2 style="color: #A64D32;">PİTO'ya Hoş Geldiniz!</h2>
+                        <p>Hesabınızı doğrulamak için aşağıdaki kodu kullanın:</p>
+                        <h1 style="font-size: 32px; letter-spacing: 5px; color: #333;">${verificationCode}</h1>
+                        <p style="font-size: 12px; color: #888;">Bu kodu kimseyle paylaşmayın.</p>
+                    </div>
+                </div>
+            `
+        };
+        await transporter.sendMail(mailOptions);
+
+        res.status(201).json({ message: "Doğrulama kodu e-postanıza gönderildi.", requireVerification: true, email: email });
+
     } catch (err) {
         if (err.code === '23505') {
             return res.status(400).json({ message: "Bu e-posta zaten kayıtlı." });
         }
         console.error("Kayıt hatası:", err);
         res.status(500).json({ error: "Sunucu hatası oluştu." });
+    }
+});
+
+// --- 2. YENİ ROTA: E-POSTA DOĞRULAMA (BUNU register'ın ALTINA EKLE) ---
+app.post('/api/verify-otp', async (req, res) => {
+    const { email, code } = req.body;
+
+    try {
+        // Kullanıcıyı bul ve kodu kontrol et
+        const result = await pool.query(
+            `SELECT * FROM users WHERE email = $1 AND verificationToken = $2`, 
+            [email, code]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(400).json({ message: "Hatalı kod veya geçersiz e-posta!" });
+        }
+
+        // Kodu doğruysa hesabı onayla (is_verified = 1 yap) ve kodu temizle
+        await pool.query(
+            `UPDATE users SET is_verified = 1, verificationToken = NULL WHERE email = $1`,
+            [email]
+        );
+
+        res.status(200).json({ message: "Hesabınız doğrulandı! Giriş yapabilirsiniz." });
+
+    } catch (err) {
+        console.error("Doğrulama hatası:", err);
+        res.status(500).json({ message: "Sunucu hatası." });
     }
 });
 
