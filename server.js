@@ -36,17 +36,27 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// --- SUPABASE VERİTABANI ---
-const CONNECTION_STRING = 'postgresql://postgres.sjmmyusbauvithzthpvo:Mhmmd1013.10@aws-1-eu-central-1.pooler.supabase.com:6543/postgres';
+// ==========================================
+// --- YENİ EKLENEN/GÜNCELLENEN SUPABASE ---
+// ==========================================
+
+// 1. SUPABASE POSTGRESQL (VERİTABANI) BAĞLANTISI
+// (URL'den çıkardığımız Session Pooler formatına uygun PostgreSQL stringi)
+const CONNECTION_STRING = 'postgresql://postgres.wjdtofrvxjqwprdidfbm:Mhmmd1013.10@aws-0-eu-central-1.pooler.supabase.com:6543/postgres';
+
 const pool = new Pool({
     connectionString: CONNECTION_STRING,
     ssl: { rejectUnauthorized: false }
 });
 
-// --- SUPABASE STORAGE ---
-const SUPABASE_URL = 'https://sjmmyusbauvithzthpvo.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_lCJAyrxh_u6tig0X9MNcnQ_yqzMZ5Q1'; 
+// 2. SUPABASE STORAGE (FOTOĞRAF YÜKLEME) BÖLÜMÜ
+const SUPABASE_URL = 'https://wjdtofrvxjqwprdidfbm.supabase.co'; // Senin verdiğin yeni URL
+const SUPABASE_KEY = 'sb_publishable_9SvTHyuhrynfd2HBCmLYjQ_ed_NKdmx'; // Senin verdiğin yeni KEY
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ==========================================
+// BUNDAN SONRASI ESKİ KODUN BİREBİR AYNISIDIR
+// ==========================================
 
 // --- MIDDLEWARE ---
 app.use(cors());
@@ -774,6 +784,105 @@ app.post('/api/caretaker-reviews', authenticateToken, async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Yorum kaydedilemedi." });
+    }
+});
+
+// ==============================================
+// --- ŞİFRE SIFIRLAMA İŞLEMLERİ (YENİ) ---
+// ==============================================
+
+// 1. ŞİFRE SIFIRLAMA KODU GÖNDER
+app.post('/api/forgot-password', async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        // Kullanıcı var mı kontrol et
+        const userCheck = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (userCheck.rows.length === 0) {
+            return res.status(404).json({ message: "Bu e-posta adresiyle kayıtlı kullanıcı bulunamadı." });
+        }
+
+        // 6 Haneli Rastgele Kod Üret
+        const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // Kodun geçerlilik süresi (Şu an + 1 saat)
+        const expireTime = Date.now() + 3600000; 
+
+        // Veritabanına kodu ve süreyi kaydet
+        await pool.query(
+            'UPDATE users SET resetPasswordToken = $1, resetPasswordExpires = $2 WHERE email = $3',
+            [resetCode, expireTime, email]
+        );
+
+        // Mail Gönder (PİTO Tasarımıyla)
+        const mailOptions = {
+            from: 'PİTO <petspito@gmail.com>',
+            to: email,
+            subject: 'PİTO - Şifre Sıfırlama Talebi',
+            html: `
+                <div style="background-color: #f9f9f9; padding: 20px; font-family: Arial;">
+                    <div style="background-color: #ffffff; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #ddd;">
+                        <h2 style="color: #A64D32;">Şifrenizi mi Unuttunuz?</h2>
+                        <p>Endişelenmeyin, aşağıdaki kodu kullanarak yeni bir şifre belirleyebilirsiniz:</p>
+                        <h1 style="color: #333; letter-spacing: 5px; font-size: 32px;">${resetCode}</h1>
+                        <p style="color: #999; font-size: 12px;">Bu kod 1 saat süreyle geçerlidir.</p>
+                        <hr style="border: none; border-top: 1px solid #eee;">
+                        <p style="font-size: 11px; color: #aaa;">Eğer bu talebi siz yapmadıysanız, bu maili görmezden gelebilirsiniz.</p>
+                    </div>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`✅ Şifre sıfırlama kodu gönderildi: ${email}`);
+        
+        res.json({ success: true, message: "Sıfırlama kodu e-posta adresinize gönderildi." });
+
+    } catch (err) {
+        console.error("Şifre Sıfırlama Hatası:", err);
+        res.status(500).json({ message: "Sunucu hatası oluştu." });
+    }
+});
+
+// 2. YENİ ŞİFREYİ KAYDET
+app.post('/api/reset-password', async (req, res) => {
+    const { email, code, newPassword } = req.body;
+
+    try {
+        // Kullanıcıyı, kodu ve süresini kontrol et
+        const result = await pool.query(
+            'SELECT * FROM users WHERE email = $1', 
+            [email]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: "Kullanıcı bulunamadı." });
+        }
+
+        const user = result.rows[0];
+
+        // Kod doğru mu?
+        if (user.resetpasswordtoken !== code) { // Postgres bazen küçük harfe çevirir sütunları
+             // Eğer yukarıdaki çalışmazsa user.resetPasswordToken dene
+            return res.status(400).json({ message: "Girdiğiniz kod hatalı!" });
+        }
+
+        // Süresi dolmuş mu?
+        if (Date.now() > parseInt(user.resetpasswordexpires)) {
+            return res.status(400).json({ message: "Bu kodun süresi dolmuş. Lütfen tekrar deneyin." });
+        }
+
+        // Şifreyi Güncelle ve Kodları Temizle
+        await pool.query(
+            'UPDATE users SET password = $1, resetPasswordToken = NULL, resetPasswordExpires = NULL WHERE email = $2',
+            [newPassword, email]
+        );
+
+        res.json({ success: true, message: "Şifreniz başarıyla değiştirildi! Giriş yapabilirsiniz." });
+
+    } catch (err) {
+        console.error("Şifre Değiştirme Hatası:", err);
+        res.status(500).json({ message: "Sunucu hatası oluştu." });
     }
 });
 

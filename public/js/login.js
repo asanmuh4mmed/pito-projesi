@@ -69,35 +69,89 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
-    // --- 2. ŞİFREMİ UNUTTUM İŞLEMİ (YENİ) ---
+// --- 2. ŞİFREMİ UNUTTUM İŞLEMİ (BACKEND ENTEGRASYONU) ---
     const resetBtn = document.getElementById('sendResetLinkBtn');
     
     if (resetBtn) {
-        resetBtn.addEventListener('click', () => {
+        resetBtn.addEventListener('click', async () => {
             const resetEmail = document.getElementById('resetEmail').value;
+            const btn = document.getElementById('sendResetLinkBtn');
             
-            // Modal penceresini bul ve kapat
-            const modalEl = document.getElementById('forgotPasswordModal');
-            const modalInstance = bootstrap.Modal.getInstance(modalEl);
-            
-            if (resetEmail) {
-                modalInstance.hide(); // Pencereyi kapat
-                
-                // Şimdilik sadece görsel uyarı veriyoruz (Backend hazır olunca buraya fetch eklenir)
-                Swal.fire({
-                    title: 'Talep Alındı',
-                    text: `${resetEmail} adresine sıfırlama bağlantısı gönderildi varsayılıyor.`,
-                    icon: 'success',
-                    confirmButtonColor: '#A64D32'
-                });
-            } else {
+            if (!resetEmail) {
                 Swal.fire({
                     title: 'Eksik Bilgi',
                     text: 'Lütfen e-posta adresinizi yazın.',
                     icon: 'warning',
                     confirmButtonColor: '#A64D32'
                 });
+                return;
+            }
+
+            // Butonu kilitle
+            btn.disabled = true;
+            btn.innerText = "Gönderiliyor...";
+
+            try {
+                // Backend'e istek at
+                const res = await fetch('https://pitopets.com/api/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: resetEmail })
+                });
+
+                const data = await res.json();
+                
+                // Modal'ı kapat
+                const modalEl = document.getElementById('forgotPasswordModal');
+                const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                modalInstance.hide();
+
+                if (res.ok) {
+                    // Adım 2: Kullanıcıdan Kodu ve Yeni Şifreyi İste
+                    const { value: formValues } = await Swal.fire({
+                        title: 'Kod Gönderildi!',
+                        html:
+                            '<p style="font-size:14px">Mailinize gelen 6 haneli kodu ve yeni şifrenizi girin.</p>' +
+                            '<input id="swal-code" class="swal2-input" placeholder="6 Haneli Kod">' +
+                            '<input id="swal-pass" type="password" class="swal2-input" placeholder="Yeni Şifre">',
+                        focusConfirm: false,
+                        confirmButtonText: 'Şifreyi Değiştir',
+                        confirmButtonColor: '#A64D32',
+                        preConfirm: () => {
+                            return [
+                                document.getElementById('swal-code').value,
+                                document.getElementById('swal-pass').value
+                            ]
+                        }
+                    });
+
+                    if (formValues) {
+                        const [code, newPassword] = formValues;
+                        // Şifre Değiştirme İsteği
+                        const resetRes = await fetch('https://pitopets.com/api/reset-password', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: resetEmail, code, newPassword })
+                        });
+                        const resetData = await resetRes.json();
+
+                        if (resetRes.ok) {
+                            Swal.fire('Başarılı!', 'Şifreniz güncellendi. Giriş yapabilirsiniz.', 'success');
+                        } else {
+                            Swal.fire('Hata', resetData.message, 'error');
+                        }
+                    }
+
+                } else {
+                    Swal.fire('Hata', data.message, 'error');
+                }
+
+            } catch (error) {
+                console.error(error);
+                Swal.fire('Hata', 'Sunucuya bağlanılamadı.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Gönder";
             }
         });
     }
