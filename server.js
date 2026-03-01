@@ -36,27 +36,17 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// ==========================================
-// --- YENİ EKLENEN/GÜNCELLENEN SUPABASE ---
-// ==========================================
-
-// 1. SUPABASE POSTGRESQL (VERİTABANI) BAĞLANTISI
-// (URL'den çıkardığımız Session Pooler formatına uygun PostgreSQL stringi)
-const CONNECTION_STRING = 'postgresql://postgres.wjdtofrvxjqwprdidfbm:Mhmmd1013.10@aws-0-eu-central-1.pooler.supabase.com:6543/postgres';
-
+// --- SUPABASE VERİTABANI ---
+const CONNECTION_STRING = 'postgresql://postgres.sjmmyusbauvithzthpvo:Mhmmd1013.10@aws-1-eu-central-1.pooler.supabase.com:6543/postgres';
 const pool = new Pool({
     connectionString: CONNECTION_STRING,
     ssl: { rejectUnauthorized: false }
 });
 
-// 2. SUPABASE STORAGE (FOTOĞRAF YÜKLEME) BÖLÜMÜ
-const SUPABASE_URL = 'https://wjdtofrvxjqwprdidfbm.supabase.co'; // Senin verdiğin yeni URL
-const SUPABASE_KEY = 'sb_publishable_9SvTHyuhrynfd2HBCmLYjQ_ed_NKdmx'; // Senin verdiğin yeni KEY
+// --- SUPABASE STORAGE ---
+const SUPABASE_URL = 'https://sjmmyusbauvithzthpvo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_lCJAyrxh_u6tig0X9MNcnQ_yqzMZ5Q1'; 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// ==========================================
-// BUNDAN SONRASI ESKİ KODUN BİREBİR AYNISIDIR
-// ==========================================
 
 // --- MIDDLEWARE ---
 app.use(cors());
